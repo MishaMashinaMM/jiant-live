@@ -753,6 +753,7 @@ int main(void)
         a.t[1].p[P_LEVEL] = 90;
         memcpy(p, a.t[1].p, sizeof p);
         fm4_convert(p, v);
+        p[P_LN8] = p[P_LN0]; p[P_LN9] = p[P_LN1]; p[P_LN10] = p[P_LN4]; p[P_LN11] = p[P_LN5];
         fm6_pack(v, pk);
         a.motion.count = 5;
         a.motion.event[0] = (motion_event_t){1u << 6 | 3u, P_E4, 20};          /* track 2: INDEX */
@@ -786,6 +787,7 @@ int main(void)
         for (i = P_FM1_ATK; i <= P_FM4_LEVEL; i++)
             p[i] = TP[i].def;
         fm4_convert(p, v);
+        p[P_LN8] = p[P_LN0]; p[P_LN9] = p[P_LN1]; p[P_LN10] = p[P_LN4]; p[P_LN11] = p[P_LN5];
         fm6_pack(v, pk);
         ok = proj_import(&c, &buf, (int)sizeof w4) && FM4_OK(c);
         bad += check("FUN4 with a DIGITAL track (no OP ENV then: their defaults): FM6, converted", ok);
@@ -930,7 +932,12 @@ int main(void)
                 ok &= restored.t[0].p[i] == b2.t[0].p[i];
             bad += check("Stage 9B2: B2/S2/O2/T2 patches, LAYER, SEND and four LEVELs survive a project round trip", ok);
         }
-        ok = proj_pack_vb(&gs, &f) && proj_import(&h, &gs, sizeof gs) && !memcmp(h.t, f.t, PROJ_LT * sizeof f.t[0]) &&
+        g = f;   /* FUNB had only E0..E7; migrated duplicates take the original lane LEVELs. */
+        for (k = 0; k < PROJ_LT; k++) {
+            g.t[k].p[P_LN8] = f.t[k].p[P_LN0]; g.t[k].p[P_LN9] = f.t[k].p[P_LN1];
+            g.t[k].p[P_LN10] = f.t[k].p[P_LN4]; g.t[k].p[P_LN11] = f.t[k].p[P_LN5];
+        }
+        ok = proj_pack_vb(&gs, &f) && proj_import(&h, &gs, sizeof gs) && !memcmp(h.t, g.t, PROJ_LT * sizeof f.t[0]) &&
              h.t[4].engine == trk_old_engine(4u) && h.t[5].engine == trk_old_engine(5u) && h.t[5].step[0].time == ST_REST;
         bad += check("FUNB (0.5) -> six tracks: its four kept, T5 / T6 at 0.9.8's power-on sounds (TRK_OLD), empty", ok);
         {   /* (JIANT 0.8.5) VOICE's lyrics: 'L' 'Y' blocks for the tracks that have one; none before */
