@@ -2455,7 +2455,8 @@ static int test_menu_tabs(void)
                 seen[MPAGE[p].row[k]]++;
     }
     for (i = 0; i < MI_COUNT; i++)
-        ok &= seen[i] == (i == MI_COLOR || i == MI_SKIN || i == MI_STYLE || i == MI_LARGE || i == MI_ANIM ? 0u : 1u) && mi_tab(i) < MTAB_COUNT;
+        ok &= seen[i] == (i == MI_COLOR || i == MI_SKIN || i == MI_STYLE || i == MI_LARGE || i == MI_ANIM ||
+                             (i >= MI_T1_RX && i <= MI_T6_RX) ? 0u : 1u) && mi_tab(i) < MTAB_COUNT;
     for (n = 0, t = 0; t < MTAB_COUNT; t++)
         n += mtab_pages(t);
     ui_prefs = 0;
@@ -2470,9 +2471,9 @@ static int test_menu_tabs(void)
               str_eq(menu_short(MI_PANEL), "CALIB") && str_eq(menu_short(MI_CLOCK), "CPU MHZ") &&
               str_eq(menu_short(MI_SERIAL), "USB AUD");
     }
-    bad += check("Live MENU: active settings on 10 pages, LARGE/ANIMATION absent; tabs SCREEN AUDIO MIDI USB SYSTEM",
+    bad += check("Live MENU: active settings on 8 pages, six RX rows absent; tabs SCREEN AUDIO MIDI USB SYSTEM",
                  ok && n == MP_COUNT && MTAB_COUNT == 5u && str_eq(MTAB_NAME[0], "SCREEN") && str_eq(MTAB_NAME[MTAB_SYSTEM], "SYSTEM") &&
-                 mtab_pages(MTAB_SCREEN) == 2u && mtab_pages(MTAB_AUDIO) == 2u && mtab_pages(MTAB_MIDI) == 3u &&
+                 mtab_pages(MTAB_SCREEN) == 2u && mtab_pages(MTAB_AUDIO) == 2u && mtab_pages(MTAB_MIDI) == 1u &&
                  mtab_pages(MTAB_USB) == 1u && mtab_pages(MTAB_SYSTEM) == 2u && mi_tab(MI_MIDIOUT) == MTAB_MIDI &&
                  mi_tab(MI_LEARN) == MTAB_MIDI && mi_tab(MI_LCLEAR) == MTAB_MIDI && mi_tab(MI_SERIAL) == MTAB_USB &&
                  mi_tab(MI_USB) == MTAB_USB && mi_tab(MI_CPU) == MTAB_SYSTEM && mi_tab(MI_CLOCK) == MTAB_SYSTEM &&
@@ -2507,18 +2508,15 @@ static int test_menu_tabs(void)
     turn(EN_ALGO, 1); ok = menu_tab() == MTAB_AUDIO && menu_page() == 2u;
     turn(EN_SELECT, 1); ok &= menu_page() == 3u && ui.menu_sel == MI_CLICK;
     turn(EN_ALGO, 1); ok &= menu_tab() == MTAB_MIDI && ui.menu_sel == MI_MIDIOUT;
-    turn(EN_SELECT, 1); ok &= menu_page() == 5u && ui.menu_sel == MI_T2_RX;   /* MIDI page 2: T2 RX CH */
-    turn(EN_SELECT, 1); ok &= menu_page() == 6u && ui.menu_sel == MI_T6_RX;   /* MIDI page 3: T6 RX CH */
-    turn(EN_SELECT, 1); ok &= menu_page() == 7u && ui.menu_sel == MI_SERIAL;   /* SELECT+1 from page 6 → USB page 7 */
-    turn(EN_SELECT, -1); turn(EN_SELECT, -1); turn(EN_SELECT, -1);             /* USB page 7 → MIDI page 4 */
-    ok &= menu_page() == 4u && ui.menu_sel == MI_MIDIOUT;
-    turn(EN_SELECT, -1); turn(EN_SELECT, -1);                                   /* MIDI page 4 → AUDIO page 2 */
+    turn(EN_SELECT, 1); ok &= menu_page() == 5u && ui.menu_sel == MI_SERIAL; /* next is USB */
+    turn(EN_SELECT, -1); ok &= menu_page() == 4u && ui.menu_sel == MI_MIDIOUT;
+    turn(EN_SELECT, -1); turn(EN_SELECT, -1);                      /* MIDI → AUDIO page 2 */
     ok &= menu_page() == 2u;
     turn(EN_ALGO, -1); ok &= menu_page() == 0u;
     turn(EN_ALGO, -1); ok &= menu_page() == 0u && menu_tab() == MTAB_SCREEN;   /* (no wrap) */
     turn(EN_ALGO, 3); ok &= menu_tab() == MTAB_USB && ui.menu_sel == MI_SERIAL;
     turn(EN_ALGO, 1); ok &= menu_tab() == MTAB_SYSTEM && ui.menu_sel == MI_HOLD;
-    turn(EN_ALGO, 1); ok &= menu_page() == 8u;   /* SYSTEM's first page: page 8 (after 3 MIDI pages) */
+    turn(EN_ALGO, 1); ok &= menu_page() == 6u;   /* SYSTEM's first page */
     bad += check("0.9.18 MENU: ALGORITHM jumps to the next / previous tab's first page, no wrap", ok && ui.menu == 1);
     ok = 1;                                            /* SYSTEM > CONTROLS: HOLD TIME, KNOB SPEEDUP, FX LATCH, CALIBRATION */
     turn(EN_K2, 1); ok &= !(ui_prefs & PREF_ACCEL_OFF) && ui.menu_sel == MI_ACCEL;
