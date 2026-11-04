@@ -53,7 +53,7 @@ static const nv_t CE_FM6[] = {NV("EDIT 1", 0, 0, 0), NV("EDIT 2", 0, 0, 0), NV("
 static const ng_t CG_FM6[] = {{"SOUND", 0}, {"TONE", 0}, {"OPERATOR", "OPS"}};
 static const nv_t CE_DRM[] = {NV("EDIT 1", "KIT", 0, 0), NV("EDIT 2", "KIT 2", 0, 0), NV("KIT 3", 0, 0, 0),
                               NV("SOUND", 0, 1, 2), NV("SOUND 2", 0, 1, 2), NV("SOUND 3", 0, 1, 2), NV("SOUND 4", 0, 1, 2),
-                              NV("LEVELS", 0, 2, 1), NV("LEVELS 2", 0, 2, 1), NV("X-MOD", 0, 3, 1), NV("FILTER", 0, 3, 1),
+                              NV("LEVELS", 0, 2, 1), NV("LEVELS 2", 0, 2, 1), NV("LEVELS 3", 0, 2, 1), NV("X-MOD", 0, 3, 1), NV("FILTER", 0, 3, 1),
                               NV("STEREO", 0, 3, 1), NV("VOICE", 0, 3, 1)};
 static const ng_t CG_DRM[] = {{"KIT", 0}, {"SOUND", 0}, {"LEVELS", "LEVEL"}, {"TONE", 0}};
 static const nv_t CE_DIG[] = {NV("EDIT 1", 0, 0, 0), NV("EDIT 2", 0, 0, 0), NV("FILTER", 0, 1, 1), NV("VOICE", 0, 1, 1),
