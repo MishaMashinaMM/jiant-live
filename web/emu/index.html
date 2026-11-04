@@ -70,6 +70,14 @@ a { color: inherit; }
 #sample-bank-controls select { max-width:100%; font:inherit; }
 kbd { font: 600 11px ui-monospace, Menlo, monospace; border: 1px solid var(--rule); padding: 0 4px; color: var(--fg); }
 footer { margin-top: 12px; font-size: 12px; }
+.midi-test { max-width: 900px; margin: 18px auto; padding: 12px 16px; border: 1px solid var(--rule); border-radius: 8px; }
+.midi-test summary { cursor: pointer; font-weight: 600; }
+.midi-test .controls, .midi-test .pads { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: end; }
+.midi-test label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; }
+.midi-test input { width: 70px; font: inherit; color: var(--fg); background: transparent; border: 1px solid var(--rule); padding: 5px; }
+.midi-test button { font: inherit; padding: 6px 10px; cursor: pointer; }
+.midi-test button:disabled { opacity: .45; cursor: default; }
+.midi-test p { font-size: 12px; color: var(--dim); }
 footer nav a { margin: 0 6px; }
 footer small { font-size: 11px; opacity: .8; }
 </style>
@@ -91,6 +99,20 @@ footer small { font-size: 11px; opacity: .8; }
 </div>
 
 
+<details class="midi-test" id="midi-test">
+  <summary>MIDI test input (channels 1–16, no external keyboard required)</summary>
+  <div class="controls">
+    <label>Channel <input id="midi-test-channel" type="number" min="1" max="16" value="1"></label>
+    <label>Note <input id="midi-test-note" type="number" min="0" max="127" value="60"></label>
+    <label>Velocity <input id="midi-test-velocity" type="number" min="1" max="127" value="100"></label>
+    <button id="midi-test-on" type="button" disabled>Note On</button>
+    <button id="midi-test-off" type="button" disabled>Note Off</button>
+    <button id="midi-test-pulse" type="button" disabled>Play 200 ms</button>
+    <button id="midi-test-panic" type="button" disabled>All Notes Off</button>
+  </div>
+  <div class="pads" id="midi-test-pads" aria-label="MIDI notes 36–47"></div>
+  <p>Drum pads send notes 36–47. All Notes Off sends CC123 on every channel.</p>
+</details>
 <p class="keys">
   <span><kbd>Z</kbd>–<kbd>'</kbd> <kbd>Q</kbd>–<kbd>O</kbd> keys</span>
   <span><kbd>1</kbd>–<kbd>=</kbd> FX … REC</span>
@@ -439,6 +461,56 @@ function saveFlash(sectors) {
   } catch { return false; }                                       // private mode, full: this session only
 }
 
+// ------------------------------------------------------------------ built-in MIDI test: same WebAssembly queue as an external keyboard
+const testValue = (id, lo, hi) => {
+  const el = document.getElementById(id), n = Number(el.value);
+  const v = Math.max(lo, Math.min(hi, Number.isFinite(n) ? Math.round(n) : lo));
+  el.value = String(v);
+  return v;
+};
+const testChannel = () => testValue("midi-test-channel", 1, 16) - 1;
+const testNote = () => testValue("midi-test-note", 0, 127);
+const testVelocity = () => testValue("midi-test-velocity", 1, 127);
+const midiTestSend = (status, note, velocity) => send({ type: "midi", data: [status, note, velocity] });
+const testHeld = new Set(), testTimers = new Set();
+function testStart(ch, n, vel) {
+  if (!node) return;
+  midiTestSend(0x90 | ch, n, vel);
+  testHeld.add(ch * 128 + n);
+}
+function testStop(ch, n) {
+  if (!node) return;
+  midiTestSend(0x80 | ch, n, 0);
+  testHeld.delete(ch * 128 + n);
+}
+function testPulse(ch, n, vel) {
+  testStart(ch, n, vel);
+  const timer = setTimeout(() => { testTimers.delete(timer); testStop(ch, n); }, 200);
+  testTimers.add(timer);
+}
+document.getElementById("midi-test-on").addEventListener("click", () => testStart(testChannel(), testNote(), testVelocity()));
+document.getElementById("midi-test-off").addEventListener("click", () => testStop(testChannel(), testNote()));
+document.getElementById("midi-test-pulse").addEventListener("click", () => testPulse(testChannel(), testNote(), testVelocity()));
+document.getElementById("midi-test-panic").addEventListener("click", () => {
+  for (const timer of testTimers) clearTimeout(timer);
+  testTimers.clear();
+  for (const key of [...testHeld]) testStop(Math.floor(key / 128), key % 128);
+  for (let ch = 0; ch < 16; ch++) midiTestSend(0xB0 | ch, 123, 0);
+});
+for (let n = 36; n < 48; n++) {
+  const pad = document.createElement("button");
+  pad.type = "button";
+  pad.disabled = true;
+  pad.className = "midi-test-pad";
+  pad.textContent = String(n);
+  pad.title = "MIDI note " + n;
+  pad.addEventListener("click", () => testPulse(testChannel(), n, testVelocity()));
+  document.getElementById("midi-test-pads").append(pad);
+}
+function midiTestEnable(on) {
+  for (const b of document.querySelectorAll("#midi-test button")) b.disabled = !on;
+}
+
 // ------------------------------------------------------------------ Web MIDI in (channel messages)
 async function midiOn() {
   if (!navigator.requestMIDIAccess) return;
@@ -509,6 +581,7 @@ async function switchOn() {
     if (sampleChoice && !saveFlash(sectors)) console.warn("JIANT: sample bank is available for this session only.");
     document.getElementById("sample-bank").disabled = true;
     document.getElementById("start").hidden = true;
+    midiTestEnable(true);
     go.textContent = "On";
     if (ac.sampleRate !== 44100) console.warn(`JIANT: the browser plays at ${ac.sampleRate} Hz, the pitch is off by ${(1200 * Math.log2(ac.sampleRate / 44100)).toFixed(0)} cents.`);
     syncButtons();
@@ -517,6 +590,7 @@ async function switchOn() {
     midiOn();
   } catch (err) {
     node = null;
+    midiTestEnable(false);
     go.disabled = false;
     go.textContent = "Switch on";
     say("Could not start: " + (err && err.message || err) + ". A current Chrome, Edge, Firefox or Safari should work.");
