@@ -28,7 +28,7 @@ int main(void)
     favorites.factory[15][28] = 0x80; /* TRACKS 6 */
     favorites.factory[1][2] = 0x9E;   /* learned CC */
     settings_export(&p);
-    assert(p.magic == PERSIST_MAGIC && sizeof p == PERSIST_V4_SIZE + 8u);
+    assert(p.magic == PERSIST_MAGIC && sizeof p == PERSIST_V5_SIZE + 68u);
     assert((uint8_t *)&p.midi_rx - (uint8_t *)&p == PERSIST_V4_SIZE);
     for (uint32_t i = 0; i < 6u; i++) midi_rx[i] = i < 3 ? 16 : 1;
     settings_export(&p);
@@ -37,6 +37,14 @@ int main(void)
     for (uint32_t i = 0; i < 6u; i++) assert(midi_rx[i] == (i < 3 ? 16u : 1u));
     q = p; assert(settings_import(&q, sizeof q) == 1 && !memcmp(&q, &p, sizeof p));
     puts("RX settings: global defaults, shared channels, round-trip and idempotence passed");
+
+    /* PER5's exact prefix is accepted and its RX assignments remain intact. */
+    q = p; q.magic = PERSIST_MAGIC_V5;
+    memset(q.ml_extra, 0xFF, sizeof q.ml_extra); /* not part of the old record */
+    assert(settings_import(&q, PERSIST_V5_SIZE) == 2);
+    for (uint32_t i = 0; i < 6u; i++) assert(midi_rx[i] == (i < 3 ? 16u : 1u));
+    assert(q.magic == PERSIST_MAGIC && q.ml_extra[0] == 0 && q.ml_extra[65] == 0);
+    puts("RX settings: PER5 migration preserves channels and clears new learned entries");
 
     q = p; q.magic = PERSIST_MAGIC_V4;
     memset(q.midi_rx, 0xFF, sizeof q.midi_rx); /* not present in PER4 */
