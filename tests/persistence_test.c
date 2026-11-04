@@ -1,0 +1,829 @@
+/* SPDX-License-Identifier: GPL-3.0-only
+ * Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
+ * Portions Copyright (C) 2026 Juan Ignacio Antonucci (Juan Jiant) */
+/* Firmware save flows against NOR flash: deferred settings, retries, and failed-save rollback. */
+#define main hostsim_main
+#include "hostsim.c"
+#undef main
+
+static int32_t fm1_enc_take(uint32_t e) { (void)e; return 0; }
+static uint32_t irq_start_race, irq_races;
+static void fm1_irq_off(void)
+{
+    if (irq_start_race) {                         /* audio serviced PLAY immediately before main masks it */
+        irq_start_race = 0;
+        events_block(CTL);
+        irq_races++;
+    }
+}
+static void fm1_irq_on(void) {}
+static void lcd_sync(void) {}
+static void lcd_power(uint32_t s) { (void)s; }   /* (MENU > SCREEN OFF: lcd.c) */
+static void lcd_wake_now(void) {}
+static void lcd_blit(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const uint16_t *p)
+{ (void)x; (void)y; (void)w; (void)h; (void)p; }
+#define FELUCCA_FLASH 1
+#include "../firmware/src/gfx.c"
+#include "../firmware/src/panel.c"
+#include "../firmware/src/ui.c"
+#include "../firmware/src/menu_items.c"
+static void panel_setup(void) {}
+
+static uint8_t nor[0x100000], flash_ok = 1;
+static int erase_error, fail_after = -1;
+static uint32_t erases, as_erases;               /* (as_erases: the autosave's two sectors, 0xE5000 / 0xE6000) */
+static int st_read(uint32_t off, void *dst, uint32_t n) { memcpy(dst, nor + off, n); return 0; }
+static int st_erase(uint32_t off)
+{
+    erases++;
+    as_erases += off >= 0xE5000u && off < 0xE7000u;
+    if (erase_error) return -8;
+    memset(nor + off, 0xFF, 4096);
+    return 0;
+}
+static int st_prog(uint32_t off, const void *src, uint32_t n)
+{
+    const uint8_t *s = src;
+    uint32_t i;
+    if (fail_after == 0) return -9;
+    if (fail_after > 0) fail_after--;
+    for (i = 0; i < n; i++) nor[off + i] &= s[i];
+    return 0;
+}
+static uint32_t irq_save(void) { return 0; }
+static void irq_restore(uint32_t f) { (void)f; }
+static uint32_t fl_jedec_ram(void) { return 0x856014u; }
+static void fl_plain_window_init(void) {}
+#define FL_FAR(fn) (fn)
+#include "../firmware/src/storage.c"
+#include "../firmware/src/upreset.c"
+#include "../firmware/src/project.c"
+
+enum { ED_UI_STATE = 34, ED_UI_SET, ED_UI_PALETTES, ED_FAV_GET, ED_FAV_SET };
+static uint8_t ed_rep[64];                        /* the reply's bytes (MENU_SET) */
+static uint32_t ed_repn;
+static void ed_b(uint32_t n) { if (ed_repn < sizeof ed_rep) ed_rep[ed_repn++] = (uint8_t)(n & 127u); }
+static void ed_v(int32_t n) { ed_b((uint32_t)(n + 8192)); ed_b((uint32_t)(n + 8192) >> 7); }
+static int32_t ed_rv(const uint8_t *a) { return (int32_t)(a[0] | (uint32_t)a[1] << 7) - 8192; }
+static void ed_str(const char *s, uint32_t n) { (void)s; (void)n; }
+#include "../firmware/src/editor_preferences.c"
+#include "../firmware/src/editor_menu.c"
+
+static int check(const char *what, int ok)
+{
+    printf("persist: %-66s %s\n", what, ok ? "ok" : "FAIL");
+    return ok ? 0 : 1;
+}
+
+static void reset(void)
+{
+    memset(nor, 0xFF, sizeof nor);
+    memset(&song, 0, sizeof song);
+    memset(trk, 0, sizeof trk);
+    memset(&chain, 0, sizeof chain);
+    chain_defaults(&chain_config);
+    memset(proj_slot, 0, sizeof proj_slot);
+    memset(up_bank, 0, sizeof up_bank);
+    memset(&persist_saved, 0, sizeof persist_saved);
+    memset(&settings, 0, sizeof settings);
+    memset(&ui, 0, sizeof ui);
+    memset(&favorites, 0, sizeof favorites);
+    panel = PANEL_DEFAULT;
+    host_tracks_init();
+    fm1_ms = 0;
+    transport_req = 0;
+    persist_pending = 0;
+    persist_retry_ms = 0;
+    flash_ok = 1;
+    erase_error = 0;
+    fail_after = -1;
+    up_gen = erases = 0;
+    irq_start_race = irq_races = 0;
+}
+
+/* ---- 1.0.3: the retired FM6 bank's patches move into the user presets on the first boot (up_fm6.c) ---- */
+static uint8_t mig_pre[0x100000];
+static fm6_bank_t mig_bank;
+
+static void mig_rec(up_bank_t *b, uint32_t i, uint32_t engine, int16_t slot, char tag)
+{
+    up_rec_t *r = &b->r[i];
+    uint32_t k;
+    memset(r, 0, sizeof *r);
+    r->used = UP_USED; r->ver = UP_VER; r->engine = (uint8_t)engine; r->np = P_COUNT;
+    r->name[0] = tag;
+    for (k = 0; k < P_COUNT; k++) up_set_value(r, k, param_desc_of(engine, k)->def);
+    up_set_value(r, P_E7, slot);
+    up_set_value(r, P_E0, (int16_t)(tag & 7));          /* (each record another sound) */
+}
+
+/* a 1.0.2 flash: user presets on B3 (slot 1), F2 (2), B5 empty (3), DRUM (4), B1 (18); the bank written twice */
+static void mig_setup(void)
+{
+    static up_bank_t b[2];
+    memset(nor, 0xFF, sizeof nor);
+    memset(b, 0, sizeof b);
+    for (uint32_t i = 0; i < 2u; i++) { b[i].magic = UP_BANK_MAGIC; b[i].rsize = sizeof(up_rec_t); b[i].nslot = UP_PER_BANK; }
+    mig_rec(&b[0], 0, ENGI_FM6, FM6_NFACTORY + 2, 'A');
+    mig_rec(&b[0], 1, ENGI_FM6, 1, 'B');
+    mig_rec(&b[0], 2, ENGI_FM6, FM6_NFACTORY + 4, 'C');
+    mig_rec(&b[0], 3, ENGI_DRUM, FM6_NFACTORY + 2, 'D');
+    mig_rec(&b[1], 1, ENGI_FM6, FM6_NFACTORY + 0, 'E');
+    st_save(OBJ_UPRESET0, &b[0], sizeof b[0]);
+    st_save(OBJ_UPRESET0 + 1, &b[1], sizeof b[1]);
+    memset(&mig_bank, 0, sizeof mig_bank);
+    mig_bank.magic = FM6_BANK_MAGIC; mig_bank.ver = 1; mig_bank.nslot = FM6_BANK_N; mig_bank.used = 1u | 1u << 2;
+    memcpy(mig_bank.v[2], FM6_FACTORY[4], FM6_PACKED); memcpy(mig_bank.v[2] + 118, "OLD BANK 1", 10);
+    st_save(OBJ_FM6BANK, &mig_bank, sizeof mig_bank);   /* A: an older bank */
+    memcpy(mig_bank.v[0], FM6_FACTORY[6], FM6_PACKED); memcpy(mig_bank.v[0] + 118, "NEW B1    ", 10);
+    memcpy(mig_bank.v[2] + 118, "NEW B3    ", 10);
+    st_save(OBJ_FM6BANK, &mig_bank, sizeof mig_bank);   /* B: the newest */
+}
+
+static void mig_boot(void)                               /* a power-on: RAM lost, the stores from flash */
+{
+    memset(up_bank, 0, sizeof up_bank);
+    memset(&upf, 0, sizeof upf);
+    up_boot();
+}
+
+/* the presets play what 1.0.2 played: slot 1 the newest B3, 18 B1, 2 F2, 3 init (an empty B5), DRUM none */
+static int mig_ok(void)
+{
+    uint8_t pk[FM6_PACKED];
+    return !upf_get(0, pk) && !memcmp(pk + 118, "NEW B3    ", 10) && !upf_get(17, pk) &&
+           !memcmp(pk + 118, "NEW B1    ", 10) && upf_get(1, pk) && upf_get(2, pk) && upf_get(3, pk);
+}
+
+static int mig_test(void)
+{
+    int bad = 0, ok = 1;
+    uint32_t cut, before, cuts = 0;
+    uint8_t pk[FM6_PACKED];
+    upf_t got;
+    reset();
+    mig_setup();
+    memcpy(mig_pre, nor, sizeof nor);
+    mig_boot();
+    bad += check("FM6 bank -> user presets: B slots get the bank's newest patches", mig_ok());
+    bad += check("  .. written into A (the bank's older copy); the bank's newest copy (B) still whole",
+                 st_load(OBJ_UPFM6, &got, sizeof got) == (int)sizeof got && !memcmp(&got, &upf, sizeof got) &&
+                     ((st_hdr_t *)(nor + 0x9F000))->type == OBJ_UPFM6 && st_load(OBJ_FM6BANK, &mig_bank, sizeof mig_bank) > 0 &&
+                     !memcmp(mig_bank.v[0] + 118, "NEW B1", 6));
+    up_load(0);
+    bad += check("  .. UP_LOAD 1 plays the bank's B3, SLOT OWN", !memcmp(fm6_patch[song.sel] + FP_NAME, "NEW B3    ", 10) &&
+                 TSEL->p[P_E7] == FM6_OWN);
+    up_load(1);
+    bad += check("  .. UP_LOAD 2 (F2) plays F2, SLOT F2", !memcmp(fm6_patch[song.sel] + FP_NAME, FM6_FACTORY[1] + 118, 10) &&
+                 TSEL->p[P_E7] == 1);
+    up_load(2);
+    bad += check("  .. UP_LOAD 3 (an empty B5) plays the init voice, as before",
+                 !memcmp(fm6_patch[song.sel] + FP_NAME, "INIT VOICE", 10) && TSEL->p[P_E7] == FM6_OWN);
+    before = erases;
+    mig_boot();
+    bad += check("  .. the next boot: done (no write), the same patches", mig_ok() && erases == before);
+    /* a power cut at every write step of the migration: the next boot ends with the same result */
+    for (cut = 0; cut < 64u && ok; cut++) {
+        memcpy(nor, mig_pre, sizeof nor);
+        fail_after = (int)cut;
+        mig_boot();                                      /* (writes stop at the cut: the rest fails) */
+        if (fail_after > 0) break;                       /* (this boot finished before the cut) */
+        fail_after = -1;
+        cuts++;
+        mig_boot();
+        ok &= mig_ok() && st_load(OBJ_UPFM6, &got, sizeof got) == (int)sizeof got;
+    }
+    memcpy(nor, mig_pre, sizeof nor);
+    erase_error = 1;
+    mig_boot();                                          /* a cut before the erase */
+    erase_error = 0;
+    mig_boot();
+    ok &= mig_ok();
+    bad += check("a power cut at any step of the migration loses nothing (the next boot redoes it)", ok && cuts >= 10u);
+    /* after it: a preset save writes the other sector (the bank's last copy); a cut there keeps the first copy */
+    memcpy(nor, mig_pre, sizeof nor);
+    fail_after = -1;
+    mig_boot();
+    trk[song.sel].eng_req = ENGI_FM6;
+    fm6_load_slot(song.sel, 3);
+    fail_after = (int)((sizeof(up_bank_t) + 255u) / 256u + 1u + 3u);   /* the preset bank's write passes, the patches' fails */
+    up_store(20, "CUT");
+    fail_after = -1;
+    mig_boot();
+    bad += check("a cut while a preset's patch is written: the others kept, that preset without one",
+                 mig_ok() && upf_get(20, pk));
+    up_store(20, "SAVED");
+    mig_boot();
+    bad += check("saved again: its patch, and the bank's sectors now both hold the patches object",
+                 mig_ok() && !upf_get(20, pk) && !memcmp(pk + 118, FM6_FACTORY[3] + 118, 10) &&
+                     ((st_hdr_t *)(nor + 0x9F000))->type == OBJ_UPFM6 && ((st_hdr_t *)(nor + 0xFE000))->type == OBJ_UPFM6);
+    memset(nor, 0xFF, sizeof nor);                        /* a device that never had a bank: nothing written */
+    before = erases;
+    mig_boot();
+    bad += check("no bank: nothing to move, nothing written", erases == before && upf_valid(&upf));
+    return bad;
+}
+
+/* ---- 1.2, Discussion #130: the autosave (project.c): written only when the music changed, stopped and idle 10 s, at
+ * most one a minute; restored at power-on (RESTORE LAST ON, a clean boot); a damaged one ignored ---- */
+static void as_run(uint32_t ms)                          /* the main loop for ms (autosave_poll checks every 250 ms) */
+{
+    uint32_t end = fm1_ms + ms;
+    while ((int32_t)(end - fm1_ms) > 0) {
+        fm1_ms += 50u;
+        autosave_poll();
+    }
+}
+static void as_power_on(void)                            /* RAM lost: the defaults, then main.c's restore */
+{
+    uint32_t k;
+    memset(trk, 0, sizeof trk);
+    memset(&motion, 0, sizeof motion);
+    memset(motion_active, 0, sizeof motion_active);
+    memset(&as, 0, sizeof as);
+    memset(&ui, 0, sizeof ui);
+    proj_name[0] = 0;
+    chain_defaults(&chain_config);
+    host_tracks_init();
+    for (k = 0; k < NTRK; k++)
+        trk[k].eng_req = trk[k].engine = (uint8_t)TRK_OLD[k][0];   /* (0.9.8's parts: the autosave tests' music) */
+}
+static void as_edit(uint32_t i)                          /* a change a project holds: step i's note (always another) */
+{
+    static uint32_t n;
+    track_t *t = &trk[i % NTRK];
+    step_t *s = &t->step[i % 16u];
+    s->time = ST_NOTE;
+    s->n = 1;
+    s->note[0] = (uint8_t)(20u + (s->note[0] + 1u + n++ % 50u) % 100u);
+    s->vel = 100;
+}
+static int autosave_test(void)
+{
+    int bad = 0, ok;
+    uint32_t w, k, b0, minute;
+    step_t st[NSTEP];
+    project_store_t raw;
+    reset();
+    ui_prefs |= PREF_RESTORE_ON;                          /* (JIANT 0.6.40: RESTORE LAST OFF by default) */
+    as_power_on();
+    as_erases = 0;
+    ok = !autosave_boot(1) && !as.writes;
+    as_run(120000u);
+    bad += check("autosave: power-on with none: nothing restored; 2 min unchanged: no write", ok && !as.writes && !as_erases);
+    as_edit(0);
+    as_run(9000u);
+    ok = !as.writes;
+    as_run(1500u);
+    bad += check("autosave: a change: no write within 10 s, one once idle 10 s (one erase)",
+                 ok && as.writes == 1u && as_erases == 1u && st_load(OBJ_AUTOSAVE, &raw, sizeof raw) == (int)sizeof raw);
+    as_run(600000u);
+    bad += check("autosave: 10 min unchanged after it: no more writes", as.writes == 1u && as_erases == 1u);
+    song.g[G_SLOT] = 3;                                  /* (the PROJECT page's pick, the selected track: not the music) */
+    song.sel = 2;
+    as_run(120000u);
+    bad += check("autosave: the selected track / PROJECT's slot pick alone: no write", as.writes == 1u);
+    song.g[G_BPM] = 133;
+    song.playing = 1;
+    as_run(300000u);
+    ok = as.writes == 1u;
+    song.playing = 0;
+    as_run(9000u);
+    ok &= as.writes == 1u;
+    as_run(1500u);
+    bad += check("autosave: changed while playing: no write until stopped and idle 10 s, then one", ok && as.writes == 2u);
+    as_edit(1);
+    fm1_in.notes = 1u << 7;                              /* a key held (playing the sound, stopped) */
+    as_run(60000u);
+    ok = as.writes == 2u;
+    fm1_in.notes = 0;
+    trk[1].v[0].active = 1;                              /* .. its release still sounding */
+    as_run(20000u);
+    ok &= as.writes == 2u;
+    trk[1].v[0].active = 0;
+    as_run(9000u);
+    ok &= as.writes == 2u;
+    as_run(1500u);
+    bad += check("autosave: a key held, a voice sounding: no write (an erase stops the audio); after, idle 10 s: one",
+                 ok && as.writes == 3u);
+    as_run(60000u);
+    as_edit(2);                                          /* written 10 s on; then edits 15 s apart: a minute's gap */
+    as_run(11000u);
+    w = as.writes;
+    as_edit(3);
+    as_run(15000u);
+    ok = as.writes == w;
+    as_edit(4);
+    as_run(15000u);
+    ok &= as.writes == w;
+    as_run(40000u);
+    bad += check("autosave: two writes at least 60 s apart", ok && as.writes == w + 1u);
+    as_run(60000u);
+    w = as.writes;
+    as_edit(5);
+    for (k = 0; k < 120u; k++) {                         /* an editor backup going on: holds it */
+        as_run(500u);
+        autosave_hold();
+    }
+    ok = as.writes == w;
+    as_run(10500u);
+    bad += check("autosave: none during an editor transfer (autosave_hold), one after", ok && as.writes == w + 1u);
+    /* power-on: restored */
+    as_edit(6);
+    song.g[G_BPM] = 97;
+    str_cpy(proj_name, "MY TUNE", sizeof proj_name);
+    as_run(70000u);
+    memcpy(st, trk[0].step, sizeof st);
+    b0 = as_erases;
+    as_power_on();
+    ok = memcmp(st, trk[0].step, sizeof st) != 0 && song.g[G_BPM] != 97;
+    ok &= autosave_boot(1) == 1 && !memcmp(st, trk[0].step, sizeof st) && song.g[G_BPM] == 97 && str_eq(proj_name, "MY TUNE") &&
+          ui.msg_t && str_eq(ui.msg, "RESTORED");
+    as_run(300000u);
+    bad += check("autosave: power-on restores it (steps, tempo, name; RESTORED); no write after (unchanged)",
+                 ok && !as.writes && as_erases == b0);
+    as_power_on();
+    ok = autosave_boot(0) == 0 && song.g[G_BPM] != 97;
+    as_run(60000u);
+    bad += check("autosave: after a crash / hang / failed boot: not restored, nothing written", ok && as_erases == b0);
+    as_power_on();
+    ui_prefs &= (uint8_t)~PREF_RESTORE_ON;
+    ok = autosave_boot(1) == 0 && song.g[G_BPM] != 97;
+    as_edit(7);
+    as_run(300000u);
+    bad += check("autosave: RESTORE LAST OFF: none restored, none written", ok && !as.writes && as_erases == b0);
+    ui_prefs |= PREF_RESTORE_ON;
+    {   /* a damaged copy: the other one (A/B); both damaged: none */
+        st_hdr_t h;
+        int cur, other;
+        as_power_on();
+        autosave_boot(1);
+        song.g[G_BPM] = 111;                             /* a newer copy into the other sector */
+        as_run(11000u);
+        cur = st_current(OBJ_AUTOSAVE, &h);
+        nor[st_sector(OBJ_AUTOSAVE, (uint32_t)cur) + ST_PAYLOAD_OFF + 100u] ^= 0x10u;   /* its payload: the CRC fails */
+        other = st_current(OBJ_AUTOSAVE, &h);
+        as_power_on();
+        ok = cur >= 0 && other == !cur && autosave_boot(1) == 1 && song.g[G_BPM] == 97;
+        bad += check("autosave: the newest copy damaged: the copy before it is restored", ok);
+        nor[st_sector(OBJ_AUTOSAVE, (uint32_t)other) + 12u] ^= 0x01u;   /* the other one's header too */
+        as_power_on();
+        ok = autosave_boot(1) == 0 && song.g[G_BPM] != 97 && song.g[G_BPM] != 111;
+        bad += check("autosave: both copies damaged: ignored, power-on as new", ok);
+        memset(nor + 0xE5000u, 0xFF, 0x2000u);
+        st_save(OBJ_AUTOSAVE, "NOT A PROJECT", 13u);     /* a valid record that is no project */
+        as_power_on();
+        bad += check("autosave: a record that is no project: ignored", autosave_boot(1) == 0 && song.g[G_BPM] != 97);
+    }
+    /* a power cut in the middle of a write: the copy before stays in charge */
+    memset(nor + 0xE5000u, 0xFF, 0x2000u);
+    as_power_on();
+    autosave_boot(1);
+    as_edit(8);
+    as_run(11000u);                                      /* (written: copy A) */
+    song.g[G_BPM] = 150;
+    fail_after = 3;                                      /* the next write stops after 3 programs */
+    as_run(70000u);
+    fail_after = -1;
+    ok = as.err;
+    as_power_on();
+    ok &= autosave_boot(1) == 1 && song.g[G_BPM] != 150 && trk[8u % NTRK].step[8].n == 1u;
+    bad += check("autosave: a write cut short (power off): the copy before is restored", ok);
+    /* wear: a 4-hour session: 3 h of editing (a change every 3 s), pauses and playing it back, then an hour away */
+    as_power_on();
+    autosave_boot(1);
+    as_erases = 0;
+    for (minute = 0; minute < 240u; minute++) {
+        uint32_t s;
+        if (minute >= 180u) {
+            as_run(60000u);
+            continue;
+        }
+        song.playing = minute % 10u >= 7u;               /* 3 minutes in 10 playing */
+        for (s = 0; s < 60u; s += 3u) {
+            if (minute % 5u != 4u)                       /* (every fifth minute a pause, no edits) */
+                as_edit(minute * 20u + s);
+            as_run(3000u);
+        }
+    }
+    song.playing = 0;
+    as_run(20000u);
+    printf("persist:   a 4-hour session (3 h editing and playing, 1 h idle): %u autosave writes\n", (unsigned)as_erases);
+    bad += check("autosave wear: a session's writes stay far below one a minute", as_erases > 0u && as_erases <= 60u);
+    {   /* worst case: a change, then just enough idle, over and over, for 8 hours */
+        uint32_t i;
+        as_erases = 0;
+        for (i = 0; i < 8u * 3600u / 11u; i++) {
+            as_edit(i);
+            as_run(11000u);
+        }
+        printf("persist:   worst case, 8 h of a change every 11 s: %u writes (%u per sector)\n", (unsigned)as_erases,
+               (unsigned)(as_erases / 2u));
+        bad += check("autosave wear, worst case: at most one write a minute (480 in 8 h)", as_erases <= 8u * 60u + 1u);
+    }
+    return bad;
+}
+
+/* JIANT's songs (song_main.c): song 1 is the four project slots, songs 2..8 their own objects; switching keeps the
+ * song left (its stored sections and rows) and brings in the other's sections, rows and section A; the index keeps
+ * the current song over a power-off; a first boot takes song 1's rows from its section A (Felucca's song) */
+static int songs_test(void)
+{
+    int bad = 0, ok;
+    reset();
+    song_cur = 0;
+    song_index_load();                                  /* (no index in flash) */
+    song_index_boot();
+    trk[0].p[P_SLEN] = 5;
+    chain_config.count = 1;
+    chain_config.row[0] = (chain_row_t){0, 3};
+    ok = project_save(0) == 0 && song_cur == 0 && st_load(OBJ_PROJECT0, &proj_wire, sizeof proj_wire) > 0;
+    ok &= song_select(1) == 0 && song_cur == 1 && !project_used(0) && !chain_config.count &&
+          trk[0].p[P_SLEN] == 5;                        /* (an empty song: the music stays) */
+    ok &= st_load(OBJ_SONGIDX, &song_idx, sizeof song_idx) == (int)sizeof song_idx && song_idx.cur == 1u &&
+          song_idx.rows[0].count == 1u && song_idx.rows[0].row[0].bars == 3u;
+    bad += check("songs: song 2 in, song 1's rows and the current song in the index", ok);
+    trk[0].p[P_SLEN] = 7;
+    section_store(1);                                   /* song 2, section B: RAM, then flash once stopped */
+    chain_config.count = 1;
+    chain_config.row[0] = (chain_row_t){1, 2};
+    song_poll();
+    ok = !live.dirty && st_load(OBJ_SONG1 + 1, &proj_wire, sizeof proj_wire) > 0 &&
+         st_load(OBJ_PROJECT0 + 1, &proj_wire, sizeof proj_wire) < 0;
+    fm1_ms += 3000u;
+    song_poll();                                        /* (the rows rested: the index written) */
+    ok &= st_load(OBJ_SONGIDX, &song_idx, sizeof song_idx) == (int)sizeof song_idx && song_idx.rows[1].row[0].slot == 1u;
+    bad += check("songs: a section stored in song 2 goes to song 2's object, its rows to the index", ok);
+    ok = song_select(0) == 0 && song_cur == 0 && project_used(0) && !project_used(1) && trk[0].p[P_SLEN] == 5 &&
+         chain_config.count == 1u && chain_config.row[0].bars == 3u && live.cur == 0;
+    bad += check("songs: back to song 1: its sections, its rows, its section A as the music", ok);
+    song.playing = 1;
+    ok = song_select(1) != 0 && song_cur == 0 && str_eq(ui.msg, "STOP TO CHANGE SONG");
+    song.playing = 0;
+    bad += check("songs: no change while playing", ok);
+    ok = song_select(1) == 0;
+    memset(proj_slot, 0, sizeof proj_slot);             /* a power-off */
+    song_cur = 0;
+    chain_defaults(&chain_config);
+    song_index_load();
+    for (uint32_t i = 0; i < 4u; i++)
+        proj_fetch(i);
+    song_index_boot();
+    ok &= song_cur == 1 && project_used(1) && !project_used(0) && chain_config.row[0].slot == 1u;
+    bad += check("songs: the current song, its sections and rows back after a power-off", ok);
+    reset();                                            /* Felucca's flash: a project with its song, no index */
+    song_cur = 0;
+    chain_config.count = 2;
+    chain_config.row[0] = (chain_row_t){0, 4};
+    chain_config.row[1] = (chain_row_t){0, 8};
+    ok = project_save(0) == 0;
+    memset(proj_slot, 0, sizeof proj_slot);
+    chain_defaults(&chain_config);
+    song_index_load();
+    for (uint32_t i = 0; i < 4u; i++)
+        proj_fetch(i);
+    song_index_boot();
+    ok &= song_cur == 0 && chain_config.count == 2u && chain_config.row[1].bars == 8u;
+    bad += check("songs: a first boot takes song 1's rows from its section A", ok);
+    {   /* (0.8.5) SAVE > LIBRARY's picture (project.c lib_scan): another project's sections from their headers, its
+         * section A's name from its bytes; the open one from RAM; an empty one nothing */
+        char b[16];
+        uint32_t m1, m2, m0;
+        ok = song_select(1) == 0 && project_save_as(0, "ACID 03") == 0 && project_save_as(2, "") == 0 && song_select(0) == 0;
+        m1 = lib_scan(1, b);
+        ok &= m1 == 5u && str_eq(b, "ACID 03");
+        m2 = lib_scan(2, b);
+        ok &= m2 == 0u && !b[0];
+        m0 = lib_scan(0, b);
+        ok &= (m0 & 1u) != 0u;
+        bad += check("songs: the library's scan: project 2's sections A and C and A's name, project 3 empty", ok);
+    }
+    return bad;
+}
+
+int main(void)
+{
+    int bad = 0, ok;
+    uint32_t before;
+    persist_t p;
+    project_store_t old, got;
+    project_v5_t v5;
+    up_bank_t bank;
+    up_rec_t r;
+    reset(); settings_init(); settings_save();
+    before = erases;
+    persist_boot(); settings_init(); settings_save();
+    ok = !persist_pending && erases == before && settings.palette == UI_JIANT_INDEX && ui_skin == SKIN_AIR;
+    for (uint32_t value = 0; value < NPALETTES; value++) {
+        uint8_t palette[] = {0, (uint8_t)value};
+        uint8_t color[] = {0, (uint8_t)value, 64}, skin[] = {21, (uint8_t)value, 64};
+        ok &= ed_ui_set(palette, sizeof palette) == 0 && settings.palette == UI_JIANT_INDEX;
+        ed_repn = 0; ed_menu_handle(ED_MENU_SET, color, sizeof color);
+        ok &= ed_rep[0] == 0 && settings.palette == UI_JIANT_INDEX;
+        ed_repn = 0; ed_menu_handle(ED_MENU_SET, skin, sizeof skin);
+        ok &= ed_rep[0] == 0 && ui_skin == SKIN_AIR && erases == before;
+    }
+    bad += check("normalized boot and repeated COLOR/SKIN protocol attempts do not erase flash", ok);
+    p = persist_saved;
+    p.palette = palette_to_stored(2); p.favorites.factory[15][20] = SKIN_HUD;
+    for (uint32_t i = 0; i < 6u; i++) p.midi_rx[i] = (uint8_t)(16u - i * 2u);
+    ok = st_save(OBJ_SETTINGS, &p, sizeof p) == 0;
+    before = erases;
+    persist_boot(); settings_init(); settings_save();
+    ok &= erases == before && !persist_pending && settings.palette == UI_JIANT_INDEX && ui_skin == SKIN_AIR;
+    for (uint32_t i = 0; i < 6u; i++) ok &= midi_rx[i] == 16u - i * 2u;
+    bad += check("legacy boot normalizes without save-on-boot wear or changing six RX channels", ok);
+    reset();
+    settings_init();
+    {
+        const uint8_t filter_on[] = {3, 1};
+        song.playing = 1;
+        bad += check("editor favorite filter while playing is applied and reports deferred saving",
+                      ed_ui_set(filter_on, sizeof filter_on) == 4 && favorites.filter == 1u && persist_pending == 1 && !erases);
+        song.playing = 0;
+        settings_poll();
+        bad += check("STOP commits the deferred favorite filter",
+                      !persist_pending && erases == 1 && persist_saved.favorites.filter == 1u);
+        before = erases;
+        bad += check("repeating an unchanged editor preference succeeds without erasing",
+                      ed_ui_set(filter_on, sizeof filter_on) == 0 && erases == before);
+        erase_error = 1;
+        const uint8_t filter_off[] = {3, 0};
+        bad += check("editor reports failed saving while preserving the previous flash setting",
+                      ed_ui_set(filter_off, sizeof filter_off) == 3 && favorites.filter == 0u && persist_pending == 2 &&
+                      persist_saved.favorites.filter == 1u);
+        erase_error = 0;
+        fm1_ms += 1000;
+        settings_poll();
+        bad += check("failed editor preference retries through the existing persistence path",
+                      !persist_pending && persist_saved.favorites.filter == 0u);
+        const uint8_t bold[] = {1, 1};
+        bad += check("the retired font weight is refused without a write", ed_ui_set(bold, sizeof bold) == 2);
+    }
+    {   /* MENU_SET (editor_menu.c): the same settings record, the same deferral, retry and idempotence */
+        const uint8_t leds_off[] = {4, 0, 64}, large_on[] = {2, 1, 64}, hold_06[] = {5, 3, 64}, eq_bass[] = {9, 2, 64};
+        persist_t q;
+        reset();
+        settings_init();
+        song.playing = 1;
+        ed_repn = 0; ed_menu_handle(ED_MENU_SET, leds_off, 3);
+        bad += check("MENU_SET while playing: applied, rc 4 (queued until STOP), no erase",
+                     ed_repn == 4 && ed_rep[0] == 4 && ed_rep[1] == 4 && settings_leds == LEDS_OFF && persist_pending == 1 && !erases);
+        song.playing = 0;
+        settings_poll();
+        bad += check("STOP commits the MENU setting (LEDS OFF in the settings record)",
+                     !persist_pending && erases == 1 && st_load(OBJ_SETTINGS, &q, sizeof q) == (int)sizeof q &&
+                     leds_from_stored(q.zoom) == LEDS_OFF);
+        ed_repn = 0; ed_menu_handle(ED_MENU_SET, large_on, 3);
+        ok = ed_rep[0] == 0 && (ui_prefs & PREF_LARGE);
+        ed_repn = 0; ed_menu_handle(ED_MENU_SET, hold_06, 3);
+        ok &= ed_rep[0] == 0 && settings_hold == 3u;
+        ed_repn = 0; ed_menu_handle(ED_MENU_SET, eq_bass, 3);
+        ok &= ed_rep[0] == 0 && st_load(OBJ_SETTINGS, &q, sizeof q) == (int)sizeof q && q.lowcut == 2u &&
+              hold_from_stored(q.bold) == 3u && (q.favorites.factory[15][30] & PREF_LARGE) && leds_from_stored(q.zoom) == LEDS_OFF;
+        bad += check("MENU_SET stopped: rc 0, saved at once (LARGE, HOLD, SPEAKER EQ), the others kept", ok);
+        before = erases;
+        ed_repn = 0; ed_menu_handle(ED_MENU_SET, hold_06, 3);
+        bad += check("repeating an unchanged MENU_SET: rc 0, no erase", ed_rep[0] == 0 && erases == before);
+        {
+            const uint8_t style_line[] = {1, 1, 64};
+            ed_repn = 0; ed_menu_handle(ED_MENU_SET, style_line, 3);
+            bad += check("immutable STYLE acknowledges FLAT without erasing an already-FLAT record",
+                         ed_rep[0] == 0 && ed_rep[1] == 1 && ed_rv(ed_rep + 2) == 0 &&
+                         ui_style == ST_FLAT && erases == before);
+        }
+        erase_error = 1;
+        ed_repn = 0; ed_menu_handle(ED_MENU_SET, leds_off, 3);   /* unchanged: still rc 0 (no write) */
+        ok = ed_rep[0] == 0;
+        {
+            const uint8_t leds_inv[] = {4, 3, 64};
+            ed_repn = 0; ed_menu_handle(ED_MENU_SET, leds_inv, 3);
+        }
+        ok &= ed_rep[0] == 3 && settings_leds == LEDS_INV && persist_pending == 2 && leds_from_stored(persist_saved.zoom) == LEDS_OFF;
+        bad += check("MENU_SET with a failing flash: applied, rc 3, the saved setting kept", ok);
+        erase_error = 0;
+        fm1_ms += 1000;
+        settings_poll();
+        bad += check("... and retried by the settings path", !persist_pending && leds_from_stored(persist_saved.zoom) == LEDS_INV);
+        settings_hold = HOLD_DEF; settings_leds = LEDS_DIM;
+    }
+    reset();
+    settings.palette = UI_JIANT_INDEX;
+    settings.lowcut = 2;
+    settings.zoom = 1;
+    persist_saved.bold = 1;                       /* (an earlier firmware's font weight: kept as saved) */
+    favorites.factory[8][0] = 1;
+    favorites.user = 1u << 31;
+    song.playing = 1;
+    settings_save();
+    bad += check("playing: settings queued, no erase, runtime kept", persist_pending && !erases &&
+                  settings.palette == UI_JIANT_INDEX && settings.lowcut == 2u && settings.zoom == 1u);
+    song.playing = 0;
+    transport_req = 1;
+    settings_poll();
+    bad += check("pending PLAY: settings still queued, no erase", persist_pending && !erases);
+    transport_req = 0;
+    chain.armed = 1;
+    settings_poll();
+    bad += check("pending SONG: settings still queued, no erase", persist_pending && !erases);
+    chain.armed = 0;
+    settings.lowcut = 1;
+    settings_poll();
+    bad += check("STOP: latest settings saved and request cleared", !persist_pending && erases == 1u &&
+                  st_load(OBJ_SETTINGS, &p, sizeof p) == (int)sizeof p && p.palette == palette_to_stored(UI_JIANT_INDEX) &&
+                  p.lowcut == 1u && p.zoom == 1u && p.bold == 1u &&
+                  p.favorites.factory[8][0] == 1 && p.favorites.user == (1u << 31) &&
+                  !memcmp(&p.panel, &panel, sizeof panel));
+    settings_save();
+    bad += check("unchanged settings do not erase", !persist_pending && erases == 1u);
+    settings.lowcut = 0;
+    erase_error = 1;
+    fm1_ms = 0xFFFFFF00u;
+    settings_save();
+    before = erases;
+    settings_poll();
+    fm1_ms += 999u;
+    settings_poll();
+    bad += check("failed settings retry waits through clock wrap", persist_pending && erases == before &&
+                  persist_saved.lowcut == 1u && settings.lowcut == 0u);
+    erase_error = 0;
+    fm1_ms++;
+    settings_poll();
+    bad += check("settings retry succeeds after 1000 ms", !persist_pending && erases == before + 1u &&
+                  st_load(OBJ_SETTINGS, &p, sizeof p) == (int)sizeof p && p.palette == palette_to_stored(UI_JIANT_INDEX) && p.lowcut == 0u);
+
+    reset();
+    trk[0].step[0] = (step_t){{60}, 1, ST_NOTE, 0, 96, 0, 0};
+    project_save(0);
+    old = proj_slot[0];
+    trk[0].step[0].note[0] = 72;
+    fail_after = 1;
+    project_save(0);
+    fail_after = -1;
+    bad += check("failed project save keeps RAM and old flash", !strcmp(ui.msg, "SAVE ERROR") &&
+                  !memcmp(&proj_slot[0], &old, sizeof old) && st_load(OBJ_PROJECT0, &got, sizeof got) == (int)sizeof got &&
+                  !memcmp(&got, &old, sizeof got));
+    project_save(0);
+    bad += check("successful project save publishes new RAM", !strcmp(ui.msg, "SAVED") &&
+                  proj_import(&proj_scratch, &proj_slot[0], sizeof proj_slot[0]) &&
+                  proj_scratch.t[0].step[0].note[0] == 72u && proj_ok(&proj_scratch));
+    before = erases;
+    transport_req = 1;
+    project_save(1);
+    bad += check("pending PLAY: project save leaves slot and flash", !project_used(1) && erases == before &&
+                  !strcmp(ui.msg, "STOP TO SAVE"));
+    transport_req = 0;
+    erase_error = 1;
+    project_save(2);
+    bad += check("failed first project save leaves slot empty", !project_used(2));
+    erase_error = 0;
+    {   /* names: a project's through flash; a failed rename keeps the old one in RAM and flash */
+        char n[16];
+        project_store_t keep;
+        step_t st0 = trk[0].step[0];
+        project_save_as(0, "LOFI JAM");
+        memset(proj_slot[0].raw, 0, 8);                       /* (the RAM copy lost: read it back from flash) */
+        proj_fetch(0);
+        bad += check("a project's name goes to flash and comes back", project_name(0, n) && !strcmp(n, "LOFI JAM") &&
+                      !strcmp(proj_name, "LOFI JAM"));
+        keep = proj_slot[0];
+        fail_after = 1;
+        bad += check("failed project rename: SAVE ERROR, the slot and flash as they were",
+                      project_rename(0, "DUB") == 2 && !strcmp(ui.msg, "SAVE ERROR") && !memcmp(&proj_slot[0], &keep, sizeof keep) &&
+                      st_load(OBJ_PROJECT0, &got, sizeof got) == (int)sizeof got && !memcmp(&got, &keep, sizeof got));
+        fail_after = -1;
+        before = erases;
+        transport_req = 1;
+        bad += check("pending PLAY: no rename, no erase", project_rename(0, "DUB") == 1 && erases == before &&
+                      !strcmp(ui.msg, "STOP TO SAVE"));
+        transport_req = 0;
+        bad += check("project rename: flash has the new name, the music as it was", project_rename(0, "DUB") == 0 &&
+                      !strcmp(ui.msg, "RENAMED") && (memset(proj_slot[0].raw, 0, 8), proj_fetch(0), project_name(0, n)) &&
+                      !strcmp(n, "DUB") && proj_scratch.t[0].step[0].note[0] == st0.note[0]);
+    }
+    {   /* FUN7 itself refuses a step outside its fields: a damaged slot is empty, the tracks stay */
+        step_t keep = trk[0].step[0];
+        old = proj_slot[0];
+        proj_slot[0].raw[67] = 9;                                 /* (FUNC) 9 tracks: more than it can hold */
+        bad += check("damaged FUN7 slot (hash ok, 9 tracks) is refused", (memcpy(proj_slot[0].raw + PROJ_STORE_SIZE - 4,
+                      &(uint32_t){proj_hash(proj_slot[0].raw, PROJ_STORE_SIZE - 4)}, 4), !project_used(0)));
+        st_save(OBJ_PROJECT0, &proj_slot[0], sizeof proj_slot[0]);
+        ui.msg[0] = 0;
+        project_load(0);
+        bad += check("loading it says EMPTY SLOT and keeps the steps", !strcmp(ui.msg, "EMPTY SLOT") &&
+                      !memcmp(&trk[0].step[0], &keep, sizeof keep));
+        proj_slot[0] = old;
+        st_save(OBJ_PROJECT0, &proj_slot[0], sizeof proj_slot[0]);
+    }
+    {   /* an older format (FUN5) with values FUN7 cannot pack still loads, bounded */
+        uint32_t i;
+        memset(&v5, 0, sizeof v5);
+        v5.magic = PROJ_MAGIC_V5;
+        v5.size = sizeof v5;
+        for (i = 0; i < G_COUNT; i++)
+            v5.g[i] = GP[i].def;
+        for (i = 0; i < PROJ_LT; i++) {
+            v5.t[i].engine = trk[i].engine;
+            memcpy(v5.t[i].p, trk[i].p, sizeof v5.t[i].p);
+        }
+        v5.t[0].p[P_LEVEL] = 900;                                  /* out of range */
+        v5.t[0].step[0] = (step10_t){{255, 128, 160, 200}, 255, 255, 0, 96, 255, 5};
+        v5.sum = proj_hash(&v5, sizeof v5 - 4u);
+        st_save(OBJ_PROJECT0 + 3u, &v5, sizeof v5);
+        memset(proj_slot[3].raw, 0, 4);
+        project_load(3);
+        bad += check("FUN5 load bounds steps and masks lane accents", trk[0].step[0].n == 4u &&
+                      trk[0].step[0].time == ST_REST && trk[0].step[0].note[0] == 127u &&
+                      !trk[0].step[0].note[1] && trk[0].step[0].acc == 5u && project_used(3));
+        bad += check("FUN5 load clamps a parameter into its range", trk[0].p[P_LEVEL] == TP[P_LEVEL].max);
+        for (i = 0; i < P_COUNT; i++) {
+            uint32_t e;
+            for (e = 0; e < NENGINES; e++)
+                if (param_desc_of(e, i)->min < -64 || param_desc_of(e, i)->max > 127) {
+                    printf("param %u engine %u: range %d..%d does not fit FUN7's byte\n", i, e,
+                           param_desc_of(e, i)->min, param_desc_of(e, i)->max);
+                    bad++;
+                }
+        }
+    }
+    chain_config.count = 1;
+    chain_config.row[0] = (chain_row_t){3, 1};
+    bad += check("SONG sources use the same step bounds", chain_prepare() == 0 &&
+                  !memcmp(&sec_stage.t[0].step[0], &trk[0].step[0], sizeof(step_t)));
+    seq_stop();
+    transport_req = 0;
+    memset(&r, 0, sizeof r);
+    r.used = UP_USED;
+    r.ver = UP_VER;
+    r.np = P_COUNT;
+    memcpy(r.name, "First", 6);
+    erase_error = 1;
+    bank = up_bank[1];
+    ok = up_put(17, &r) == 2;
+    erase_error = 0;
+    bad += check("failed first preset save restores empty bank", ok && !memcmp(&up_bank[1], &bank, sizeof bank));
+    bad += check("preset initial save", up_put(3, &r) == 0 && up_used(3));
+    bank = up_bank[0];
+    before = up_gen;
+    r.p[0] = 77;
+    fail_after = 1;
+    ok = up_put(3, &r) == 2;
+    fail_after = -1;
+    bad += check("failed preset save rolls back bank and generation", ok && up_gen == before &&
+                  !memcmp(&up_bank[0], &bank, sizeof bank));
+    favorite_set(NENGINES, 3, 1);
+    fail_after = 1;
+    ok = up_put(3, 0) == 2;
+    fail_after = -1;
+    bad += check("failed preset erasure retains both the sound and its favorite", ok && up_used(3) &&
+                  favorite_has(NENGINES, 3) && !memcmp(&up_bank[0], &bank, sizeof bank));
+    memset(&up_bank[0], 0, sizeof up_bank[0]);
+    up_boot();
+    bad += check("failed preset save keeps old flash", !memcmp(&up_bank[0], &bank, sizeof bank));
+    trk[0].user = 4;
+    erase_error = 1;
+    ok = up_put(3, 0) == 2;
+    erase_error = 0;
+    bad += check("failed preset erase keeps record and loaded label", ok && trk[0].user == 4u && up_gen == before &&
+                  !memcmp(&up_bank[0], &bank, sizeof bank));
+    bad += check("successful preset erase clears loaded label", up_put(3, 0) == 0 && !up_used(3) && !trk[0].user);
+    before = erases;
+    transport_req = 1;
+    bad += check("pending PLAY: preset save blocked", up_put(3, &r) == 2 && erases == before && !up_used(3));
+    transport_req = 0;
+    chain.armed = 1;
+    bad += check("pending SONG: preset save blocked", up_put(3, &r) == 2 && erases == before && !up_used(3));
+    chain.armed = 0;
+    bad += check("preset invalid slot blocked before access", up_put(UP_SLOTS, &r) == 1 && erases == before);
+    song.playing = 0; transport_req = 1; irq_start_race = 1;
+    bad += check("PLAY consumed before the save snapshot still blocks a project write",
+                  project_save(1) != 0 && irq_races == 1u && song.playing && !transport_req && erases == before);
+    song.playing = 0; transport_req = 1; irq_start_race = 1;
+    bad += check("PLAY consumed before the preset snapshot still blocks a bank write",
+                  up_put(3, &r) == 2 && irq_races == 2u && song.playing && !transport_req && erases == before);
+    song.playing = 0; transport_req = 1; irq_start_race = 1;
+    settings.lowcut = (settings.lowcut + 1u) % 3u;
+    settings_save();
+    bad += check("PLAY consumed before the settings snapshot defers the write",
+                  irq_races == 3u && song.playing && !transport_req && persist_pending && erases == before);
+    bad += mig_test();
+    bad += autosave_test();
+    bad += songs_test();
+    reset(); settings_init();
+    {
+        const uint8_t rx16[] = {30, 15, 64}; /* editor index 15 = channel 16, T6 even under TRACKS 4 */
+        song.playing = 1; before = erases;
+        ed_repn = 0; ed_menu_handle(ED_MENU_SET, rx16, 3);
+        events_block(CTL);
+        bad += check("RX applies while playing, with no flash write in the audio block",
+                     ed_rep[0] == 4 && midi_rx[5] == 16 && persist_pending == 1 && erases == before);
+        song.playing = 0; settings_poll();
+        memset(midi_rx, 0, sizeof midi_rx);
+        bad += check("RX survives a restart through the saved settings record",
+                     st_load(OBJ_SETTINGS, &p, sizeof p) == (int)sizeof p && settings_import(&p, sizeof p) && midi_rx[5] == 16);
+        before = erases; ed_repn = 0; ed_menu_handle(ED_MENU_SET, rx16, 3);
+        bad += check("unchanged RX assignment does not wear flash", ed_rep[0] == 0 && erases == before);
+    }
+    printf("%s\n", bad ? "PERSISTENCE TEST FAILED" : "persistence test passed");
+    return bad != 0;
+}

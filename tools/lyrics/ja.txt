@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
+# VOICE words (JIANT 0.8.5): the Japanese word bank of the lyric generator (tools/gen_lyrics.py -> felucca_lyrics.h),
+# in romaji (Hepburn; the device reads Hepburn and kunrei, sing.c sy_ja): one note a mora, so "sora" is two notes,
+# "kokoro" three, "taiyou" four (ta i yo u). A line: a theme (LOVE NIGHT SEA SKY ROAD DREAM FIRE) or FN, a category,
+# words. N nouns, V verbs (the dictionary form: "kaze ga fuku"), A adjectives (-i), P particles (no ga ni wo to wa mo).
+LOVE N: ai koi kokoro kimi boku te kuchibiru namida egao yume yakusoku koe mune hoho omoi nukumori
+LOVE V: aisuru dakishimeru naku warau matsu omou fureru sasayaku utau
+LOVE A: amai yasashii itoshii setsunai atatakai
+NIGHT N: yoru tsuki hoshi kage machi michi hikari yami kaze sora mado yume neon yuki tsukiakari
+NIGHT V: hikaru nemuru kieru matsu nagareru kagayaku furu
+NIGHT A: kurai samui aoi tooi kanashii
+SEA N: umi nami suna fune minato kaze shio mizu shima kaigan sora kamome
+SEA V: oyogu nagareru yureru kaeru hashiru utau
+SEA A: aoi fukai hiroi tooi
+SKY N: sora taiyou kumo ame kaze tori tsubasa niji asa hikari hoshi
+SKY V: tobu noboru furu kagayaku hikaru hareru
+SKY A: takai akarui shiroi aoi
+ROAD N: michi densha eki machi tabi chizu kawa hashi kita minami ie kaerimichi
+ROAD V: aruku hashiru iku kaeru tsuzuku sagasu wataru
+ROAD A: nagai tooi atarashii furui hayai
+DREAM N: yume mahou kagami tenshi monogatari sekai kioku mirai niji hoshi
+DREAM V: miru tobu nemuru kawaru wasureru shinjiru
+DREAM A: amai tooi fushigi
+FIRE N: hi honoo netsu hibana kemuri chikara kodou arashi taiyou
+FIRE V: moeru sakebu tatakau odoru hikaru
+FIRE A: atsui akai tsuyoi hageshii
+FN P: no ga ni wo to wa mo de

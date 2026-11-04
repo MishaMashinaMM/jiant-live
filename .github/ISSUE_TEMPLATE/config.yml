@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: JIANT manual
+    url: https://github.com/juanjiant-bit/JIANT/blob/main/docs/MANUAL.md
+    about: How JIANT works, page by page (español en docs/MANUAL.es.md).

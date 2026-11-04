@@ -1,0 +1,2133 @@
+# The English dictionary of the VOICE engine's words (JIANT 0.8.5): the most common English words (and every
+# word of en.txt), each with its first pronunciation in the CMU Pronouncing Dictionary (ARPAbet, stress digits
+# kept: 0 marks the reduced vowels). tools/gen_lyrics.py packs it into felucca_lyrics.h. A subset of
+# cmudict 0.7b (https://github.com/cmusphinx/cmudict), under its BSD-2-Clause licence:
+#
+# Copyright (C) 1993-2015 Carnegie Mellon University. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#    The contents of this file are deemed to be source code.
+#
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in
+#    the documentation and/or other materials provided with the
+#    distribution.
+#
+# This work was supported in part by funding from the Defense Advanced
+# Research Projects Agency, the Office of Naval Research and the National
+# Science Foundation of the United States of America, and by member
+# companies of the Carnegie Mellon Sphinx Speech Consortium. We acknowledge
+# the contributions of many volunteers to the expansion and improvement of
+# this dictionary.
+#
+# THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND
+# ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+# NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+a AH0
+ability AH0 B IH1 L AH0 T IY2
+able EY1 B AH0 L
+about AH0 B AW1 T
+above AH0 B AH1 V
+absolutely AE2 B S AH0 L UW1 T L IY0
+accept AE0 K S EH1 P T
+access AE1 K S EH2 S
+accident AE1 K S AH0 D AH0 N T
+according AH0 K AO1 R D IH0 NG
+account AH0 K AW1 N T
+accounts AH0 K AW1 N T S
+across AH0 K R AO1 S
+act AE1 K T
+acting AE1 K T IH0 NG
+action AE1 K SH AH0 N
+actions AE1 K SH AH0 N Z
+active AE1 K T IH0 V
+activities AE0 K T IH1 V AH0 T IY0 Z
+activity AE0 K T IH1 V AH0 T IY0
+actual AE1 K CH AH0 W AH0 L
+actually AE1 K CH UW2 AH0 L IY0
+ad AE1 D
+add AE1 D
+added AE1 D AH0 D
+addition AH0 D IH1 SH AH0 N
+additional AH0 D IH1 SH AH0 N AH0 L
+address AE1 D R EH2 S
+administration AE0 D M IH2 N IH0 S T R EY1 SH AH0 N
+adult AH0 D AH1 L T
+advanced AH0 D V AE1 N S T
+advantage AE0 D V AE1 N T IH0 JH
+advice AE0 D V AY1 S
+afraid AH0 F R EY1 D
+africa AE1 F R AH0 K AA0
+african AE1 F R AH0 K AH0 N
+after AE1 F T ER0
+afternoon AE2 F T ER0 N UW1 N
+again AH0 G EH1 N
+against AH0 G EH1 N S T
+age EY1 JH
+agency EY1 JH AH0 N S IY0
+agent EY1 JH AH0 N T
+ago AH0 G OW1
+agree AH0 G R IY1
+agreed AH0 G R IY1 D
+agreement AH0 G R IY1 M AH0 N T
+ahead AH0 HH EH1 D
+aid EY1 D
+aint EY1 N T
+air EH1 R
+airport EH1 R P AO2 R T
+al AE1 L
+album AE1 L B AH0 M
+alive AH0 L AY1 V
+all AO1 L
+allow AH0 L AW1
+allowed AH0 L AW1 D
+almost AO1 L M OW2 S T
+alone AH0 L OW1 N
+along AH0 L AO1 NG
+already AO0 L R EH1 D IY0
+also AO1 L S OW0
+alternative AO0 L T ER1 N AH0 T IH0 V
+although AO2 L DH OW1
+always AO1 L W EY2 Z
+am AE1 M
+amazing AH0 M EY1 Z IH0 NG
+america AH0 M EH1 R AH0 K AH0
+american AH0 M EH1 R AH0 K AH0 N
+americans AH0 M EH1 R AH0 K AH0 N Z
+among AH0 M AH1 NG
+amount AH0 M AW1 N T
+an AE1 N
+analysis AH0 N AE1 L AH0 S AH0 S
+anchor AE1 NG K ER0
+and AH0 N D
+angel EY1 N JH AH0 L
+angeles AE1 N JH AH0 L IH0 S
+animal AE1 N AH0 M AH0 L
+animals AE1 N AH0 M AH0 L Z
+announced AH0 N AW1 N S T
+annual AE1 N Y UW0 AH0 L
+another AH0 N AH1 DH ER0
+answer AE1 N S ER0
+anti AE1 N T IY2
+any EH1 N IY0
+anymore EH2 N IY0 M AO1 R
+anyone EH1 N IY0 W AH2 N
+anything EH1 N IY0 TH IH2 NG
+anyway EH1 N IY0 W EY2
+anywhere EH1 N IY0 W EH2 R
+apart AH0 P AA1 R T
+app AE1 P
+apparently AH0 P EH1 R AH0 N T L IY0
+appear AH0 P IH1 R
+appeared AH0 P IH1 R D
+appears AH0 P IH1 R Z
+apple AE1 P AH0 L
+application AE2 P L AH0 K EY1 SH AH0 N
+apply AH0 P L AY1
+appreciate AH0 P R IY1 SH IY0 EY2 T
+approach AH0 P R OW1 CH
+april EY1 P R AH0 L
+are AA1 R
+area EH1 R IY0 AH0
+areas EH1 R IY0 AH0 Z
+arent AA1 R AH0 N T
+arm AA1 R M
+arms AA1 R M Z
+army AA1 R M IY0
+around ER0 AW1 N D
+arrived ER0 AY1 V D
+art AA1 R T
+article AA1 R T AH0 K AH0 L
+articles AA1 R T AH0 K AH0 L Z
+artist AA1 R T AH0 S T
+arts AA1 R T S
+as AE1 Z
+ash AE1 SH
+ask AE1 S K
+asked AE1 S K T
+asking AE1 S K IH0 NG
+assistant AH0 S IH1 S T AH0 N T
+associated AH0 S OW1 S IY0 EY2 T IH0 D
+association AH0 S OW2 S IY0 EY1 SH AH0 N
+at AE1 T
+attack AH0 T AE1 K
+attempt AH0 T EH1 M P T
+attention AH0 T EH1 N SH AH0 N
+audience AA1 D IY0 AH0 N S
+august AA1 G AH0 S T
+australia AO0 S T R EY1 L Y AH0
+australian AO0 S T R EY1 L Y AH0 N
+author AO1 TH ER0
+authority AH0 TH AO1 R AH0 T IY0
+available AH0 V EY1 L AH0 B AH0 L
+average AE1 V ER0 IH0 JH
+avoid AH0 V OY1 D
+award AH0 W AO1 R D
+awards AH0 W AO1 R D Z
+aware AH0 W EH1 R
+away AH0 W EY1
+awesome AA1 S AH0 M
+baby B EY1 B IY0
+back B AE1 K
+background B AE1 K G R AW2 N D
+bad B AE1 D
+bag B AE1 G
+balance B AE1 L AH0 N S
+ball B AO1 L
+band B AE1 N D
+bank B AE1 NG K
+bar B AA1 R
+base B EY1 S
+based B EY1 S T
+basic B EY1 S IH0 K
+basis B EY1 S AH0 S
+battle B AE1 T AH0 L
+bay B EY1
+be B IY1
+beach B IY1 CH
+bear B EH1 R
+beat B IY1 T
+beautiful B Y UW1 T AH0 F AH0 L
+beauty B Y UW1 T IY0
+became B IH0 K EY1 M
+because B IH0 K AO1 Z
+become B IH0 K AH1 M
+becomes B IH0 K AH1 M Z
+becoming B IH0 K AH1 M IH0 NG
+bed B EH1 D
+bee B IY1
+been B IH1 N
+beer B IH1 R
+before B IH0 F AO1 R
+began B IH0 G AE1 N
+begin B IH0 G IH1 N
+beginning B IH0 G IH1 N IH0 NG
+behind B IH0 HH AY1 N D
+being B IY1 IH0 NG
+believe B IH0 L IY1 V
+believed B IH0 L IY1 V D
+below B IH0 L OW1
+benefit B EH1 N AH0 F IH0 T
+benefits B EH1 N AH0 F IH0 T S
+best B EH1 S T
+bet B EH1 T
+better B EH1 T ER0
+between B IH0 T W IY1 N
+beyond B IH0 AA1 N D
+big B IH1 G
+bigger B IH1 G ER0
+biggest B IH1 G AH0 S T
+bill B IH1 L
+billion B IH1 L Y AH0 N
+bird B ER1 D
+birth B ER1 TH
+birthday B ER1 TH D EY2
+bit B IH1 T
+black B L AE1 K
+block B L AA1 K
+blog B L AO1 G
+blood B L AH1 D
+blue B L UW1
+board B AO1 R D
+boat B OW1 T
+body B AA1 D IY0
+book B UH1 K
+books B UH1 K S
+bop B AA1 P
+border B AO1 R D ER0
+born B AO1 R N
+boss B AA1 S
+both B OW1 TH
+bottom B AA1 T AH0 M
+bought B AA1 T
+box B AA1 K S
+boy B OY1
+boys B OY1 Z
+brain B R EY1 N
+brand B R AE1 N D
+break B R EY1 K
+breaking B R EY1 K IH0 NG
+bridge B R IH1 JH
+bright B R AY1 T
+bring B R IH1 NG
+bringing B R IH1 NG IH0 NG
+britain B R IH1 T AH0 N
+british B R IH1 T IH0 SH
+broke B R OW1 K
+broken B R OW1 K AH0 N
+brother B R AH1 DH ER0
+brought B R AO1 T
+brown B R AW1 N
+budget B AH1 JH IH0 T
+build B IH1 L D
+building B IH1 L D IH0 NG
+built B IH1 L T
+burn B ER1 N
+burning B ER1 N IH0 NG
+bus B AH1 S
+business B IH1 Z N AH0 S
+busy B IH1 Z IY0
+but B AH1 T
+buy B AY1
+buying B AY1 IH0 NG
+by B AY1
+california K AE2 L AH0 F AO1 R N Y AH0
+call K AO1 L
+called K AO1 L D
+calling K AO1 L IH0 NG
+calls K AO1 L Z
+calm K AA1 M
+came K EY1 M
+camera K AE1 M ER0 AH0
+camp K AE1 M P
+campaign K AE0 M P EY1 N
+can K AE1 N
+canada K AE1 N AH0 D AH0
+canadian K AH0 N EY1 D IY0 AH0 N
+cancer K AE1 N S ER0
+candle K AE1 N D AH0 L
+cannot K AE1 N AA0 T
+cant K AE1 N T
+capacity K AH0 P AE1 S AH0 T IY0
+capital K AE1 P AH0 T AH0 L
+captain K AE1 P T AH0 N
+car K AA1 R
+card K AA1 R D
+cards K AA1 R D Z
+care K EH1 R
+career K ER0 IH1 R
+carried K AE1 R IY0 D
+carry K AE1 R IY0
+cars K AA1 R Z
+case K EY1 S
+cases K EY1 S AH0 Z
+cash K AE1 SH
+cast K AE1 S T
+cat K AE1 T
+catch K AE1 CH
+caught K AA1 T
+cause K AA1 Z
+caused K AA1 Z D
+cell S EH1 L
+cells S EH1 L Z
+cent S EH1 N T
+center S EH1 N T ER0
+central S EH1 N T R AH0 L
+centre S EH1 N T ER0
+century S EH1 N CH ER0 IY0
+certain S ER1 T AH0 N
+certainly S ER1 T AH0 N L IY0
+chairman CH EH1 R M AH0 N
+challenge CH AE1 L AH0 N JH
+chance CH AE1 N S
+change CH EY1 N JH
+changed CH EY1 N JH D
+changes CH EY1 N JH AH0 Z
+changing CH EY1 N JH IH0 NG
+channel CH AE1 N AH0 L
+character K EH1 R IH0 K T ER0
+characters K AE1 R AH0 K T ER0 Z
+charge CH AA1 R JH
+charles CH AA1 R L Z
+cheap CH IY1 P
+check CH EH1 K
+chicago SH AH0 K AA1 G OW2
+chief CH IY1 F
+child CH AY1 L D
+children CH IH1 L D R AH0 N
+china CH AY1 N AH0
+chinese CH AY0 N IY1 Z
+choice CH OY1 S
+choose CH UW1 Z
+chris K R IH1 S
+christ K R AY1 S T
+christian K R IH1 S CH AH0 N
+christmas K R IH1 S M AH0 S
+church CH ER1 CH
+cities S IH1 T IY0 Z
+citizens S IH1 T AH0 Z AH0 N Z
+city S IH1 T IY0
+civil S IH1 V AH0 L
+claim K L EY1 M
+claims K L EY1 M Z
+class K L AE1 S
+classes K L AE1 S AH0 Z
+classic K L AE1 S IH0 K
+clean K L IY1 N
+clear K L IH1 R
+clearly K L IH1 R L IY0
+click K L IH1 K
+climate K L AY1 M AH0 T
+clock K L AA1 K
+close K L OW1 S
+closed K L OW1 Z D
+closer K L OW1 S ER0
+clothes K L OW1 DH Z
+cloud K L AW1 D
+clouds K L AW1 D Z
+club K L AH1 B
+co K OW1
+coach K OW1 CH
+coast K OW1 S T
+code K OW1 D
+coffee K AA1 F IY0
+cold K OW1 L D
+collection K AH0 L EH1 K SH AH0 N
+college K AA1 L IH0 JH
+color K AH1 L ER0
+come K AH1 M
+comes K AH1 M Z
+comet K AA1 M AH0 T
+coming K AH1 M IH0 NG
+command K AH0 M AE1 N D
+comment K AA1 M EH0 N T
+comments K AA1 M EH0 N T S
+commercial K AH0 M ER1 SH AH0 L
+commission K AH0 M IH1 SH AH0 N
+committee K AH0 M IH1 T IY0
+common K AA1 M AH0 N
+communities K AH0 M Y UW1 N AH0 T IY0 Z
+community K AH0 M Y UW1 N AH0 T IY0
+companies K AH1 M P AH0 N IY2 Z
+company K AH1 M P AH0 N IY2
+compared K AH0 M P EH1 R D
+competition K AA2 M P AH0 T IH1 SH AH0 N
+complete K AH0 M P L IY1 T
+completed K AH0 M P L IY1 T AH0 D
+completely K AH0 M P L IY1 T L IY0
+complex K AA1 M P L EH0 K S
+computer K AH0 M P Y UW1 T ER0
+concept K AA1 N S EH0 P T
+concerned K AH0 N S ER1 N D
+condition K AH0 N D IH1 SH AH0 N
+conditions K AH0 N D IH1 SH AH0 N Z
+conference K AA1 N F ER0 AH0 N S
+congress K AA1 NG G R AH0 S
+connection K AH0 N EH1 K SH AH0 N
+consider K AH0 N S IH1 D ER0
+considered K AH0 N S IH1 D ER0 D
+construction K AH0 N S T R AH1 K SH AH0 N
+contact K AA1 N T AE2 K T
+content K AA1 N T EH0 N T
+continue K AH0 N T IH1 N Y UW0
+continued K AH0 N T IH1 N Y UW0 D
+continues K AH0 N T IH1 N Y UW0 Z
+contract K AA1 N T R AE2 K T
+control K AH0 N T R OW1 L
+conversation K AA2 N V ER0 S EY1 SH AH0 N
+cool K UW1 L
+copy K AA1 P IY0
+core K AO1 R
+corner K AO1 R N ER0
+correct K ER0 EH1 K T
+cost K AA1 S T
+costs K AA1 S T S
+could K UH1 D
+couldnt K UH1 D AH0 N T
+council K AW1 N S AH0 L
+count K AW1 N T
+countries K AH1 N T R IY0 Z
+country K AH1 N T R IY0
+county K AW1 N T IY0
+couple K AH1 P AH0 L
+course K AO1 R S
+court K AO1 R T
+cover K AH1 V ER0
+covered K AH1 V ER0 D
+crazy K R EY1 Z IY0
+create K R IY0 EY1 T
+created K R IY0 EY1 T AH0 D
+credit K R EH1 D AH0 T
+crew K R UW1
+crime K R AY1 M
+criminal K R IH1 M AH0 N AH0 L
+critical K R IH1 T IH0 K AH0 L
+cross K R AO1 S
+crowd K R AW1 D
+cry K R AY1
+cultural K AH1 L CH ER0 AH0 L
+culture K AH1 L CH ER0
+cup K AH1 P
+current K ER1 AH0 N T
+currently K ER1 AH0 N T L IY0
+customers K AH1 S T AH0 M ER0 Z
+cut K AH1 T
+dad D AE1 D
+dah D AH1
+daily D EY1 L IY0
+damage D AE1 M AH0 JH
+dance D AE1 N S
+dangerous D EY1 N JH ER0 AH0 S
+dark D AA1 R K
+darling D AA1 R L IH0 NG
+dat D AE1 T
+data D EY1 T AH0
+date D EY1 T
+dating D EY1 T IH0 NG
+daughter D AO1 T ER0
+david D EY1 V IH0 D
+dawn D AO1 N
+day D EY1
+days D EY1 Z
+de D IY1
+dead D EH1 D
+deal D IY1 L
+dear D IH1 R
+death D EH1 TH
+december D IH0 S EH1 M B ER0
+decide D IH2 S AY1 D
+decided D IH2 S AY1 D IH0 D
+decision D IH0 S IH1 ZH AH0 N
+decisions D IH0 S IH1 ZH AH0 N Z
+deep D IY1 P
+defense D IH0 F EH1 N S
+definitely D EH1 F AH0 N AH0 T L IY0
+degree D IH0 G R IY1
+demand D IH0 M AE1 N D
+democratic D EH2 M AH0 K R AE1 T IH0 K
+department D IH0 P AA1 R T M AH0 N T
+described D IH0 S K R AY1 B D
+description D IH0 S K R IH1 P SH AH0 N
+design D IH0 Z AY1 N
+designed D IH0 Z AY1 N D
+desire D IH0 Z AY1 ER0
+despite D IH0 S P AY1 T
+details D IH0 T EY1 L Z
+develop D IH0 V EH1 L AH0 P
+developed D IH0 V EH1 L AH0 P T
+development D IH0 V EH1 L AH0 P M AH0 N T
+did D IH1 D
+didnt D IH1 D AH0 N T
+die D AY1
+died D AY1 D
+difference D IH1 F ER0 AH0 N S
+different D IH1 F ER0 AH0 N T
+difficult D IH1 F AH0 K AH0 L T
+digital D IH1 JH AH0 T AH0 L
+dinner D IH1 N ER0
+direct D ER0 EH1 K T
+direction D ER0 EH1 K SH AH0 N
+directly D ER0 EH1 K T L IY0
+director D ER0 EH1 K T ER0
+discovered D IH0 S K AH1 V ER0 D
+discussion D IH0 S K AH1 SH AH0 N
+disease D IH0 Z IY1 Z
+distance D IH1 S T AH0 N S
+distant D IH1 S T AH0 N T
+district D IH1 S T R IH0 K T
+division D IH0 V IH1 ZH AH0 N
+do D UW1
+doctor D AA1 K T ER0
+does D AH1 Z
+doesnt D AH1 Z AH0 N T
+dog D AO1 G
+dogs D AA1 G Z
+doing D UW1 IH0 NG
+dollars D AA1 L ER0 Z
+done D AH1 N
+dont D OW1 N T
+doo D UW1
+door D AO1 R
+dot D AA1 T
+double D AH1 B AH0 L
+doubt D AW1 T
+down D AW1 N
+dr D R AY1 V
+draw D R AO1
+dream D R IY1 M
+dreams D R IY1 M Z
+dress D R EH1 S
+drift D R IH1 F T
+drink D R IH1 NG K
+drinking D R IH1 NG K IH0 NG
+drive D R AY1 V
+driver D R AY1 V ER0
+driving D R AY1 V IH0 NG
+drop D R AA1 P
+dropped D R AA1 P T
+drug D R AH1 G
+drugs D R AH1 G Z
+drum D R AH1 M
+dry D R AY1
+dude D UW1 D
+due D UW1
+dum D AH1 M
+during D UH1 R IH0 NG
+dust D AH1 S T
+duty D UW1 T IY0
+each IY1 CH
+earlier ER1 L IY0 ER0
+early ER1 L IY0
+earth ER1 TH
+easier IY1 Z IY0 ER0
+easily IY1 Z AH0 L IY0
+east IY1 S T
+eastern IY1 S T ER0 N
+easy IY1 Z IY0
+eat IY1 T
+eating IY1 T IH0 NG
+economic EH2 K AH0 N AA1 M IH0 K
+economy IH0 K AA1 N AH0 M IY0
+ed EH1 D
+edge EH1 JH
+edition AH0 D IH1 SH AH0 N
+education EH2 JH AH0 K EY1 SH AH0 N
+effect IH0 F EH1 K T
+effective IH0 F EH1 K T IH0 V
+effects IH0 F EH1 K T S
+effort EH1 F ER0 T
+efforts EH1 F ER0 T S
+eight EY1 T
+either IY1 DH ER0
+election IH0 L EH1 K SH AH0 N
+electric IH0 L EH1 K T R IH0 K
+elements EH1 L AH0 M AH0 N T S
+else EH1 L S
+emergency IH0 M ER1 JH AH0 N S IY0
+employees EH0 M P L OY1 IY0 Z
+empty EH1 M P T IY0
+end EH1 N D
+ended EH1 N D AH0 D
+endless EH1 N D L AH0 S
+ends EH1 N D Z
+enemy EH1 N AH0 M IY0
+energy EH1 N ER0 JH IY0
+engine EH1 N JH AH0 N
+engineering EH1 N JH AH0 N IH1 R IH0 NG
+england IH1 NG G L AH0 N D
+english IH1 NG G L IH0 SH
+enjoy EH2 N JH OY1
+enough IH0 N AH1 F
+ensure EH0 N SH UH1 R
+enter EH1 N T ER0
+entered EH1 N T ER0 D
+entire IH0 N T AY1 ER0
+entirely IH0 N T AY1 ER0 L IY0
+environment IH0 N V AY1 R AH0 N M AH0 N T
+environmental IH0 N V AY2 R AH0 N M EH1 N T AH0 L
+episode EH1 P AH0 S OW2 D
+equipment IH0 K W IH1 P M AH0 N T
+especially AH0 S P EH1 SH L IY0
+established IH0 S T AE1 B L IH0 SH T
+estate IH0 S T EY1 T
+etc EH2 T S EH1 T ER0 AH0
+europe Y UH1 R AH0 P
+european Y UH2 R AH0 P IY1 AH0 N
+even IY1 V IH0 N
+evening IY1 V N IH0 NG
+event IH0 V EH1 N T
+events IH0 V EH1 N T S
+eventually IH0 V EH1 N CH AH0 W AH0 L IY0
+ever EH1 V ER0
+every EH1 V ER0 IY0
+everybody EH1 V R IY0 B AA2 D IY0
+everyone EH1 V R IY0 W AH2 N
+everything EH1 V R IY0 TH IH2 NG
+evidence EH1 V AH0 D AH0 N S
+evil IY1 V AH0 L
+ex EH1 K S
+exactly IH0 G Z AE1 K T L IY0
+example IH0 G Z AE1 M P AH0 L
+excellent EH1 K S AH0 L AH0 N T
+except IH0 K S EH1 P T
+exchange IH0 K S CH EY1 N JH
+excited IH0 K S AY1 T AH0 D
+executive IH0 G Z EH1 K Y AH0 T IH0 V
+exist IH0 G Z IH1 S T
+existing IH0 G Z IH1 S T IH0 NG
+expect IH0 K S P EH1 K T
+expected IH0 K S P EH1 K T AH0 D
+experience IH0 K S P IH1 R IY0 AH0 N S
+explain IH0 K S P L EY1 N
+extra EH1 K S T R AH0
+extremely EH0 K S T R IY1 M L IY0
+eye AY1
+eyes AY1 Z
+face F EY1 S
+facebook F EY1 S B UH2 K
+fact F AE1 K T
+facts F AE1 K T S
+fade F EY1 D
+failed F EY1 L D
+failure F EY1 L Y ER0
+fair F EH1 R
+faith F EY1 TH
+fall F AO1 L
+families F AE1 M AH0 L IY0 Z
+family F AE1 M AH0 L IY0
+famous F EY1 M AH0 S
+fan F AE1 N
+fans F AE1 N Z
+fantastic F AE0 N T AE1 S T IH0 K
+fantasy F AE1 N T AH0 S IY0
+far F AA1 R
+farm F AA1 R M
+fashion F AE1 SH AH0 N
+fast F AE1 S T
+fat F AE1 T
+father F AA1 DH ER0
+favorite F EY1 V ER0 IH0 T
+fear F IH1 R
+feature F IY1 CH ER0
+features F IY1 CH ER0 Z
+february F EH1 B Y AH0 W EH2 R IY0
+federal F EH1 D ER0 AH0 L
+feel F IY1 L
+feeling F IY1 L IH0 NG
+feelings F IY1 L IH0 NG Z
+feels F IY1 L Z
+feet F IY1 T
+fell F EH1 L
+fellow F EH1 L OW0
+felt F EH1 L T
+female F IY1 M EY2 L
+festival F EH1 S T AH0 V AH0 L
+few F Y UW1
+field F IY1 L D
+fierce F IH1 R S
+fifth F IH1 F TH
+fight F AY1 T
+fighting F AY1 T IH0 NG
+figure F IH1 G Y ER0
+figures F IH1 G Y ER0 Z
+file F AY1 L
+filled F IH1 L D
+film F IH1 L M
+final F AY1 N AH0 L
+finally F AY1 N AH0 L IY0
+financial F AH0 N AE1 N SH AH0 L
+find F AY1 N D
+finding F AY1 N D IH0 NG
+fine F AY1 N
+finish F IH1 N IH0 SH
+finished F IH1 N IH0 SH T
+fire F AY1 ER0
+firm F ER1 M
+first F ER1 S T
+fish F IH1 SH
+fit F IH1 T
+five F AY1 V
+fix F IH1 K S
+fixed F IH1 K S T
+flame F L EY1 M
+flat F L AE1 T
+flight F L AY1 T
+float F L OW1 T
+floor F L AO1 R
+florida F L AO1 R AH0 D AH0
+flow F L OW1
+fly F L AY1
+flying F L AY1 IH0 NG
+focus F OW1 K AH0 S
+follow F AA1 L OW0
+followed F AA1 L OW0 D
+following F AA1 L OW0 IH0 NG
+follows F AA1 L OW0 Z
+food F UW1 D
+foot F UH1 T
+football F UH1 T B AO2 L
+for F AO1 R
+force F AO1 R S
+forced F AO1 R S T
+forces F AO1 R S IH0 Z
+foreign F AO1 R AH0 N
+forest F AO1 R AH0 S T
+forever F ER0 EH1 V ER0
+forget F ER0 G EH1 T
+form F AO1 R M
+former F AO1 R M ER0
+forms F AO1 R M Z
+forward F AO1 R W ER0 D
+found F AW1 N D
+foundation F AW0 N D EY1 SH AH0 N
+four F AO1 R
+fourth F AO1 R TH
+france F R AE1 N S
+frank F R AE1 NG K
+free F R IY1
+freedom F R IY1 D AH0 M
+french F R EH1 N CH
+fresh F R EH1 SH
+friday F R AY1 D IY0
+friend F R EH1 N D
+friends F R EH1 N D Z
+from F R AH1 M
+front F R AH1 N T
+fuel F Y UW1 AH0 L
+full F UH1 L
+fully F UH1 L IY0
+fun F AH1 N
+function F AH1 NG K SH AH0 N
+fund F AH1 N D
+funds F AH1 N D Z
+funny F AH1 N IY0
+further F ER1 DH ER0
+future F Y UW1 CH ER0
+gain G EY1 N
+game G EY1 M
+games G EY1 M Z
+garden G AA1 R D AH0 N
+gas G AE1 S
+gave G EY1 V
+general JH EH1 N ER0 AH0 L
+generally JH EH1 N ER0 AH0 L IY0
+generation JH EH2 N ER0 EY1 SH AH0 N
+gentle JH EH1 N T AH0 L
+george JH AO1 R JH
+german JH ER1 M AH0 N
+germany JH ER1 M AH0 N IY0
+get G EH1 T
+gets G EH1 T S
+getting G EH1 T IH0 NG
+gift G IH1 F T
+girl G ER1 L
+girls G ER1 L Z
+give G IH1 V
+given G IH1 V AH0 N
+gives G IH1 V Z
+giving G IH1 V IH0 NG
+glad G L AE1 D
+glass G L AE1 S
+global G L OW1 B AH0 L
+glow G L OW1
+go G OW1
+goal G OW1 L
+goals G OW1 L Z
+god G AA1 D
+goes G OW1 Z
+going G OW1 IH0 NG
+gold G OW1 L D
+golden G OW1 L D AH0 N
+gone G AO1 N
+gonna G AA1 N AH0
+good G UH1 D
+google G UW1 G AH0 L
+got G AA1 T
+gotta G AA1 T AH0
+government G AH1 V ER0 M AH0 N T
+governor G AH1 V ER0 N ER0
+grade G R EY1 D
+grand G R AE1 N D
+great G R EY1 T
+greater G R EY1 T ER0
+greatest G R EY1 T AH0 S T
+green G R IY1 N
+ground G R AW1 N D
+group G R UW1 P
+groups G R UW1 P S
+grow G R OW1
+growing G R OW1 IH0 NG
+growth G R OW1 TH
+guard G AA1 R D
+guess G EH1 S
+guide G AY1 D
+gun G AH1 N
+guy G AY1
+guys G AY1 Z
+had HH AE1 D
+hair HH EH1 R
+half HH AE1 F
+hall HH AO1 L
+hand HH AE1 N D
+handle HH AE1 N D AH0 L
+hands HH AE1 N D Z
+happen HH AE1 P AH0 N
+happened HH AE1 P AH0 N D
+happening HH AE1 P AH0 N IH0 NG
+happens HH AE1 P AH0 N Z
+happy HH AE1 P IY0
+harbor HH AA1 R B ER0
+hard HH AA1 R D
+harry HH EH1 R IY0
+has HH AE1 Z
+hasnt HH AE1 Z AH0 N T
+hate HH EY1 T
+have HH AE1 V
+havent HH AE1 V AH0 N T
+having HH AE1 V IH0 NG
+he HH IY1
+head HH EH1 D
+health HH EH1 L TH
+healthy HH EH1 L TH IY0
+hear HH IY1 R
+heard HH ER1 D
+hearing HH IY1 R IH0 NG
+heart HH AA1 R T
+heartbeat HH AA1 R T B IY2 T
+heat HH IY1 T
+heaven HH EH1 V AH0 N
+heavy HH EH1 V IY0
+held HH EH1 L D
+hello HH AH0 L OW1
+help HH EH1 L P
+helped HH EH1 L P T
+helping HH EH1 L P IH0 NG
+helps HH EH1 L P S
+henry HH EH1 N R IY0
+her HH ER1
+here HH IY1 R
+heres HH IH1 R Z
+herself HH ER0 S EH1 L F
+hes HH IY1 Z
+hey HH EY1
+hi HH AY1
+hide HH AY1 D
+high HH AY1
+higher HH AY1 ER0
+highest HH AY1 AH0 S T
+highly HH AY1 L IY0
+highway HH AY1 W EY2
+hill HH IH1 L
+him HH IH1 M
+himself HH IH0 M S EH1 L F
+his HH IH1 Z
+history HH IH1 S T ER0 IY0
+hit HH IH1 T
+hold HH OW1 L D
+holding HH OW1 L D IH0 NG
+holy HH OW1 L IY0
+home HH OW1 M
+honest AA1 N AH0 S T
+honey HH AH1 N IY0
+hope HH OW1 P
+horizon HH ER0 AY1 Z AH0 N
+horse HH AO1 R S
+hospital HH AA1 S P IH2 T AH0 L
+host HH OW1 S T
+hot HH AA1 T
+hotel HH OW0 T EH1 L
+hour AW1 ER0
+hours AW1 ER0 Z
+house HH AW1 S
+houses HH AW1 S AH0 Z
+housing HH AW1 Z IH0 NG
+how HH AW1
+however HH AW2 EH1 V ER0
+http EY2 CH T IY2 T IY2 P IY1
+huge HH Y UW1 JH
+human HH Y UW1 M AH0 N
+hundred HH AH1 N D R AH0 D
+hurt HH ER1 T
+husband HH AH1 Z B AH0 N D
+i AY1
+ice AY1 S
+id AY1 D
+idea AY0 D IY1 AH0
+ideas AY0 D IY1 AH0 Z
+if IH1 F
+ignite IH2 G N AY1 T
+ill AY1 L
+im AY1 M
+image IH1 M AH0 JH
+images IH1 M AH0 JH AH0 Z
+imagine IH2 M AE1 JH AH0 N
+immediately IH2 M IY1 D IY2 AH0 T L IY0
+impact IH2 M P AE1 K T
+important IH2 M P AO1 R T AH0 N T
+impossible IH2 M P AA1 S AH0 B AH0 L
+improve IH2 M P R UW1 V
+in IH0 N
+inc IH1 NG K
+include IH2 N K L UW1 D
+included IH2 N K L UW1 D AH0 D
+includes IH2 N K L UW1 D Z
+including IH2 N K L UW1 D IH0 NG
+income IH1 N K AH2 M
+increase IH2 N K R IY1 S
+increased IH2 N K R IY1 S T
+indeed IH2 N D IY1 D
+independent IH2 N D IH0 P EH1 N D AH0 N T
+india IH1 N D IY0 AH0
+indian IH1 N D IY0 AH0 N
+individual IH2 N D AH0 V IH1 JH AH0 W AH0 L
+individuals IH2 N D AH0 V IH1 JH AH0 W AH0 L Z
+industrial IH2 N D AH1 S T R IY0 AH0 L
+industry IH1 N D AH0 S T R IY0
+influence IH1 N F L UW0 AH0 N S
+information IH2 N F ER0 M EY1 SH AH0 N
+initial IH2 N IH1 SH AH0 L
+injury IH1 N JH ER0 IY0
+inside IH2 N S AY1 D
+instead IH2 N S T EH1 D
+institute IH1 N S T AH0 T UW2 T
+insurance IH2 N SH UH1 R AH0 N S
+intelligence IH2 N T EH1 L AH0 JH AH0 N S
+intended IH2 N T EH1 N D IH0 D
+interest IH1 N T R AH0 S T
+interested IH1 N T R AH0 S T IH0 D
+interesting IH1 N T R AH0 S T IH0 NG
+international IH2 N T ER0 N AE1 SH AH0 N AH0 L
+internet IH1 N T ER0 N EH2 T
+interview IH1 N T ER0 V Y UW2
+into IH1 N T UW0
+introduced IH2 N T R AH0 D UW1 S T
+investigation IH2 N V EH2 S T AH0 G EY1 SH AH0 N
+investment IH2 N V EH1 S T M AH0 N T
+involved IH2 N V AA1 L V D
+iron AY1 ER0 N
+is IH1 Z
+island AY1 L AH0 N D
+isnt IH1 Z AH0 N T
+israel IH1 Z R IY0 AH0 L
+issue IH1 SH UW0
+issued IH1 SH UW0 D
+issues IH1 SH UW0 Z
+it IH1 T
+items AY1 T AH0 M Z
+its IH1 T S
+itself IH2 T S EH1 L F
+ive AY1 V
+jack JH AE1 K
+james JH EY1 M Z
+january JH AE1 N Y UW0 EH2 R IY0
+japan JH AH0 P AE1 N
+japanese JH AE2 P AH0 N IY1 Z
+jesus JH IY1 Z AH0 S
+job JH AA1 B
+jobs JH AA1 B Z
+joe JH OW1
+john JH AA1 N
+johnson JH AA1 N S AH0 N
+join JH OY1 N
+joined JH OY1 N D
+joint JH OY1 N T
+jones JH OW1 N Z
+journal JH ER1 N AH0 L
+journey JH ER1 N IY0
+judge JH AH1 JH
+july JH UW2 L AY1
+june JH UW1 N
+just JH AH1 S T
+justice JH AH1 S T AH0 S
+keep K IY1 P
+keeping K IY1 P IH0 NG
+kept K EH1 P T
+key K IY1
+kick K IH1 K
+kid K IH1 D
+kids K IH1 D Z
+kill K IH1 L
+killed K IH1 L D
+killing K IH1 L IH0 NG
+kind K AY1 N D
+king K IH1 NG
+kiss K IH1 S
+knew N UW1
+know N OW1
+knowing N OW1 IH0 NG
+knowledge N AA1 L AH0 JH
+known N OW1 N
+knows N OW1 Z
+la L AA1
+labor L EY1 B ER0
+labour L EY1 B ER0
+lack L AE1 K
+lady L EY1 D IY0
+lake L EY1 K
+land L AE1 N D
+language L AE1 NG G W AH0 JH
+large L AA1 R JH
+larger L AA1 R JH ER0
+largest L AA1 R JH AH0 S T
+last L AE1 S T
+late L EY1 T
+later L EY1 T ER0
+latest L EY1 T AH0 S T
+law L AO1
+laws L AO1 Z
+lead L EH1 D
+leader L IY1 D ER0
+leaders L IY1 D ER0 Z
+leadership L IY1 D ER0 SH IH2 P
+leading L IY1 D IH0 NG
+league L IY1 G
+learn L ER1 N
+learned L ER1 N D
+learning L ER1 N IH0 NG
+least L IY1 S T
+leave L IY1 V
+leaves L IY1 V Z
+leaving L IY1 V IH0 NG
+led L EH1 D
+lee L IY1
+left L EH1 F T
+legal L IY1 G AH0 L
+length L EH1 NG K TH
+less L EH1 S
+let L EH1 T
+lets L EH1 T S
+letter L EH1 T ER0
+level L EH1 V AH0 L
+levels L EH1 V AH0 L Z
+library L AY1 B R EH0 R IY2
+lie L AY1
+lies L AY1 Z
+life L AY1 F
+light L AY1 T
+lighthouse L AY1 T HH AW2 S
+lightning L AY1 T N IH0 NG
+like L AY1 K
+liked L AY1 K T
+likely L AY1 K L IY0
+likes L AY1 K S
+limit L IH1 M AH0 T
+limited L IH1 M AH0 T AH0 D
+line L AY1 N
+lines L AY1 N Z
+link L IH1 NG K
+links L IH1 NG K S
+lips L IH1 P S
+list L IH1 S T
+listen L IH1 S AH0 N
+literally L IH1 T ER0 AH0 L IY0
+little L IH1 T AH0 L
+live L AY1 V
+lived L IH1 V D
+lives L IH1 V Z
+living L IH1 V IH0 NG
+local L OW1 K AH0 L
+located L OW1 K EY2 T AH0 D
+location L OW0 K EY1 SH AH0 N
+lol L AO1 L
+london L AH1 N D AH0 N
+lonely L OW1 N L IY0
+long L AO1 NG
+longer L AO1 NG G ER0
+look L UH1 K
+looked L UH1 K T
+looking L UH1 K IH0 NG
+looks L UH1 K S
+lord L AO1 R D
+los L OW1 S
+lose L UW1 Z
+losing L UW1 Z IH0 NG
+loss L AO1 S
+lost L AO1 S T
+lot L AA1 T
+lots L AA1 T S
+louis L UW1 IH0 S
+love L AH1 V
+loved L AH1 V D
+lovely L AH1 V L IY0
+low L OW1
+lower L OW1 ER0
+luck L AH1 K
+lucky L AH1 K IY0
+machine M AH0 SH IY1 N
+mad M AE1 D
+made M EY1 D
+magazine M AE1 G AH0 Z IY2 N
+magic M AE1 JH IH0 K
+mail M EY1 L
+main M EY1 N
+major M EY1 JH ER0
+majority M AH0 JH AO1 R AH0 T IY0
+make M EY1 K
+makes M EY1 K S
+making M EY1 K IH0 NG
+male M EY1 L
+man M AE1 N
+managed M AE1 N AH0 JH D
+management M AE1 N AH0 JH M AH0 N T
+manager M AE1 N AH0 JH ER0
+many M EH1 N IY0
+map M AE1 P
+march M AA1 R CH
+mark M AA1 R K
+market M AA1 R K AH0 T
+marketing M AA1 R K AH0 T IH0 NG
+marriage M EH1 R IH0 JH
+married M EH1 R IY0 D
+martin M AA1 R T AH0 N
+mary M EH1 R IY0
+mass M AE1 S
+massive M AE1 S IH0 V
+master M AE1 S T ER0
+match M AE1 CH
+material M AH0 T IH1 R IY0 AH0 L
+materials M AH0 T IH1 R IY0 AH0 L Z
+matter M AE1 T ER0
+matters M AE1 T ER0 Z
+may M EY1
+maybe M EY1 B IY0
+me M IY1
+mean M IY1 N
+meaning M IY1 N IH0 NG
+means M IY1 N Z
+meant M EH1 N T
+media M IY1 D IY0 AH0
+medical M EH1 D AH0 K AH0 L
+medicine M EH1 D AH0 S AH0 N
+meet M IY1 T
+meeting M IY1 T IH0 NG
+member M EH1 M B ER0
+members M EH1 M B ER0 Z
+memory M EH1 M ER0 IY0
+men M EH1 N
+mental M EH1 N T AH0 L
+mention M EH1 N SH AH0 N
+mentioned M EH1 N SH AH0 N D
+message M EH1 S AH0 JH
+met M EH1 T
+metal M EH1 T AH0 L
+method M EH1 TH AH0 D
+mexico M EH1 K S AH0 K OW2
+michael M AY1 K AH0 L
+mid M IH1 D
+middle M IH1 D AH0 L
+midnight M IH1 D N AY2 T
+might M AY1 T
+mike M AY1 K
+miles M AY1 L Z
+military M IH1 L AH0 T EH2 R IY0
+million M IH1 L Y AH0 N
+mind M AY1 N D
+mine M AY1 N
+minister M IH1 N AH0 S T ER0
+minute M IH1 N AH0 T
+minutes M IH1 N AH0 T S
+mirror M IH1 R ER0
+miss M IH1 S
+missed M IH1 S T
+missing M IH1 S IH0 NG
+mission M IH1 SH AH0 N
+mix M IH1 K S
+mobile M OW1 B AH0 L
+model M AA1 D AH0 L
+models M AA1 D AH0 L Z
+modern M AA1 D ER0 N
+mom M AA1 M
+moment M OW1 M AH0 N T
+monday M AH1 N D IY0
+money M AH1 N IY0
+month M AH1 N TH
+months M AH1 N TH S
+moon M UW1 N
+more M AO1 R
+morning M AO1 R N IH0 NG
+most M OW1 S T
+mostly M OW1 S T L IY0
+mother M AH1 DH ER0
+mountain M AW1 N T AH0 N
+mouth M AW1 TH
+move M UW1 V
+moved M UW1 V D
+movement M UW1 V M AH0 N T
+movie M UW1 V IY0
+movies M UW1 V IY0 Z
+moving M UW1 V IH0 NG
+mr M IH1 S T ER0
+mrs M IH1 S IH0 Z
+much M AH1 CH
+multiple M AH1 L T AH0 P AH0 L
+murder M ER1 D ER0
+museum M Y UW0 Z IY1 AH0 M
+music M Y UW1 Z IH0 K
+must M AH1 S T
+my M AY1
+myself M AY2 S EH1 L F
+mystery M IH1 S T ER0 IY0
+na N AA1
+name N EY1 M
+named N EY1 M D
+names N EY1 M Z
+nation N EY1 SH AH0 N
+national N AE1 SH AH0 N AH0 L
+nations N EY1 SH AH0 N Z
+natural N AE1 CH ER0 AH0 L
+nature N EY1 CH ER0
+near N IH1 R
+nearly N IH1 R L IY0
+necessary N EH1 S AH0 S EH2 R IY0
+need N IY1 D
+needed N IY1 D AH0 D
+needs N IY1 D Z
+negative N EH1 G AH0 T IH0 V
+neither N IY1 DH ER0
+neon N IY1 AA0 N
+net N EH1 T
+network N EH1 T W ER2 K
+never N EH1 V ER0
+new N UW1
+news N UW1 Z
+next N EH1 K S T
+nice N AY1 S
+night N AY1 T
+nine N AY1 N
+no N OW1
+nobody N OW1 B AA2 D IY2
+non N AA1 N
+none N AH1 N
+nor N AO1 R
+normal N AO1 R M AH0 L
+north N AO1 R TH
+northern N AO1 R DH ER0 N
+not N AA1 T
+note N OW1 T
+notes N OW1 T S
+nothing N AH1 TH IH0 NG
+notice N OW1 T AH0 S
+november N OW0 V EH1 M B ER0
+now N AW1
+nuclear N UW1 K L IY0 ER0
+number N AH1 M B ER0
+numbers N AH1 M B ER0 Z
+o OW1
+obama OW2 B AA1 M AH0
+obviously AA1 B V IY0 AH0 S L IY0
+ocean OW1 SH AH0 N
+october AA0 K T OW1 B ER0
+of AH1 V
+off AO1 F
+offer AO1 F ER0
+offered AO1 F ER0 D
+offers AO1 F ER0 Z
+office AO1 F IH0 S
+officer AO1 F AH0 S ER0
+officers AO1 F AH0 S ER0 Z
+official AH0 F IH1 SH AH0 L
+often AO1 F AH0 N
+oh OW1
+oil OY1 L
+ok OW1 K EY1
+okay OW2 K EY1
+old OW1 L D
+older OW1 L D ER0
+on AA1 N
+once W AH1 N S
+one W AH1 N
+ones W AH1 N Z
+online AO1 N L AY2 N
+only OW1 N L IY0
+onto AA1 N T UW0
+open OW1 P AH0 N
+opened OW1 P AH0 N D
+opening OW1 P AH0 N IH0 NG
+operating AA1 P ER0 EY2 T IH0 NG
+operation AA2 P ER0 EY1 SH AH0 N
+operations AA2 P ER0 EY1 SH AH0 N Z
+opinion AH0 P IH1 N Y AH0 N
+opportunity AA2 P ER0 T UW1 N AH0 T IY0
+option AA1 P SH AH0 N
+options AA1 P SH AH0 N Z
+or AO1 R
+order AO1 R D ER0
+ordered AO1 R D ER0 D
+orders AO1 R D ER0 Z
+organization AO2 R G AH0 N AH0 Z EY1 SH AH0 N
+original ER0 IH1 JH AH0 N AH0 L
+other AH1 DH ER0
+others AH1 DH ER0 Z
+otherwise AH1 DH ER0 W AY2 Z
+our AW1 ER0
+out AW1 T
+outside AW1 T S AY1 D
+over OW1 V ER0
+overall OW1 V ER0 AO2 L
+own OW1 N
+owned OW1 N D
+owner OW1 N ER0
+page P EY1 JH
+paid P EY1 D
+pain P EY1 N
+pair P EH1 R
+paper P EY1 P ER0
+parents P EH1 R AH0 N T S
+paris P EH1 R IH0 S
+park P AA1 R K
+parliament P AA1 R L AH0 M AH0 N T
+part P AA1 R T
+particular P ER0 T IH1 K Y AH0 L ER0
+particularly P AA2 R T IH1 K Y AH0 L ER0 L IY0
+parties P AA1 R T IY0 Z
+partner P AA1 R T N ER0
+parts P AA1 R T S
+party P AA1 R T IY0
+pass P AE1 S
+passed P AE1 S T
+past P AE1 S T
+path P AE1 TH
+patient P EY1 SH AH0 N T
+patients P EY1 SH AH0 N T S
+paul P AO1 L
+pay P EY1
+paying P EY1 IH0 NG
+peace P IY1 S
+people P IY1 P AH0 L
+per P ER1
+percent P ER0 S EH1 N T
+perfect P ER0 F EH1 K T
+performance P ER0 F AO1 R M AH0 N S
+perhaps P ER0 HH AE1 P S
+period P IH1 R IY0 AH0 D
+person P ER1 S AH0 N
+personal P ER1 S IH0 N AH0 L
+peter P IY1 T ER0
+phone F OW1 N
+photo F OW1 T OW2
+photos F OW1 T OW2 Z
+physical F IH1 Z IH0 K AH0 L
+pick P IH1 K
+picked P IH1 K T
+picture P IH1 K CH ER0
+pictures P IH1 K CH ER0 Z
+piece P IY1 S
+pieces P IY1 S AH0 Z
+place P L EY1 S
+placed P L EY1 S T
+places P L EY1 S AH0 Z
+plan P L AE1 N
+plane P L EY1 N
+planet P L AE1 N AH0 T
+planning P L AE1 N IH0 NG
+plans P L AE1 N Z
+plant P L AE1 N T
+plants P L AE1 N T S
+play P L EY1
+played P L EY1 D
+player P L EY1 ER0
+players P L EY1 ER0 Z
+playing P L EY1 IH0 NG
+plays P L EY1 Z
+please P L IY1 Z
+plenty P L EH1 N T IY0
+plus P L AH1 S
+point P OY1 N T
+points P OY1 N T S
+police P AH0 L IY1 S
+policies P AA1 L AH0 S IY0 Z
+policy P AA1 L AH0 S IY0
+political P AH0 L IH1 T AH0 K AH0 L
+politics P AA1 L AH0 T IH2 K S
+poor P UW1 R
+pop P AA1 P
+popular P AA1 P Y AH0 L ER0
+population P AA2 P Y AH0 L EY1 SH AH0 N
+port P AO1 R T
+position P AH0 Z IH1 SH AH0 N
+positive P AA1 Z AH0 T IH0 V
+possible P AA1 S AH0 B AH0 L
+possibly P AA1 S AH0 B L IY0
+post P OW1 S T
+posted P OW1 S T IH0 D
+potential P AH0 T EH1 N SH AH0 L
+power P AW1 ER0
+powerful P AW1 ER0 F AH0 L
+powers P AW1 ER0 Z
+practice P R AE1 K T AH0 S
+pre P R IY1
+prepared P R IY0 P EH1 R D
+presence P R EH1 Z AH0 N S
+present P R EH1 Z AH0 N T
+presented P R IY0 Z EH1 N T IH0 D
+president P R EH1 Z AH0 D EH2 N T
+press P R EH1 S
+pressure P R EH1 SH ER0
+pretty P R IH1 T IY0
+prevent P R IH0 V EH1 N T
+previous P R IY1 V IY0 AH0 S
+previously P R IY1 V IY0 AH0 S L IY0
+price P R AY1 S
+prices P R AY1 S AH0 Z
+primary P R AY1 M EH2 R IY0
+prime P R AY1 M
+prince P R IH1 N S
+prior P R AY1 ER0
+prison P R IH1 Z AH0 N
+private P R AY1 V AH0 T
+pro P R OW1
+probably P R AA1 B AH0 B L IY2
+problem P R AA1 B L AH0 M
+problems P R AA1 B L AH0 M Z
+process P R AA1 S EH2 S
+produce P R AH0 D UW1 S
+produced P R AH0 D UW1 S T
+product P R AA1 D AH0 K T
+production P R AH0 D AH1 K SH AH0 N
+products P R AA1 D AH0 K T S
+professional P R AH0 F EH1 SH AH0 N AH0 L
+professor P R AH0 F EH1 S ER0
+profile P R OW1 F AY2 L
+profit P R AA1 F AH0 T
+program P R OW1 G R AE2 M
+programs P R OW1 G R AE2 M Z
+progress P R AA1 G R EH2 S
+project P R AA1 JH EH0 K T
+projects P R AA1 JH EH0 K T S
+promise P R AA1 M AH0 S
+proper P R AA1 P ER0
+property P R AA1 P ER0 T IY0
+proposed P R AH0 P OW1 Z D
+protect P R AH0 T EH1 K T
+protection P R AH0 T EH1 K SH AH0 N
+proud P R AW1 D
+prove P R UW1 V
+provide P R AH0 V AY1 D
+provided P R AH0 V AY1 D IH0 D
+provides P R AH0 V AY1 D Z
+providing P R AH0 V AY1 D IH0 NG
+public P AH1 B L IH0 K
+published P AH1 B L IH0 SH T
+pull P UH1 L
+purchase P ER1 CH AH0 S
+purpose P ER1 P AH0 S
+push P UH1 SH
+put P UH1 T
+putting P AH1 T IH0 NG
+quality K W AA1 L AH0 T IY0
+quarter K W AO1 R T ER0
+queen K W IY1 N
+question K W EH1 S CH AH0 N
+questions K W EH1 S CH AH0 N Z
+quick K W IH1 K
+quickly K W IH1 K L IY0
+quiet K W AY1 AH0 T
+quite K W AY1 T
+race R EY1 S
+radio R EY1 D IY0 OW2
+rage R EY1 JH
+rain R EY1 N
+rainbow R EY1 N B OW2
+raise R EY1 Z
+raised R EY1 Z D
+ran R AE1 N
+range R EY1 N JH
+rare R EH1 R
+rate R EY1 T
+rates R EY1 T S
+rather R AE1 DH ER0
+re R EY1
+reach R IY1 CH
+reached R IY1 CH T
+reaction R IY0 AE1 K SH AH0 N
+read R EH1 D
+reading R IY1 D IH0 NG
+ready R EH1 D IY0
+real R IY1 L
+reality R IY2 AE1 L AH0 T IY2
+realize R IY1 AH0 L AY2 Z
+really R IH1 L IY0
+reason R IY1 Z AH0 N
+reasons R IY1 Z AH0 N Z
+receive R AH0 S IY1 V
+received R AH0 S IY1 V D
+recent R IY1 S AH0 N T
+recently R IY1 S AH0 N T L IY0
+record R AH0 K AO1 R D
+records R AH0 K AO1 R D Z
+red R EH1 D
+reduce R AH0 D UW1 S
+reference R EH1 F ER0 AH0 N S
+region R IY1 JH AH0 N
+regional R IY1 JH AH0 N AH0 L
+regular R EH1 G Y AH0 L ER0
+related R IH0 L EY1 T IH0 D
+relationship R IY0 L EY1 SH AH0 N SH IH2 P
+release R IY0 L IY1 S
+released R IY0 L IY1 S T
+religion R IH0 L IH1 JH AH0 N
+religious R IH0 L IH1 JH AH0 S
+remain R IH0 M EY1 N
+remains R IH0 M EY1 N Z
+remember R IH0 M EH1 M B ER0
+remove R IY0 M UW1 V
+removed R IY0 M UW1 V D
+report R IY0 P AO1 R T
+reported R IY2 P AO1 R T IH0 D
+reports R IH0 P AO1 R T S
+request R IH0 K W EH1 S T
+require R IY2 K W AY1 ER0
+required R IY0 K W AY1 ER0 D
+research R IY0 S ER1 CH
+resources R IY1 S AO0 R S IH0 Z
+respect R IH0 S P EH1 K T
+response R IH0 S P AA1 N S
+responsibility R IY0 S P AA2 N S AH0 B IH1 L AH0 T IY0
+responsible R IY0 S P AA1 N S AH0 B AH0 L
+rest R EH1 S T
+result R IH0 Z AH1 L T
+results R IH0 Z AH1 L T S
+return R IH0 T ER1 N
+returned R IH0 T ER1 N D
+review R IY2 V Y UW1
+rich R IH1 CH
+richard R IH1 CH ER0 D
+ride R AY1 D
+right R AY1 T
+rights R AY1 T S
+ring R IH1 NG
+rise R AY1 Z
+risk R IH1 S K
+river R IH1 V ER0
+road R OW1 D
+robert R AA1 B ER0 T
+rock R AA1 K
+role R OW1 L
+roll R OW1 L
+room R UW1 M
+rose R OW1 Z
+round R AW1 N D
+royal R OY1 AH0 L
+rule R UW1 L
+rules R UW1 L Z
+run R AH1 N
+running R AH1 N IH0 NG
+runs R AH1 N Z
+russia R AH1 SH AH0
+russian R AH1 SH AH0 N
+sad S AE1 D
+safe S EY1 F
+safety S EY1 F T IY0
+said S EH1 D
+sail S EY1 L
+sale S EY1 L
+sales S EY1 L Z
+salt S AO1 L T
+salty S AO1 L T IY0
+same S EY1 M
+san S AE1 N
+sand S AE1 N D
+saturday S AE1 T ER0 D IY0
+save S EY1 V
+saw S AO1
+say S EY1
+saying S EY1 IH0 NG
+says S EH1 Z
+scale S K EY1 L
+scene S IY1 N
+school S K UW1 L
+schools S K UW1 L Z
+science S AY1 AH0 N S
+score S K AO1 R
+scott S K AA1 T
+screen S K R IY1 N
+sea S IY1
+search S ER1 CH
+season S IY1 Z AH0 N
+seat S IY1 T
+second S EH1 K AH0 N D
+seconds S EH1 K AH0 N D Z
+secret S IY1 K R AH0 T
+secretary S EH1 K R AH0 T EH2 R IY0
+section S EH1 K SH AH0 N
+security S IH0 K Y UH1 R AH0 T IY0
+see S IY1
+seeing S IY1 IH0 NG
+seem S IY1 M
+seemed S IY1 M D
+seems S IY1 M Z
+seen S IY1 N
+self S EH1 L F
+sell S EH1 L
+selling S EH1 L IH0 NG
+senate S EH1 N AH0 T
+send S EH1 N D
+senior S IY1 N Y ER0
+sense S EH1 N S
+sent S EH1 N T
+separate S EH1 P ER0 EY2 T
+september S EH0 P T EH1 M B ER0
+series S IH1 R IY0 Z
+serious S IH1 R IY0 AH0 S
+seriously S IH1 R IY0 AH0 S L IY0
+serve S ER1 V
+served S ER1 V D
+service S ER1 V AH0 S
+services S ER1 V AH0 S AH0 Z
+session S EH1 SH AH0 N
+set S EH1 T
+setting S EH1 T IH0 NG
+seven S EH1 V AH0 N
+several S EH1 V R AH0 L
+sexual S EH1 K SH UW0 AH0 L
+shadow SH AE1 D OW2
+shall SH AE1 L
+shape SH EY1 P
+share SH EH1 R
+she SH IY1
+shes SH IY1 Z
+shine SH AY1 N
+ship SH IH1 P
+shoo SH UW1
+shoot SH UW1 T
+shooting SH UW1 T IH0 NG
+shop SH AA1 P
+shore SH AO1 R
+short SH AO1 R T
+shot SH AA1 T
+should SH UH1 D
+shouldnt SH UH1 D AH0 N T
+shout SH AW1 T
+show SH OW1
+showed SH OW1 D
+showing SH OW1 IH0 NG
+shown SH OW1 N
+shows SH OW1 Z
+shut SH AH1 T
+sick S IH1 K
+side S AY1 D
+sides S AY1 D Z
+sign S AY1 N
+signed S AY1 N D
+significant S AH0 G N IH1 F IH0 K AH0 N T
+signs S AY1 N Z
+silence S AY1 L AH0 N S
+silver S IH1 L V ER0
+similar S IH1 M AH0 L ER0
+simple S IH1 M P AH0 L
+simply S IH1 M P L IY0
+since S IH1 N S
+single S IH1 NG G AH0 L
+sir S ER1
+siren S AY1 R AH0 N
+sister S IH1 S T ER0
+sit S IH1 T
+site S AY1 T
+sites S AY1 T S
+sitting S IH1 T IH0 NG
+situation S IH2 CH UW0 EY1 SH AH0 N
+six S IH1 K S
+size S AY1 Z
+skills S K IH1 L Z
+skin S K IH1 N
+sky S K AY1
+sleep S L IY1 P
+sleepy S L IY1 P IY0
+slightly S L AY1 T L IY0
+slow S L OW1
+small S M AO1 L
+smaller S M AO1 L ER0
+smart S M AA1 R T
+smile S M AY1 L
+smith S M IH1 TH
+smoke S M OW1 K
+snow S N OW1
+so S OW1
+soar S AO1 R
+social S OW1 SH AH0 L
+society S AH0 S AY1 AH0 T IY0
+software S AO1 F T W EH2 R
+sold S OW1 L D
+solid S AA1 L AH0 D
+solution S AH0 L UW1 SH AH0 N
+some S AH1 M
+somebody S AH1 M B AA2 D IY0
+someone S AH1 M W AH2 N
+something S AH1 M TH IH0 NG
+sometimes S AH0 M T AY1 M Z
+somewhere S AH1 M W EH2 R
+son S AH1 N
+song S AO1 NG
+songs S AO1 NG Z
+soon S UW1 N
+sorry S AA1 R IY0
+sort S AO1 R T
+soul S OW1 L
+sound S AW1 N D
+sounds S AW1 N D Z
+source S AO1 R S
+sources S AO1 R S AH0 Z
+south S AW1 TH
+southern S AH1 DH ER0 N
+space S P EY1 S
+spanish S P AE1 N IH0 SH
+spark S P AA1 R K
+speak S P IY1 K
+speaking S P IY1 K IH0 NG
+special S P EH1 SH AH0 L
+species S P IY1 SH IY0 Z
+specific S P AH0 S IH1 F IH0 K
+speech S P IY1 CH
+speed S P IY1 D
+spend S P EH1 N D
+spending S P EH1 N D IH0 NG
+spent S P EH1 N T
+spirit S P IH1 R AH0 T
+sport S P AO1 R T
+sports S P AO1 R T S
+spot S P AA1 T
+spread S P R EH1 D
+spring S P R IH1 NG
+square S K W EH1 R
+st S T R IY1 T
+staff S T AE1 F
+stage S T EY1 JH
+stand S T AE1 N D
+standard S T AE1 N D ER0 D
+standards S T AE1 N D ER0 D Z
+standing S T AE1 N D IH0 NG
+star S T AA1 R
+starlight S T AA1 R L AY2 T
+stars S T AA1 R Z
+start S T AA1 R T
+started S T AA1 R T IH0 D
+starting S T AA1 R T IH0 NG
+starts S T AA1 R T S
+state S T EY1 T
+stated S T EY1 T IH0 D
+statement S T EY1 T M AH0 N T
+states S T EY1 T S
+station S T EY1 SH AH0 N
+status S T AE1 T AH0 S
+stay S T EY1
+steel S T IY1 L
+step S T EH1 P
+steps S T EH1 P S
+steve S T IY1 V
+stick S T IH1 K
+still S T IH1 L
+stock S T AA1 K
+stone S T OW1 N
+stop S T AA1 P
+stopped S T AA1 P T
+store S T AO1 R
+stories S T AO1 R IY0 Z
+storm S T AO1 R M
+story S T AO1 R IY0
+straight S T R EY1 T
+strange S T R EY1 N JH
+strategy S T R AE1 T AH0 JH IY0
+street S T R IY1 T
+strength S T R EH1 NG K TH
+stress S T R EH1 S
+strong S T R AO1 NG
+structure S T R AH1 K CH ER0
+student S T UW1 D AH0 N T
+students S T UW1 D AH0 N T S
+studies S T AH1 D IY0 Z
+study S T AH1 D IY0
+stuff S T AH1 F
+stupid S T UW1 P AH0 D
+style S T AY1 L
+subject S AH0 B JH EH1 K T
+success S AH0 K S EH1 S
+successful S AH0 K S EH1 S F AH0 L
+such S AH1 CH
+suggest S AH0 JH EH1 S T
+summer S AH1 M ER0
+sun S AH1 N
+sunday S AH1 N D EY2
+super S UW1 P ER0
+supply S AH0 P L AY1
+support S AH0 P AO1 R T
+supporting S AH0 P AO1 R T IH0 NG
+supposed S AH0 P OW1 Z D
+sure SH UH1 R
+surface S ER1 F AH0 S
+surprise S ER0 P R AY1 Z
+sweet S W IY1 T
+swim S W IH1 M
+system S IH1 S T AH0 M
+systems S IH1 S T AH0 M Z
+table T EY1 B AH0 L
+take T EY1 K
+taken T EY1 K AH0 N
+takes T EY1 K S
+taking T EY1 K IH0 NG
+talk T AO1 K
+talking T AO1 K IH0 NG
+target T AA1 R G AH0 T
+taste T EY1 S T
+tax T AE1 K S
+tea T IY1
+teacher T IY1 CH ER0
+teachers T IY1 CH ER0 Z
+teaching T IY1 CH IH0 NG
+team T IY1 M
+teams T IY1 M Z
+technical T EH1 K N IH0 K AH0 L
+technology T EH0 K N AA1 L AH0 JH IY0
+television T EH1 L AH0 V IH2 ZH AH0 N
+tell T EH1 L
+telling T EH1 L IH0 NG
+tells T EH1 L Z
+ten T EH1 N
+tender T EH1 N D ER0
+term T ER1 M
+terms T ER1 M Z
+terrible T EH1 R AH0 B AH0 L
+test T EH1 S T
+texas T EH1 K S AH0 S
+text T EH1 K S T
+than DH AE1 N
+thank TH AE1 NG K
+thanks TH AE1 NG K S
+that DH AE1 T
+thats DH AE1 T S
+the DH AH0
+their DH EH1 R
+them DH EH1 M
+themselves DH EH0 M S EH1 L V Z
+then DH EH1 N
+theory TH IH1 R IY0
+there DH EH1 R
+therefore DH EH1 R F AO2 R
+theres DH EH1 R Z
+these DH IY1 Z
+they DH EY1
+theyll DH EY1 L
+theyre DH EH1 R
+theyve DH EY1 V
+thing TH IH1 NG
+things TH IH1 NG Z
+think TH IH1 NG K
+thinking TH IH1 NG K IH0 NG
+thinks TH IH1 NG K S
+third TH ER1 D
+this DH IH1 S
+thomas T AA1 M AH0 S
+those DH OW1 Z
+though DH OW1
+thought TH AO1 T
+thoughts TH AO1 T S
+thousands TH AW1 Z AH0 N D Z
+three TH R IY1
+through TH R UW1
+throughout TH R UW0 AW1 T
+throw TH R OW1
+thunder TH AH1 N D ER0
+thus DH AH1 S
+tide T AY1 D
+till T IH1 L
+time T AY1 M
+times T AY1 M Z
+tired T AY1 ER0 D
+title T AY1 T AH0 L
+to T UW1
+today T AH0 D EY1
+together T AH0 G EH1 DH ER0
+told T OW1 L D
+tom T AA1 M
+tomorrow T AH0 M AA1 R OW2
+tonight T AH0 N AY1 T
+too T UW1
+took T UH1 K
+top T AA1 P
+total T OW1 T AH0 L
+totally T OW1 T AH0 L IY0
+touch T AH1 CH
+tough T AH1 F
+tour T UH1 R
+toward T AH0 W AO1 R D
+towards T AH0 W AO1 R D Z
+town T AW1 N
+track T R AE1 K
+trade T R EY1 D
+traditional T R AH0 D IH1 SH AH0 N AH0 L
+traffic T R AE1 F IH0 K
+train T R EY1 N
+training T R EY1 N IH0 NG
+transfer T R AE0 N S F ER1
+travel T R AE1 V AH0 L
+treat T R IY1 T
+treated T R IY1 T IH0 D
+treatment T R IY1 T M AH0 N T
+tree T R IY1
+trial T R AY1 AH0 L
+tried T R AY1 D
+trip T R IH1 P
+trouble T R AH1 B AH0 L
+true T R UW1
+truly T R UW1 L IY0
+trump T R AH1 M P
+trust T R AH1 S T
+truth T R UW1 TH
+try T R AY1
+trying T R AY1 IH0 NG
+turn T ER1 N
+turned T ER1 N D
+turning T ER1 N IH0 NG
+turns T ER1 N Z
+tv T IY1 V IY1
+twice T W AY1 S
+twitter T W IH1 T ER0
+two T UW1
+type T AY1 P
+types T AY1 P S
+uk Y UW2 K EY1
+under AH1 N D ER0
+understand AH2 N D ER0 S T AE1 N D
+understanding AH2 N D ER0 S T AE1 N D IH0 NG
+union Y UW1 N Y AH0 N
+unique Y UW0 N IY1 K
+unit Y UW1 N AH0 T
+united Y UW0 N AY1 T IH0 D
+units Y UW1 N AH0 T S
+universe Y UW1 N AH0 V ER2 S
+university Y UW2 N AH0 V ER1 S AH0 T IY0
+unless AH0 N L EH1 S
+until AH0 N T IH1 L
+up AH1 P
+upon AH0 P AA1 N
+upper AH1 P ER0
+us AH1 S
+usa Y UW2 EH2 S EY1
+use Y UW1 S
+used Y UW1 Z D
+useful Y UW1 S F AH0 L
+users Y UW1 Z ER0 Z
+uses Y UW1 S AH0 Z
+using Y UW1 Z IH0 NG
+usually Y UW1 ZH AH0 W AH0 L IY0
+valley V AE1 L IY0
+value V AE1 L Y UW0
+van V AE1 N
+variety V ER0 AY1 AH0 T IY0
+various V EH1 R IY0 AH0 S
+vehicle V IY1 HH IH0 K AH0 L
+version V ER1 ZH AH0 N
+very V EH1 R IY0
+via V AY1 AH0
+vice V AY1 S
+victory V IH1 K T ER0 IY0
+video V IH1 D IY0 OW0
+videos V IH1 D IY0 OW0 Z
+view V Y UW1
+views V Y UW1 Z
+village V IH1 L AH0 JH
+violence V AY1 AH0 L AH0 N S
+visit V IH1 Z IH0 T
+voice V OY1 S
+volume V AA1 L Y UW0 M
+vote V OW1 T
+vs V IY1 EH1 S
+wah W AA1
+wait W EY1 T
+waiting W EY1 T IH0 NG
+wake W EY1 K
+walk W AO1 K
+walking W AO1 K IH0 NG
+wall W AO1 L
+wanna W AA1 N AH0
+want W AA1 N T
+wanted W AO1 N T IH0 D
+wants W AA1 N T S
+war W AO1 R
+warm W AO1 R M
+was W AA1 Z
+wash W AA1 SH
+washington W AA1 SH IH0 NG T AH0 N
+wasnt W AA1 Z AH0 N T
+waste W EY1 S T
+watch W AA1 CH
+watched W AA1 CH T
+watching W AA1 CH IH0 NG
+water W AO1 T ER0
+wave W EY1 V
+waves W EY1 V Z
+way W EY1
+ways W EY1 Z
+we W IY1
+weapons W EH1 P AH0 N Z
+wear W EH1 R
+wearing W EH1 R IH0 NG
+weather W EH1 DH ER0
+web W EH1 B
+website W EH1 B S AY2 T
+wedding W EH1 D IH0 NG
+week W IY1 K
+weekend W IY1 K EH2 N D
+weeks W IY1 K S
+weight W EY1 T
+weird W IH1 R D
+welcome W EH1 L K AH0 M
+well W EH1 L
+went W EH1 N T
+were W ER1
+west W EH1 S T
+western W EH1 S T ER0 N
+weve W IY1 V
+what W AH1 T
+whatever W AH2 T EH1 V ER0
+whats W AH1 T S
+when W EH1 N
+where W EH1 R
+whether W EH1 DH ER0
+which W IH1 CH
+while W AY1 L
+whisper W IH1 S P ER0
+white W AY1 T
+who HH UW1
+whole HH OW1 L
+whom HH UW1 M
+whos HH UW1 Z
+whose HH UW1 Z
+why W AY1
+wide W AY1 D
+wife W AY1 F
+wild W AY1 L D
+will W IH1 L
+william W IH1 L Y AH0 M
+willing W IH1 L IH0 NG
+win W IH1 N
+wind W AY1 N D
+window W IH1 N D OW0
+windows W IH1 N D OW0 Z
+wine W AY1 N
+wings W IH1 NG Z
+winner W IH1 N ER0
+winning W IH1 N IH0 NG
+winter W IH1 N T ER0
+wish W IH1 SH
+with W IH1 DH
+within W IH0 DH IH1 N
+without W IH0 TH AW1 T
+wolf W UH1 L F
+woman W UH1 M AH0 N
+women W IH1 M AH0 N
+won W AH1 N
+wonder W AH1 N D ER0
+wonderful W AH1 N D ER0 F AH0 L
+wont W OW1 N T
+wood W UH1 D
+word W ER1 D
+words W ER1 D Z
+work W ER1 K
+worked W ER1 K T
+workers W ER1 K ER0 Z
+working W ER1 K IH0 NG
+works W ER1 K S
+world W ER1 L D
+worry W ER1 IY0
+worse W ER1 S
+worst W ER1 S T
+worth W ER1 TH
+would W UH1 D
+wouldnt W UH1 D AH0 N T
+wow W AW1
+write R AY1 T
+writing R AY1 T IH0 NG
+written R IH1 T AH0 N
+wrong R AO1 NG
+wrote R OW1 T
+yeah Y AE1
+year Y IH1 R
+years Y IH1 R Z
+yes Y EH1 S
+yesterday Y EH1 S T ER0 D EY2
+yet Y EH1 T
+york Y AO1 R K
+you Y UW1
+youd Y UW1 D
+youll Y UW1 L
+young Y AH1 NG
+your Y AO1 R
+youre Y UH1 R
+yours Y UH1 R Z
+yourself Y ER0 S EH1 L F
+youth Y UW1 TH
+youve Y UW1 V
+zone Z OW1 N

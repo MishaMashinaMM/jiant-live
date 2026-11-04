@@ -1,0 +1,130 @@
+/* SPDX-License-Identifier: GPL-3.0-only
+ * JIANT tools: the landing page's palette, type and HUD corners.
+ * Inlined by make_site.py so each tool keeps its standalone styling. */
+:root, :root:not([data-theme="light"]), :root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#050409; --fg:#efe6c8; --dim:#aaa1bd; --line:rgba(239,230,200,.2);
+  --jiant-panel:#0d0b14; --jiant-field:#08070e; --jiant-cyan:#3fe0e6;
+  --jiant-yellow:#ffe14d; --jiant-mag:#ff3ea5; --jiant-orange:#ff7a1a;
+  --jiant-on-accent:#050409;
+  --jiant-display:"Michroma","Arial Black",system-ui,sans-serif;
+  --jiant-body:"Instrument Sans","Noto Sans JP",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --jiant-mono:"IBM Plex Mono","Noto Sans JP",ui-monospace,Menlo,Consolas,monospace;
+  --jiant-heat:linear-gradient(90deg,#9d97ff,#d39bff 22%,#ff9fd2 42%,#ff9a8a 60%,#ffc07a 78%,#fff3a8);
+}
+:root[data-theme="light"] {
+  color-scheme:light; --bg:#f4efe4; --fg:#251a32; --dim:#655770; --line:rgba(37,26,50,.25);
+  --jiant-panel:#fffcf5; --jiant-field:#fff; --jiant-cyan:#006e78;
+  --jiant-yellow:#8b4b00; --jiant-mag:#aa175c; --jiant-orange:#ae3c00; --jiant-on-accent:#fff;
+  --jiant-heat:linear-gradient(90deg,#6855b5,#a63886 45%,#b13d16 75%,#865500);
+}
+* { box-sizing:border-box; }
+body {
+  background-color:var(--bg); color:var(--fg); font-family:var(--jiant-body);
+  background-image:radial-gradient(ellipse at 5% 0%,rgba(184,112,255,.065),transparent 45%),radial-gradient(ellipse at 100% 0%,rgba(63,224,230,.04),transparent 45%);
+}
+::selection { background:var(--jiant-mag); color:var(--jiant-on-accent); }
+:focus-visible { outline:2px solid var(--jiant-yellow); outline-offset:3px; }
+main { position:relative; padding-left:max(18px,env(safe-area-inset-left)); padding-right:max(18px,env(safe-area-inset-right)); }
+.jiant-wordmark { display:flex; flex-wrap:wrap; align-items:center; gap:14px; margin:0 0 12px; font:400 clamp(27px,4vw,42px)/1.15 var(--jiant-display); letter-spacing:.025em; }
+.jiant-wordmark a { color:var(--fg); text-decoration:none; white-space:nowrap; }
+.jiant-wordmark .fm { background:var(--jiant-heat); background-clip:text; -webkit-background-clip:text; color:transparent; margin-left:.16em; }
+.jiant-tool { border:1px solid var(--line); padding:7px 9px; color:var(--jiant-cyan); font:500 10px/1.3 var(--jiant-mono); letter-spacing:.14em; }
+a { text-underline-offset:3px; }
+a:hover { color:var(--jiant-cyan); }
+button,select,input,textarea { font-family:var(--jiant-mono); }
+button { min-height:36px; padding:8px 12px; border:1px solid var(--line); border-radius:0; background:var(--jiant-panel); color:var(--fg); line-height:1.3; }
+button:hover:not(:disabled) { border-color:var(--jiant-cyan); color:var(--jiant-cyan); }
+button:disabled { opacity:.45; cursor:not-allowed; }
+select,input[type=text],input[type=number],input[type=search],textarea { min-height:34px; min-width:0; max-width:100%; border:1px solid var(--line); border-radius:0; background:var(--jiant-field); color:var(--fg); padding:6px 8px; }
+input:not([type]),input[type=file] { max-width:100%; min-width:0; }
+select option { background:var(--jiant-panel); color:var(--fg); }
+input[type=range],input[type=checkbox],progress { accent-color:var(--jiant-cyan); }
+input[type=range] { min-width:0; }
+#go,#connect { background:var(--jiant-yellow); color:var(--jiant-on-accent); border-color:var(--jiant-yellow); font-weight:600; min-height:44px; }
+#go:hover:not(:disabled),#connect:hover:not(:disabled) { background:var(--jiant-mag); color:var(--jiant-on-accent); border-color:var(--jiant-mag); }
+#status { font-family:var(--jiant-mono); font-size:12px; line-height:1.7; overflow-wrap:anywhere; color:var(--jiant-cyan); }
+.dim,.small { color:var(--dim); }
+/* Static corner brackets: no canvas, blur, animation or extra audio/UI work. */
+.jiant-editor .top,.jiant-editor .group,.jiant-installer .diag {
+  --frame:var(--jiant-cyan); --corner:10px;
+  border:1px solid var(--line);
+  background:
+    linear-gradient(var(--frame),var(--frame)) 0 0/var(--corner) 1px,
+    linear-gradient(var(--frame),var(--frame)) 0 0/1px var(--corner),
+    linear-gradient(var(--frame),var(--frame)) 100% 100%/var(--corner) 1px,
+    linear-gradient(var(--frame),var(--frame)) 100% 100%/1px var(--corner),
+    linear-gradient(var(--jiant-panel),var(--jiant-panel));
+  background-repeat:no-repeat;
+}
+.jiant-editor { font-size:14px; line-height:1.5; }
+.jiant-editor main { max-width:1180px; padding-top:28px; padding-bottom:48px; }
+.jiant-editor h1 { padding-right:64px; }
+.jiant-editor button.lang { position:absolute; top:28px; right:18px; float:none; min-height:32px; padding:6px 8px; border:1px solid var(--line); color:var(--dim); text-decoration:none; font:11px/1.3 var(--jiant-mono); }
+.jiant-editor main > p.dim { margin-bottom:20px; font:11px/1.5 var(--jiant-mono); letter-spacing:.04em; }
+.jiant-editor .top { padding:14px 14px 0; margin-bottom:20px; }
+.jiant-editor .top .bar { margin-bottom:10px; }
+.jiant-editor #midiports { font:12px/1.6 var(--jiant-mono); color:var(--dim); padding:4px 0 10px; }
+.jiant-editor summary { cursor:pointer; color:var(--jiant-cyan); }
+.jiant-editor .tabs { border-color:var(--line); gap:4px; margin-top:10px; }
+.jiant-editor .tabs button { padding:9px 12px; min-height:40px; font:500 11px/1.4 var(--jiant-mono); border:1px solid transparent; }
+.jiant-editor .tabs button[aria-selected=true] { background:var(--jiant-yellow); color:var(--jiant-on-accent); border-color:var(--jiant-yellow); }
+.jiant-editor .groups { columns:290px; gap:16px; }
+.jiant-editor .group { padding:14px; margin-bottom:16px; }
+.jiant-editor h2 { font:500 12px/1.5 var(--jiant-mono); color:var(--fg); letter-spacing:.06em; border-bottom:1px solid var(--line); padding-bottom:8px; margin-bottom:10px; }
+.jiant-editor h3 { font:500 11px/1.5 var(--jiant-mono); color:var(--jiant-cyan); letter-spacing:.035em; margin-bottom:8px; }
+.jiant-editor .row { grid-template-columns:54px minmax(0,1fr) 64px; min-height:36px; }
+.jiant-editor .row.modrow { grid-template-columns:16px repeat(3,minmax(0,1fr)) 44px; }
+.jiant-editor .row select { font-size:11px; padding-inline:3px; }
+.jiant-editor .row .v { font:11px/1.4 var(--jiant-mono); }
+.jiant-editor .seg button,.jiant-editor button.tog { background:var(--jiant-panel); color:var(--dim); border-color:var(--line); padding:6px 10px; }
+.jiant-editor .seg button[aria-pressed=true],.jiant-editor button.tog[aria-pressed=true] { background:var(--jiant-cyan); color:var(--jiant-on-accent); border-color:var(--jiant-cyan); }
+.jiant-editor .grid button { background:var(--jiant-panel); color:var(--dim); border-color:var(--line); }
+.jiant-editor .grid button.on { background:var(--jiant-cyan); color:var(--jiant-on-accent); border-color:var(--jiant-cyan); }
+.jiant-editor .grid button.tie,.jiant-editor .strip.sel { border-color:var(--jiant-cyan); }
+.jiant-editor .strip { background:var(--jiant-panel); padding:10px 6px; }
+.jiant-editor .strip.sel { box-shadow:inset 0 0 0 1px var(--jiant-cyan); }
+.jiant-editor .list { background:var(--jiant-panel); }
+.jiant-editor .list tr.sel td { background:var(--jiant-cyan); color:var(--jiant-on-accent); }
+.jiant-editor .browser { padding:0 0 16px; }
+.jiant-editor footer { border-top:1px solid var(--line); padding-top:16px; font:11px/1.6 var(--jiant-mono); }
+.jiant-installer { font-size:15px; line-height:1.65; }
+.jiant-installer main { max-width:760px; padding-top:28px; padding-bottom:48px; }
+.jiant-installer .lang { float:none; display:flex; justify-content:flex-end; flex-wrap:wrap; gap:0; margin-bottom:24px; }
+.jiant-installer .lang button { min-height:36px; padding:8px 10px; border:1px solid var(--line); text-decoration:none; font:11px/1.3 var(--jiant-mono); }
+.jiant-installer .lang button+button { border-left:0; }
+.jiant-installer .lang button[aria-pressed=true] { background:var(--jiant-yellow); color:var(--jiant-on-accent); border-color:var(--jiant-yellow); }
+.jiant-installer h1 { margin-bottom:24px; }
+.jiant-installer .small { font-size:13px; }
+.jiant-installer #ver { display:block; width:100%; margin:8px 0; font:13px/1.4 var(--jiant-body); min-height:44px; }
+.jiant-installer .jiant-notice,.jiant-installer .tip { padding:18px; margin:20px 0; background:var(--jiant-panel); border:1px solid var(--jiant-orange); }
+.jiant-installer .jiant-notice [data-t=firstTitle] { color:var(--jiant-yellow); }
+.jiant-installer #first-stock,.jiant-installer #stock-go { border-color:var(--jiant-orange); color:var(--jiant-orange); }
+.jiant-installer #go { min-width:180px; min-height:48px; padding:14px 24px; }
+.jiant-installer .diag { margin-top:24px; padding:18px; }
+.jiant-installer .diag button { min-height:36px; }
+.jiant-installer details { padding:14px 0; border-block:1px solid var(--line); }
+.jiant-installer summary { cursor:pointer; font-family:var(--jiant-mono); font-size:13px; color:var(--jiant-cyan); }
+.jiant-installer progress { height:8px; background:var(--jiant-panel); }
+.jiant-installer progress::-webkit-progress-bar { background:var(--jiant-panel); }
+.jiant-installer progress::-webkit-progress-value { background:var(--jiant-cyan); }
+.jiant-installer pre { font-family:var(--jiant-mono); }
+@media(max-width:600px) {
+  .jiant-editor main,.jiant-installer main { padding-top:20px; }
+  .jiant-editor button.lang { top:20px; }
+  .jiant-editor .top { position:static; padding:12px 10px 0; }
+  .jiant-editor .tabs { gap:2px; }
+  .jiant-editor .tabs button { padding:8px 9px; font-size:10px; }
+  .jiant-editor .groups { columns:auto; }
+  .jiant-editor .group { padding:12px; }
+  .jiant-wordmark { gap:10px; }
+  .jiant-installer .jiant-notice,.jiant-installer .diag,.jiant-installer .tip { padding:14px; }
+}
+@media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; transition:none!important; animation:none!important; } }
+
+/* Keep the legacy/unknown-firmware plain parameter list usable on desktop too. */
+.jiant-editor .group:has(> .row:nth-of-type(n+24)) { column-span:all; columns:290px; column-gap:24px; }
+.jiant-editor .group:has(> .row:nth-of-type(n+24)) > :is(h2,h3,p) { column-span:all; }
+.jiant-editor .row { break-inside:avoid; }
+.jiant-editor .row.pushed .v { font-weight:600; color:var(--jiant-cyan); }
+.jiant-editor .strip .rec.on { color:var(--jiant-mag); }

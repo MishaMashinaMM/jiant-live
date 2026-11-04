@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
+# VOICE words (JIANT 0.8.5): the English word bank of the lyric generator (tools/gen_lyrics.py -> felucca_lyrics.h).
+# English is not read by rules: every word here, and the device's English dictionary (tools/lyrics/en_dict.txt, from
+# the CMU Pronouncing Dictionary), carries its phonemes. A line: a theme (LOVE NIGHT SEA SKY ROAD DREAM FIRE) or FN
+# (the small words of every theme), a category, words.
+#   N nouns, V verbs (the base form: "we fall", "hold my hand"), A adjectives, D determiners, P prepositions,
+#   C subject pronouns and conjunctions ("i", "and we").
+LOVE N: love heart kiss lips skin soul life hand eyes name touch arms desire heartbeat promise memory voice rose
+LOVE N: smile whisper truth baby honey darling
+LOVE V: love need feel hold kiss miss want call wait cry dance touch stay
+LOVE A: sweet tender true wild lonely gentle golden only
+NIGHT N: night moon star stars shadow silence secret city street light dark clock smoke rain window neon midnight
+NIGHT N: starlight candle snow wolf
+NIGHT V: shine sleep fall wait glow burn hide run call drift
+NIGHT A: dark cold blue quiet silver deep empty electric
+SEA N: sea ocean wave waves sand shore boat harbor wind salt water island tide horizon lighthouse river bay
+SEA N: siren anchor
+SEA V: sail drift float swim break flow wash roll
+SEA A: blue deep wide endless calm silver salty green
+SKY N: sky sun cloud clouds rain wind bird wings air thunder lightning rainbow dawn morning heaven space planet comet
+SKY V: fly rise fall shine soar fade glow open
+SKY A: high bright clear white golden free endless open
+ROAD N: road train station highway city border town way map river bridge north south distance home journey dust
+ROAD N: engine
+ROAD V: drive run go leave ride roll follow cross find walk
+ROAD A: long lost new old free tired fast lonely
+DREAM N: dream dreams magic mirror cloud angel mystery story world universe memory wonder fantasy garden
+DREAM V: dream fly float wake change grow imagine forget remember believe
+DREAM A: magic strange sleepy blue endless distant golden secret
+FIRE N: fire flame heat spark ash smoke blood power drum thunder storm rage sun
+FIRE V: burn shout beat rise fight dance ignite break
+FIRE A: burning red wild fierce strong alive hot electric
+FN D: the my your our this
+FN P: in on into under over through with for of
+FN C: i you we they

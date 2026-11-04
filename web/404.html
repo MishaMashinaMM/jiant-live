@@ -1,0 +1,59 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: GPL-3.0-only
+     (JIANT 0.9.11) GitHub Pages serves this for any path of the site that does not exist: an old or mistyped link
+     (/JIANT/installer/, /JIANT/webapp/, /JIANT/editor, a link pasted with ":1:1" or a ")" stuck to it, a video
+     description's link) goes to the page it meant. web/make_site.py and the site's workflow put it at the root. -->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JIANT FM</title>
+<style>
+  :root { --bg: #fff; --fg: #000; --dim: #777; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #000; --fg: #fff; --dim: #888; } }
+  :root[data-theme="dark"] { --bg: #000; --fg: #fff; --dim: #888; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif; }
+  main { max-width: 520px; margin: 0 auto; padding: 48px 16px; }
+  a { color: inherit; }
+  .small { color: var(--dim); font-size: 13px; }
+</style>
+<script>
+/*REDIRECT-BEGIN*/
+/* the page a missing path meant, or null (stay here: it would send to itself) */
+function jiantTarget(pathname) {
+  let p = String(pathname || "/");
+  try { p = decodeURIComponent(p); } catch (_) {}
+  const asked = p;
+  const junk = /[\s"'<>()[\]{}.,;:!?*|]+$/;
+  for (let k = 0; k < 3; k++) p = p.replace(junk, "").replace(/(:\d+)+$/, "");
+  const m = /^\/jiant(?:\/|$)(.*)$/i.exec(p);
+  const rest = (m ? m[1] : p.replace(/^\/+/, "")).toLowerCase();
+  const pre = /(^|\/)preview(\/|$)/.test(rest) ? "preview/" : "";
+  let to = "";
+  if (/edit/.test(rest)) to = pre + "webapp/editor/";
+  else if (/emu|emulat|simul/.test(rest)) to = "emu/";
+  else if (/instal|updat|actualiz|flash|upgrad|webapp|firmware|fwsc|^preview/.test(rest)) to = pre + "webapp/installer/";
+  else if (/frecuen|frequen/.test(rest)) to = "frecuencia.html";
+  const target = "/JIANT/" + to;
+  const here = asked.replace(/\/index\.html$/i, "/").replace(/\/?$/, "/");
+  return here === target.replace(/\/?$/, "/") ? null : target;   // the target itself missing: no loop
+}
+/*REDIRECT-END*/
+const to = jiantTarget(location.pathname);
+if (to) location.replace(to + location.search + location.hash);
+</script>
+</head>
+<body>
+<main>
+  <h1 style="font-size:24px;font-weight:600">JIANT FM</h1>
+  <p>Esta página no existe; probá con: · This page does not exist; try:</p>
+  <ul>
+    <li><a href="/JIANT/webapp/installer/">Instalador · Installer</a></li>
+    <li><a href="/JIANT/webapp/editor/">Editor</a></li>
+    <li><a href="/JIANT/emu/">Emulador · Emulator</a></li>
+    <li><a href="/JIANT/">Inicio · Home</a></li>
+  </ul>
+  <p class="small"><a href="https://github.com/juanjiant-bit/JIANT">github.com/juanjiant-bit/JIANT</a></p>
+</main>
+</body>
+</html>

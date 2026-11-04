@@ -1,0 +1,21 @@
+# Earlier versions the public installer offers next to the current one (web/STABLE), each built from its own commit
+# by .github/workflows/emulator.yml (never a package taken from the live site). One per line: the commit, then a note.
+# Newest first. Up to make_site.py's KEEP_OLD are offered. A version in web/WITHDRAWN stays out.
+# (0.9.9-beta4) one milestone per line of the history, so anyone can pick the version they liked.
+fe81db8885d13d17f88b1268e3641c04f199b2d5  # JIANT 0.9.9-gen2 (2026-10-25): ULTRA STABLE, the public version before 0.9.9-par3 (the one to go back to)
+3d5566f389fa1c94cd2265a7f6c7c32c32f95149  # JIANT 0.9.9-par11 (2026-10-26): the public version before 0.9.9-par12
+30f05b37637da67e44bd8f33b4e90a0005f437f6  # JIANT 0.9.9-par10 (2026-10-26): the public version before 0.9.9-par11 (the last with ADD)
+1502f55702b60b9d0807eefbd5cc78da4a315c20  # JIANT 0.9.9-par9 (2026-10-26): the public version before 0.9.9-par10
+eea92834f4be7b090c2c5ac1e38b8416931fbe25  # JIANT 0.9.9-par8 (2026-10-26): the public version before 0.9.9-par9
+df2b17612287b18d2d6450ac38cff8603a3ab20f  # JIANT 0.9.9-par6 (2026-10-26): the public version before 0.9.9-par8
+bb3852598397924b79a2e2d620f3fefe9c8b2c9f  # JIANT 0.9.9-par5 (2026-10-25): the public version before 0.9.9-par6
+ee63cee99edc071482120cd647eab940ea4746c6  # JIANT 0.9.9-par4 (2026-10-25): the public version before 0.9.9-par5 (EBM at 126-135)
+d7b95dea0e4ef53c7dd5fcfffe10a15268e73f97  # JIANT 0.9.9-par3 (2026-10-25): the public version before 0.9.9-par4 (the generator as before)
+73726deba23052e10c957e66aa7f3e9b7b30b6de  # JIANT 0.9.17 (2026-10-20): the last of the 0.9.1x line (glitcher, generator, dice, THEME)
+813869db36ca5f08955c97682249498bf7a41c4c  # JIANT 0.9.9-beta4a (2026-10-23): the public version before 0.9.9-gen2
+6968b20ed195c284a2523138d16f59ee06477490  # JIANT 0.9.9 (2026-10-18): the public version up to 0.9.9-beta3
+cd49edcdac53e5c7d48b79d775df3afb3cf53593  # JIANT 0.8.9 (2026-10-17): USB audio fixed (no lost halves), skins COLORS / BOTTOM / HUD
+14fff26959d2d0729f3239bec88c5412f0882d87  # JIANT 0.7.9 (2026-10-16): 0.7.8's clicks fixed; before USB STEMS
+1aade034da0b1d4b62fed00dec39ec7ada1461b7  # JIANT 0.6.82 (2026-10-14): the last 0.6; step components
+6522453c2893322ea574e39b579277775fde650b  # JIANT 0.6.2 (2026-10-10): six tracks, one core, the line users ask for
+d91bdd02902cb5ff5a57b49c64629ba720ededf5  # JIANT 0.5.5 (2026-10-10): four tracks, the last before six

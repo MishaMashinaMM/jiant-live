@@ -1,0 +1,14 @@
+{
+  "v0.9.9-par12-527c7e4": {
+    "edition": "STANDARD",
+    "status": "stable"
+  },
+  "v0.9.9-par10-30f05b3": {
+    "edition": "ADDITIVE",
+    "status": "previous"
+  },
+  "v0.9.9-par13b-3641c02-preview": {
+    "edition": "SAMPLE",
+    "status": "public"
+  }
+}

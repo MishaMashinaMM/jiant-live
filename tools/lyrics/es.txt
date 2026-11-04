@@ -1,0 +1,40 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
+# VOICE words (JIANT 0.8.5): the Spanish word bank of the lyric generator (tools/gen_lyrics.py -> felucca_lyrics.h).
+# Plain ASCII, no accents (the device's font and keys have none; stress is not marked in singing). Spanish is read by
+# rules on the device (sing.c sy_es), so any Spanish text sings; these words are only what the dice picks from.
+# A line: a theme (LOVE NIGHT SEA SKY ROAD DREAM FIRE) or FN (the small words of every theme), a category, words.
+#   N nouns (/f feminine: the adjective after it takes -a), V verbs (3rd person present: "el mar canta"),
+#   A adjectives (masculine; -o turns -a after a feminine noun), D determiners (gender-free: mi tu su),
+#   P prepositions, C conjunctions. The sound "ny" is the letter enye (suenyo = sueno with a tilde).
+LOVE N: amor corazon beso labio piel/f alma/f vida/f mano/f boca/f nombre abrazo deseo pasion/f carinyo flor/f
+LOVE N: rosa/f voz/f latido mirada/f promesa/f recuerdo verdad/f calor suspiro caricia/f cancion/f sonrisa/f
+LOVE V: ama besa siente quiere vuelve llora espera abraza canta mira late respira toca sonrie promete
+LOVE A: dulce tierno eterno solo loco bello suave lejano rojo sincero
+NIGHT N: noche/f luna/f estrella/f sombra/f silencio secreto reloj ciudad/f calle/f farol frio humo nube/f
+NIGHT N: madrugada/f cielo luz/f lucero tiempo eco ventana/f vela/f nieve/f lobo misterio
+NIGHT V: brilla duerme calla espera despierta baila camina susurra cae llama busca suenya
+NIGHT A: oscuro negro frio azul callado lento profundo plateado
+SEA N: mar ola/f arena/f playa/f barco puerto viento sal/f agua/f orilla/f faro isla/f marea/f horizonte pez
+SEA N: espuma/f coral velero costa/f perla/f sirena/f ancla/f gaviota/f
+SEA V: navega llega rompe flota nada canta vuelve brilla corre baila lleva besa
+SEA A: azul salado profundo inmenso claro verde sereno lejano
+SKY N: cielo sol nube/f lluvia/f viento pajaro ala/f vuelo aire trueno rayo aurora/f alba/f altura/f cometa
+SKY N: planeta espacio luz/f paloma/f estrella/f manyana/f
+SKY V: vuela sube cae brilla corre llueve nace pasa gira abre canta despierta
+SKY A: alto claro blanco limpio dorado libre infinito ligero
+ROAD N: camino tren estacion/f maleta/f ciudad/f frontera/f pueblo paso huella/f mapa rio puente norte sur
+ROAD N: distancia/f regreso viaje polvo motor ruta/f carretera/f destino
+ROAD V: camina corre sigue vuelve llega parte busca cruza viaja avanza deja encuentra
+ROAD A: largo lejano perdido nuevo viejo libre cansado rapido
+DREAM N: suenyo fantasia/f deseo magia/f espejo nube/f ilusion/f memoria/f recuerdo angel misterio viaje
+DREAM N: cuento universo luna/f jardin
+DREAM V: suenya vuela imagina flota despierta cambia crece inventa olvida recuerda
+DREAM A: magico extranyo dormido azul eterno lejano infinito dorado
+FIRE N: fuego llama/f calor chispa/f ceniza/f humo sangre/f fuerza/f grito tambor volcan hoguera/f brasa/f
+FIRE N: furia/f rayo sol tormenta/f
+FIRE V: arde quema grita late sube baila enciende estalla vibra lucha
+FIRE A: ardiente rojo salvaje feroz fuerte vivo caliente intenso
+FN D: mi tu su
+FN P: en de con sin por para hacia
+FN C: y que si pero cuando

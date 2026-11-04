@@ -1,0 +1,696 @@
+<!doctype html>
+<!-- Copyright (C) 2026 Juan Ignacio Antonucci (Juan Jiant) -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>JIANT FM</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="JIANT FM: a free, open firmware that turns the M-VAVE FM-1 into a complete instrument. Install it from the browser, try it in the emulator, edit your sounds.">
+<meta property="og:title" content="JIANT FM">
+<meta property="og:description" content="A free firmware for the M-VAVE FM-1: six tracks, nine engines, a deep sequencer. Install it from your browser in two minutes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Michroma&family=VT323&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap">
+<style>
+/* Layout: a fixed field of the firmware's own creatures behind everything (canvas). First a cover that is mostly that
+   field, the name at its foot; then the FM-1 drawn with its controls where they are and HOME live on its screen; then
+   the panels (HUD corners) read top to bottom: three steps, what's inside, manual, coming next, support, FAQ.
+   Text never sits on the moving field directly: a dimming veil rises behind the content as the page scrolls */
+:root{
+  color-scheme:dark;
+  --void:#050409;
+  --glass:rgba(9,8,16,.92);
+  --line:#efe6c8;
+  --text:#ddd6ea;
+  --dim:#a39cba;
+  --rule:rgba(239,230,200,.16);
+  --cyan:#3fe0e6;
+  --violet:#b870ff;
+  --red:#ff3b2f;
+  --orange:#ff7a1a;
+  --yellow:#ffe14d;
+  --mag:#ff3ea5;
+  --display:"Michroma","Arial Black",system-ui,sans-serif;
+  --body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --term:"VT323","IBM Plex Mono",ui-monospace,monospace;
+  --heat:linear-gradient(90deg,#9d97ff,#d39bff 22%,#ff9fd2 42%,#ff9a8a 60%,#ffc07a 78%,#fff3a8);
+}
+:lang(zh){--body:"Instrument Sans","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif}
+:lang(ja){--body:"Instrument Sans","Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif}
+:lang(zh) h2,:lang(zh) h3,:lang(ja) h2,:lang(ja) h3{font-family:var(--body)!important;font-weight:500!important;letter-spacing:0!important}
+*{box-sizing:border-box}
+html{background:var(--void);scroll-behavior:smooth}
+body{margin:0;background:var(--void);color:var(--text);font:16px/1.6 var(--body);overflow-x:hidden}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--yellow);outline-offset:3px}
+::selection{background:var(--mag);color:var(--void)}
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
+.veil{position:fixed;inset:0;z-index:1;pointer-events:none;background:rgba(5,4,9,.72);opacity:0}
+.scan{position:fixed;inset:0;z-index:1;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.2) 0 1px,transparent 1px 3px);opacity:.4}
+.wrap{position:relative;z-index:2;max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 48px;display:flex;flex-direction:column;gap:96px}
+
+.brk{--bc:var(--cyan);--k:14px;
+  background:
+   linear-gradient(var(--bc),var(--bc)) 0 0/var(--k) 1px,linear-gradient(var(--bc),var(--bc)) 0 0/1px var(--k),
+   linear-gradient(var(--bc),var(--bc)) 100% 0/var(--k) 1px,linear-gradient(var(--bc),var(--bc)) 100% 0/1px var(--k),
+   linear-gradient(var(--bc),var(--bc)) 0 100%/var(--k) 1px,linear-gradient(var(--bc),var(--bc)) 0 100%/1px var(--k),
+   linear-gradient(var(--bc),var(--bc)) 100% 100%/var(--k) 1px,linear-gradient(var(--bc),var(--bc)) 100% 100%/1px var(--k),
+   linear-gradient(var(--glass),var(--glass));
+  background-repeat:no-repeat}
+/* a plain dark plate behind headings and loose text (no glow around the letters) */
+.plate{background:rgba(5,4,9,.82);padding:18px 20px;border-left:2px solid var(--cyan);max-width:760px}
+
+/* top bar */
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px 18px;flex-wrap:wrap;padding:10px 14px;font:500 11px/1.4 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.top b{color:var(--line);font-weight:600}
+.live::before{content:"";display:inline-block;width:7px;height:7px;background:var(--red);margin-right:8px;animation:blink 1.2s steps(2) infinite}
+@keyframes blink{50%{opacity:.15}}
+.lang{display:inline-flex;border:1px solid var(--rule);flex-wrap:wrap}
+.lang button{font:500 11px/1 var(--mono);letter-spacing:.1em;color:var(--dim);background:transparent;border:0;padding:8px 10px;cursor:pointer}
+.lang button+button{border-left:1px solid var(--rule)}
+.lang button[lang="zh"]{font-family:"Noto Sans SC",var(--mono);letter-spacing:0}
+.lang button[lang="ja"]{font-family:"Noto Sans JP",var(--mono);letter-spacing:0}
+.lang button[aria-pressed="true"]{background:var(--yellow);color:var(--void)}
+
+/* the cover: room for the creatures, the name at its foot */
+.cover{min-height:min(86svh,900px);display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:12px}
+.kicker{font:500 12px/1.4 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);margin:0 0 18px;display:flex;align-items:center;gap:10px}
+.circ{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--cyan);color:var(--void);font:600 13px/1 var(--mono);flex:none}
+h1{font:400 clamp(56px,11vw,132px)/.92 var(--display);letter-spacing:.02em;margin:0;color:var(--line)}
+h1 .fm{display:block;background:var(--heat);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(255,159,210,.4))}
+.tag{font:500 clamp(12px,1.5vw,14px)/1.5 var(--mono);letter-spacing:.28em;text-transform:uppercase;color:var(--line);margin:20px 0 0}
+.tag i{font-style:normal;color:var(--mag)}
+.down{align-self:flex-start;margin-top:36px;font:500 11px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;text-decoration:none;color:var(--yellow);display:inline-flex;gap:10px;align-items:center;padding:11px 14px;border:1px solid rgba(255,225,77,.4);background:rgba(5,4,9,.6)}
+.down .arr{display:inline-block;animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(4px)}}
+
+/* hero: the pitch and the FM-1 */
+.hero{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:28px;align-items:center;scroll-margin-top:24px}
+.pitch{--bc:var(--yellow);padding:26px}
+.lede{font-size:clamp(17px,1.7vw,19px);color:var(--text);max-width:52ch;margin:0}
+.ctas{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+.btn{display:inline-flex;align-items:center;gap:10px;font:500 12px/1.1 var(--mono);letter-spacing:.1em;text-transform:uppercase;text-decoration:none;padding:15px 18px;border:1px solid var(--rule);background:rgba(9,8,16,.9);color:var(--line);transition:border-color .2s,color .2s,background .2s}
+.btn:hover{border-color:var(--yellow);color:var(--yellow)}
+.btn.hot{background:var(--yellow);border-color:var(--yellow);color:var(--void);font-weight:600}
+.btn.hot:hover{background:var(--mag);border-color:var(--mag);color:var(--void)}
+.btn .sq{width:8px;height:8px;background:currentColor;flex:none}
+.ver{margin:18px 0 0;font:12px/1.5 var(--mono);color:var(--dim)}
+.ver b{color:var(--yellow);font-weight:500}
+.device{--bc:var(--orange);padding:12px}
+#fm1{display:block;width:100%;max-width:100%;aspect-ratio:840/504}
+.dev-cap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:8px;font:500 10px/1.4 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+
+/* section heads */
+.eyebrow{font:500 11px/1.4 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);margin:0 0 10px}
+h2{font:400 clamp(24px,3.4vw,36px)/1.2 var(--display);letter-spacing:.01em;margin:0 0 10px;color:var(--line);text-wrap:balance}
+.intro{max-width:64ch;margin:0;color:var(--text)}
+.head{margin-bottom:22px}
+
+/* three steps */
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.step{display:flex;flex-direction:column;gap:12px;padding:24px;min-width:0}
+.step:nth-child(1){--bc:var(--cyan)}.step:nth-child(2){--bc:var(--yellow)}.step:nth-child(3){--bc:var(--violet)}
+.step .no{font:400 46px/1 var(--term);color:var(--bc)}
+.step h3{font:400 18px/1.3 var(--display);margin:0;color:var(--line)}
+.step p{margin:0}
+.step ul{margin:0;padding-left:18px;color:var(--dim);font-size:14.5px}
+.step li+li{margin-top:4px}
+.step .btn{margin-top:auto;align-self:flex-start}
+.need{margin:14px 0 0;font:12px/1.5 var(--mono);color:var(--dim);background:rgba(5,4,9,.82);display:inline-block;padding:8px 12px}
+
+/* what's inside: the eight species, then six organs */
+.species{--bc:var(--violet);padding:20px 20px 14px;margin-bottom:14px}
+.species .k{font:500 10px/1.4 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--violet);margin:0 0 6px}
+#zoo{display:block;width:100%;max-width:100%;height:auto;aspect-ratio:9/2.1}
+.organs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.org{padding:20px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.org .hd{display:flex;align-items:center;gap:10px;font:500 10px/1.4 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.org h3{font:400 15px/1.35 var(--display);margin:2px 0 0;color:var(--line)}
+.org p{margin:0;font-size:14.5px}
+
+/* frequency in nature (frecuencia.html): one card */
+.nat{--bc:var(--yellow);--k:22px;padding:26px;text-decoration:none;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 24px;align-items:end;transition:transform .25s}
+.nat:hover{transform:translateY(-2px)}
+.nat .k{grid-column:1/-1;font:500 10px/1.4 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--yellow)}
+.nat h3{font:400 clamp(22px,3.4vw,36px)/1.15 var(--display);margin:0;background:var(--heat);-webkit-background-clip:text;background-clip:text;color:transparent}
+.nat p{margin:6px 0 0;max-width:62ch}
+.nat .go{font:13px/1.4 var(--mono);color:var(--yellow);white-space:nowrap}
+@media (max-width:600px){.nat{grid-template-columns:minmax(0,1fr)}}
+
+/* the navigation map (docs/navigation-map.png, tools/gen_nav_map.py): the picture, then the six rules as organs */
+.navfig{--bc:var(--violet);padding:12px;margin:0 0 14px}
+.navfig a{display:block}
+.navfig img{display:block;width:100%;height:auto;border-radius:10px}
+.navfig figcaption{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:8px;font:500 10px/1.4 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.navfig figcaption a{display:inline;color:var(--yellow)}
+.org .go{font:12px/1.4 var(--mono);color:var(--yellow);margin-top:auto;padding-top:4px}
+
+/* manual and cheat sheets */
+.docs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.doc{--bc:var(--cyan);padding:20px;text-decoration:none;display:flex;flex-direction:column;gap:6px;min-width:0;transition:transform .25s}
+.doc:hover{transform:translateY(-2px)}
+.doc .t{font:500 10px/1.4 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
+.doc h3{font:400 16px/1.3 var(--display);margin:0;color:var(--line)}
+.doc p{margin:0;font-size:14px;color:var(--dim)}
+.doc .go{margin-top:auto;padding-top:8px;font:12px/1.4 var(--mono);color:var(--yellow)}
+
+/* coming next */
+.next{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:14px}
+.term{--bc:var(--red);padding:22px;font-family:var(--term);color:var(--red);font-size:21px;line-height:1.2;overflow-x:auto}
+.term .hdr{white-space:pre;margin:0 0 12px;color:var(--orange)}
+.term table{border-collapse:collapse;width:100%;min-width:420px}
+.term td{padding:5px 10px 5px 0;vertical-align:top}
+.term td:first-child{color:var(--line);white-space:nowrap}
+.term td:last-child{color:var(--orange);white-space:nowrap;text-align:right}
+.term .wip{color:var(--yellow)}
+.term .cur{display:inline-block;width:.55em;height:.9em;background:var(--red);vertical-align:-2px;animation:blink 1s steps(2) infinite}
+:lang(zh) .term td:first-child,:lang(ja) .term td:first-child{font-family:var(--body);font-size:16px}
+.early{--bc:var(--mag);padding:24px;display:flex;flex-direction:column;gap:14px}
+.early .k{font:500 10px/1.4 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mag)}
+.early h3{font:400 20px/1.3 var(--display);margin:0;color:var(--line)}
+.early p{margin:0}
+.early .btn{align-self:flex-start}
+
+/* support */
+.targets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.tgt{--bc:var(--yellow);--k:22px;padding:26px;text-decoration:none;display:flex;flex-direction:column;gap:10px;transition:transform .25s}
+.tgt:hover{transform:translateY(-2px)}
+.tgt .id{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font:500 11px/1.4 var(--mono);letter-spacing:.12em;color:var(--dim);text-transform:uppercase}
+.tgt h3{font:400 clamp(28px,4vw,42px)/1 var(--display);margin:4px 0 0}
+.tgt.k h3{color:var(--mag)}.tgt.c h3{color:var(--orange)}
+.tgt p{margin:0}
+.tgt .go{font:13px/1.4 var(--mono);color:var(--yellow)}
+
+/* faq */
+.faq{display:grid;gap:10px}
+.faq details{--bc:var(--rule);padding:16px 20px}
+.faq summary{cursor:pointer;font:500 16px/1.4 var(--body);color:var(--line);list-style:none;display:flex;justify-content:space-between;gap:16px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font:400 20px/1 var(--mono);color:var(--cyan)}
+.faq details[open] summary::after{content:"–"}
+.faq details p{margin:12px 0 0;max-width:72ch}
+
+footer{display:flex;justify-content:space-between;gap:10px 18px;flex-wrap:wrap;padding:16px 14px;background:rgba(5,4,9,.9);border-top:1px solid var(--rule);font:11px/1.6 var(--mono);letter-spacing:.06em;color:var(--dim)}
+footer a{color:var(--line)}
+footer .tm{flex-basis:100%;letter-spacing:0}
+
+@media (max-width:900px){
+  .hero,.next{grid-template-columns:minmax(0,1fr)}
+  .steps,.organs,.docs{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .step:nth-child(3){grid-column:1/-1}
+  #zoo{aspect-ratio:4/4.2}
+}
+@media (max-width:600px){
+  .steps,.organs,.targets,.docs{grid-template-columns:minmax(0,1fr)}
+  .wrap{gap:72px}
+  .term{font-size:18px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+<div class="veil" id="veil" aria-hidden="true"></div>
+<div class="scan" aria-hidden="true"></div>
+
+<div class="wrap">
+  <header class="top brk">
+    <span><b>JIANT</b> / FM · M-VAVE FM-1</span>
+    <span class="live" data-i18n="live">free · open source · GPL-3.0</span>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" id="lang-en" data-lang="en" aria-pressed="true">EN</button>
+      <button type="button" id="lang-es" data-lang="es" aria-pressed="false" lang="es">ES</button>
+      <button type="button" id="lang-zh" data-lang="zh" aria-pressed="false" lang="zh">中文</button>
+      <button type="button" id="lang-ja" data-lang="ja" aria-pressed="false" lang="ja">日本語</button>
+    </div>
+  </header>
+
+  <section class="cover">
+    <p class="kicker"><span class="circ">S</span><span data-i18n="kicker">a firmware for the M-VAVE FM-1</span></p>
+    <h1>JIANT<span class="fm">FM</span></h1>
+    <p class="tag">bio<i>·</i>synthetic <i>·</i> operating <i>·</i> system</p>
+    <a class="down" href="#enter"><span data-i18n="down">enter the organism</span> <span class="arr">↓</span></a>
+  </section>
+
+  <section class="hero" id="enter">
+    <div class="pitch brk">
+      <p class="lede" data-i18n="lede">A free firmware that turns the FM-1 into a complete instrument: six tracks, eleven synthesis engines, a deep sequencer and effects, all inside the little keyboard. Install it from your browser in a couple of minutes, and go back to the official firmware whenever you want.</p>
+      <div class="ctas">
+        <a class="btn hot" href="https://juanjiant-bit.github.io/JIANT/webapp/installer/"><span class="sq"></span><span data-i18n="cta_install">Install on your FM-1</span></a>
+        <a class="btn" href="https://juanjiant-bit.github.io/JIANT/emu/" data-i18n="cta_emu">Try it in the browser</a>
+        <a class="btn" href="https://juanjiant-bit.github.io/JIANT/webapp/editor/" data-i18n="cta_editor">Open the editor</a>
+      </div>
+      <p class="ver"><span data-i18n="ver">Current version:</span> <b id="ver">v0.9.9-par9</b></p>
+    </div>
+    <figure class="device brk" style="margin:0">
+      <canvas id="fm1" role="img" aria-label="Drawing of the M-VAVE FM-1: MASTER, SELECT, PRESETS and ALGORITHM knobs with OCT- and OCT+ on the left, a small square screen showing JIANT's HOME with one creature per track, KNOB1 to KNOB4 over a grid of twelve buttons (FX, SEL, ENV, LFO, EDIT, GLO, HOME, SAVE, ARP, SEQ, PLAY/STOP, REC), and two rows of touch keys that light orange as a demo arpeggio plays"></canvas>
+      <figcaption class="dev-cap"><span>M-VAVE FM-1</span><span data-i18n="dev_cap">HOME: one creature per track, swelling with its sound</span></figcaption>
+    </figure>
+  </section>
+
+  <section id="start">
+    <div class="head plate">
+      <p class="eyebrow" data-i18n="s_eb">Start here</p>
+      <h2 data-i18n="s_h2">Three steps, no coding</h2>
+      <p class="intro" data-i18n="s_in">Everything runs in the browser. You don't need to install any program, and you can try JIANT before touching your FM-1.</p>
+    </div>
+    <div class="steps">
+      <div class="step brk">
+        <span class="no">01</span>
+        <h3 data-i18n="st1_h">Try it in the browser</h3>
+        <p data-i18n="st1_p">The emulator runs the real firmware on your computer or phone. Play with the keyboard, load a song, hear every engine.</p>
+        <ul><li data-i18n="st1_a">No FM-1 needed</li><li data-i18n="st1_b">Renders the stems of a song from your backup</li></ul>
+        <a class="btn" href="https://juanjiant-bit.github.io/JIANT/emu/" data-i18n="st1_go">Open the emulator</a>
+      </div>
+      <div class="step brk">
+        <span class="no">02</span>
+        <h3 data-i18n="st2_h">Install it on your FM-1</h3>
+        <p data-i18n="st2_p">Open the installer in Chrome or Edge, connect the FM-1 with a USB data cable, press Install and wait without unplugging.</p>
+        <ul><li data-i18n="st2_a">The installer checks your FM-1 first and saves a backup</li><li data-i18n="st2_b">Coming from another custom firmware? Return to official V15 first, with the installer's button</li></ul>
+        <a class="btn" href="https://juanjiant-bit.github.io/JIANT/webapp/installer/" data-i18n="st2_go">Open the installer</a>
+      </div>
+      <div class="step brk">
+        <span class="no">03</span>
+        <h3 data-i18n="st3_h">Edit and back up</h3>
+        <p data-i18n="st3_p">The web editor shows your sounds and settings on the computer screen while the FM-1 keeps playing.</p>
+        <ul><li data-i18n="st3_a">Send DX7 banks to FM6, manage presets</li><li data-i18n="st3_b">Back up every project with one click</li></ul>
+        <a class="btn" href="https://juanjiant-bit.github.io/JIANT/webapp/editor/" data-i18n="st3_go">Open the editor</a>
+      </div>
+    </div>
+    <p class="need" data-i18n="need">Needs: Chrome or Edge on a computer (WebUSB and Web MIDI) · a USB cable that carries data, not only charge.</p>
+  </section>
+
+  <section>
+    <div class="head plate">
+      <p class="eyebrow" data-i18n="i_eb">What's inside</p>
+      <h2 data-i18n="i_h2">One organism, nine species</h2>
+      <p class="intro" data-i18n="i_in">Each engine is a species, drawn by the firmware itself. On HOME every track is a creature of its engine's species: its shape comes from its knobs, and it swells and heats up with its own audio.</p>
+    </div>
+    <div class="species brk">
+      <p class="k" data-i18n="zoo_k">The nine engines, as the FM-1 draws them</p>
+      <canvas id="zoo" role="img" aria-label="The nine species: ANALOG radiolarian, FM6 pollen grain, PHASE amoeba, LOFI diatom, VOICE hydra, WHEEL ciliate, NOISE spore, DRUM-X colony, ANIMAL larva"></canvas>
+    </div>
+    <div class="organs">
+      <div class="org brk"><div class="hd"><span class="circ">A</span><span data-i18n="a_o">engines</span></div><h3 data-i18n="a_h">11 synthesis engines</h3><p data-i18n="a_p">ANALOG, FM6 (six operators, 32 algorithms, DX7 banks), PHASE, LOFI, VOICE (it sings words in Spanish, English and Japanese), WHEEL, NOISE, ANIMAL (birds, insects and frogs from physical models), STRING (a plucked, struck or bowed string), ADD (additive) and DRUM-X. No samples: everything is synthesized.</p></div>
+      <div class="org brk"><div class="hd"><span class="circ">B</span><span data-i18n="b_o">heart</span></div><h3 data-i18n="b_h">DRUM-X</h3><p data-i18n="b_p">A drum kit of eight synthesized sounds, each with two sides: MORPH moves the whole kit from one to the other, live. In every octave the same keys: ratchets above, short, ghost and flam hits below.</p></div>
+      <div class="org brk"><div class="hd"><span class="circ">C</span><span data-i18n="c_o">nervous system</span></div><h3 data-i18n="c_h">64-step sequencer</h3><p data-i18n="c_p">A piano roll per track, chords, probability, ratchets, extra playheads, recording off the grid to a 64th of a step, and MUTATE, which transforms sound and pattern every few bars.</p></div>
+      <div class="org brk"><div class="hd"><span class="circ">D</span><span data-i18n="d_o">membrane</span></div><h3 data-i18n="d_h">Effects and master</h3><p data-i18n="d_p">Delay, five reverbs (SHIMMER, RESO, CLOUD…), chorus, slicer, live punch-in effects, a DJ filter on the whole mix and a master with limiter, clip, punch, tape and a 4-band EQ.</p></div>
+      <div class="org brk"><div class="hd"><span class="circ">E</span><span data-i18n="e_o">memory</span></div><h3 data-i18n="e_h">Songs and the generator</h3><p data-i18n="e_p">Four sections per project, an ARRANGE page to chain them, and a generator that writes a whole song idea: from a genre, or in EXPLORE, breaking every rule.</p></div>
+      <div class="org brk"><div class="hd"><span class="circ">F</span><span data-i18n="f_o">roots</span></div><h3 data-i18n="f_h">USB audio and MIDI</h3><p data-i18n="f_p">The FM-1 becomes an audio interface that keeps its time: every track on its own channel into your DAW (STEMS), ready to record each part on its own. MIDI over USB, Bluetooth and TRS.</p><span class="go" data-i18n="f_go">A separate product: coming soon</span></div>
+    </div>
+  </section>
+
+  <section id="map">
+    <div class="head plate">
+      <p class="eyebrow" data-i18n="nv_eb">Find your way</p>
+      <h2 data-i18n="nv_h2">Six rules, one map</h2>
+      <p class="intro" data-i18n="nv_in">Since 0.9.2 every section works the same way: learn six rules once and the whole synth is known. The map shows each button's groups and pages in the order SELECT walks them, in any of the three skins (AIR, COLORS, HUD).</p>
+    </div>
+    <figure class="navfig brk">
+      <a id="navmap-link" href="docs/navigation-map.svg" target="_blank" rel="noopener"><img id="navmap" src="docs/navigation-map.png" width="1500" height="2747" loading="lazy" alt="JIANT FM navigation map: every section, its groups and its pages in the order SELECT walks them, the six rules, the held layers and the combos"></a>
+      <figcaption><span data-i18n="nv_cap">The navigation map · click to open it full size (SVG, zoomable)</span><span>firmware v0.9.2</span></figcaption>
+    </figure>
+    <div class="organs">
+      <div class="org brk"><div class="hd"><span class="circ">1</span><span data-i18n="nv1_o">SELECT</span></div><h3 data-i18n="nv1_h">SELECT walks the pages</h3><p data-i18n="nv1_p">One chain per section, a page a detent; it stops at the first and the last page.</p></div>
+      <div class="org brk"><div class="hd"><span class="circ">2</span><span data-i18n="nv2_o">button</span></div><h3 data-i18n="nv2_h">The button: in, or on</h3><p data-i18n="nv2_p">From another section, the page you left there. Inside, the first page of the next group, round.</p></div>
+      <div class="org brk"><div class="hd"><span class="circ">3</span><span data-i18n="nv3_o">PRESETS</span></div><h3 data-i18n="nv3_h">PRESETS loads presets</h3><p data-i18n="nv3_p">The track's sounds everywhere, the patterns in SEQ, the genre in GEN. Never a page or a track.</p></div>
+      <div class="org brk"><div class="hd"><span class="circ">4</span><span data-i18n="nv4_o">KNOB 1</span></div><h3 data-i18n="nv4_h">KNOB 1 picks</h3><p data-i18n="nv4_p">The step, the bar, the slot, the stage, the kit's sound. The track is always ALGORITHM's.</p></div>
+      <div class="org brk"><div class="hd"><span class="circ">5</span><span data-i18n="nv5_o">hold</span></div><h3 data-i18n="nv5_h">Hold = the layer</h3><p data-i18n="nv5_p">A button held puts its shortcuts on the keys: SEQ + G5 clears a step, SAVE + C5 names, GLO + G4 undoes. Held + SELECT: GEN, the dice, the tempo.</p></div>
+      <div class="org brk"><div class="hd"><span class="circ">6</span><span data-i18n="nv6_o">screen</span></div><h3 data-i18n="nv6_h">The screen says where</h3><p data-i18n="nv6_p">Tabs on top are the section's groups, a dot a page; the footer says SECTION · GROUP · page and n/N.</p></div>
+    </div>
+  </section>
+
+  <section id="nature">
+    <a class="nat brk" href="frecuencia.html">
+      <span class="k" data-i18n="nat_k">New page · frequency</span>
+      <div><h3 data-i18n="nat_h">Frequency in nature</h3><p data-i18n="nat_p">Matter is light, colour is frequency: a ladder from the solar cycle to gamma rays, and four sounding examples of how a synth already lives in it.</p></div>
+      <span class="go" data-i18n="nat_go">Climb the ladder →</span>
+    </a>
+  </section>
+
+  <section id="docs">
+    <div class="head plate">
+      <p class="eyebrow" data-i18n="m_eb">Learn</p>
+      <h2 data-i18n="m_h2">Manual and cheat sheets</h2>
+      <p class="intro" data-i18n="m_in">The full manual explains every page and every knob. The cheat sheets fit the controls and the sound pages on one sheet each, to keep next to the FM-1.</p>
+    </div>
+    <a class="nat brk" href="manual/" style="margin-bottom:14px">
+      <span class="k" data-i18n="mi_k">New · interactive manual</span>
+      <div><h3 data-i18n="mi_h">The interactive manual</h3><p data-i18n="mi_p">Touch any control of the FM-1 and see what it does alone, held and in combination, with the firmware's real screens. Search every command, follow step-by-step recipes, catch up on what's new.</p></div>
+      <span class="go" data-i18n="mi_go">Open the manual →</span>
+    </a>
+    <div class="docs">
+      <a class="doc brk" href="https://github.com/juanjiant-bit/JIANT/blob/main/docs/MANUAL.md" target="_blank" rel="noopener"><span class="t">EN</span><h3 data-i18n="m1_h">User manual</h3><p data-i18n="m1_p">Every page, layer and engine, in English.</p><span class="go">MANUAL.md ↗</span></a>
+      <a class="doc brk" href="https://github.com/juanjiant-bit/JIANT/blob/main/docs/MANUAL.es.md" target="_blank" rel="noopener"><span class="t">ES</span><h3 data-i18n="m2_h">Manual de usuario</h3><p data-i18n="m2_p">The same manual, in Spanish.</p><span class="go">MANUAL.es.md ↗</span></a>
+      <a class="doc brk" href="https://juanjiant-bit.github.io/JIANT/docs/cheatsheet-controls.pdf" target="_blank" rel="noopener"><span class="t">PDF</span><h3 data-i18n="m3_h">Controls cheat sheet</h3><p data-i18n="m3_p">Buttons, layers and combinations on one page.</p><span class="go">cheatsheet-controls.pdf ↗</span></a>
+      <a class="doc brk" href="https://juanjiant-bit.github.io/JIANT/docs/cheatsheet-sound.pdf" target="_blank" rel="noopener"><span class="t">PDF</span><h3 data-i18n="m4_h">Sound cheat sheet</h3><p data-i18n="m4_p">Engines, filter, envelopes and effects on one page.</p><span class="go">cheatsheet-sound.pdf ↗</span></a>
+    </div>
+  </section>
+
+  <section id="next">
+    <div class="head plate">
+      <p class="eyebrow" data-i18n="n_eb">Coming next</p>
+      <h2 data-i18n="n_h2">Future upgrades</h2>
+      <p class="intro" data-i18n="n_in">What is being built and tested in the lab right now. Dates depend on testing on real FM-1s.</p>
+    </div>
+    <div class="next">
+      <div class="term brk">
+        <div class="hdr">----- JIANT FM ----- ROADMAP</div>
+        <table>
+          <tr><td data-i18n="r1">Stems + your voice (STEMS+IN)</td><td class="wip" data-i18n="r_test">TESTING</td></tr>
+          <tr><td data-i18n="r2">A separate product, coming soon</td><td data-i18n="r_test2">OUT · 1.0</td></tr>
+          <tr><td data-i18n="r3">Live visuals</td><td data-i18n="r_lab">IN THE LAB</td></tr>
+          <tr><td data-i18n="r4">FX buses A–D, routed per track</td><td data-i18n="r_lab2">IN THE LAB</td></tr>
+          <tr><td data-i18n="r5">JIANT on the SMK</td><td data-i18n="r_plan">PLANNED</td></tr>
+        </table>
+        <p style="margin:14px 0 0">&gt; <span data-i18n="r_more">more ideas from the community</span> <span class="cur"></span></p>
+      </div>
+      <div class="early brk">
+        <span class="k" data-i18n="e_k">Early access</span>
+        <h3 data-i18n="e_h3">Supporters play every new version first</h3>
+        <p data-i18n="e_p1">People who support JIANT on Ko-fi or Cafecito get the new versions before they go public, and help decide what comes next.</p>
+        <a class="btn hot" href="https://ko-fi.com/juanjiant" target="_blank" rel="noopener"><span class="sq"></span><span data-i18n="e_go">Join on Ko-fi</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section id="support">
+    <div class="head plate">
+      <p class="eyebrow" data-i18n="sup_eb">Support</p>
+      <h2 data-i18n="sup_h2">JIANT is free. If it makes music with you, buy me a coffee.</h2>
+      <p class="intro" data-i18n="sup_in">JIANT is made by Juan Jiant, a muralist and visual artist from Buenos Aires. Every contribution pays for development hours and keeps the firmware free for everyone.</p>
+    </div>
+    <div class="targets">
+      <a class="tgt k brk" href="https://ko-fi.com/juanjiant" target="_blank" rel="noopener">
+        <div class="id"><span>K0F1</span><span data-i18n="k_z">global · usd</span></div>
+        <h3>Ko-fi</h3>
+        <p data-i18n="k_p">From any country, by card or PayPal. One-off or monthly, with early access to new versions.</p>
+        <span class="go">ko-fi.com/juanjiant ↗</span>
+      </a>
+      <a class="tgt c brk" href="https://cafecito.app/juanjiant" target="_blank" rel="noopener">
+        <div class="id"><span>CF4R</span><span data-i18n="c_z">argentina · ars</span></div>
+        <h3>Cafecito</h3>
+        <p data-i18n="cf_p">From Argentina, in pesos, with Mercado Pago or card.</p>
+        <span class="go">cafecito.app/juanjiant ↗</span>
+      </a>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="head plate">
+      <p class="eyebrow">FAQ</p>
+      <h2 data-i18n="q_h2">Before you install</h2>
+    </div>
+    <div class="faq">
+      <details class="brk"><summary data-i18n="q1">Can I go back to the official firmware?</summary><p data-i18n="a1">Yes. The installer has a button to return to the official V15 firmware (you choose the official FM-1.fwsc from M-VAVE). It saves a complete backup first.</p></details>
+      <details class="brk"><summary data-i18n="q2">Which browser do I need?</summary><p data-i18n="a2">Chrome or Edge on a computer, for the installer and the editor: they talk to the FM-1 over USB. The emulator also works in other browsers and on phones.</p></details>
+      <details class="brk"><summary data-i18n="q3">Will I lose my sounds or projects?</summary><p data-i18n="a3">Back them up with the editor before installing or changing version. The installer can also install earlier versions, but a project saved by a newer version may not open right in an older one.</p></details>
+      <details class="brk"><summary data-i18n="q4">The installer doesn't find my FM-1.</summary><p data-i18n="a4">Use a USB cable that carries data (many cables only charge), connect it straight to the computer without a hub, and close other programs that use the FM-1 over MIDI.</p></details>
+    </div>
+  </section>
+
+  <footer>
+    <span>JIANT FM · Juan Jiant · Buenos Aires</span>
+    <span><a href="frecuencia.html" data-i18n="f_nat">Frequency in nature</a> · <a href="https://github.com/juanjiant-bit/JIANT" target="_blank" rel="noopener">GitHub</a> · <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener">GPL-3.0</a></span>
+    <span class="tm" data-i18n="tm">Built on Felucca by Hügelton Instruments. M-VAVE and FM-1 are trademarks of their respective owners; JIANT is not affiliated with or endorsed by them, nor with Hügelton Instruments.</span>
+  </footer>
+</div>
+
+<script>
+/* the firmware's creatures (firmware/src/ui_being.c, as tools/video/beings.js ports it): a species per engine, its
+   isotherms in the heat ramp, spikes, lobes, nuclei; excited by its energy */
+(function(){
+const reduce=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+const TAU=Math.PI*2,clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const H=[[0,208,255],[90,60,255],[181,48,230],[247,40,49],[255,121,0],[255,212,0],[255,255,255]];
+function heat(v,a){v=clamp(v,0,256);const k=Math.min(5,Math.floor(v*6/257)),m=(v*6-k*256)/256,p=H[k],q=H[k+1];const c=p.map((x,j)=>Math.round(x+(q[j]-x)*m));return a!==undefined&&a<1?`rgba(${c},${a})`:`rgb(${c})`;}
+const G={lar:[14,8,7,6,26,1,9],rad:[6,18,16,3,22,0,6],amo:[3,5,14,2,26,3,2],dia:[4,6,10,4,18,0,1],cil:[10,30,8,5,20,1,10],spo:[5,9,12,3,19,2,4],pol:[8,12,12,6,17,0,8],hyd:[3,7,15,3,21,4,5],drm:[12,0,10,3,18,0,6]};
+const SP=[['ANALOG','RADIOLARIA',G.rad,{spikes:24,len:98,wob:66,lob:3,nuc:2,ripple:160}],['FM6','POLLEN',G.pol,{spikes:14,len:110,wob:80,lob:6,nuc:3,sep:90}],
+  ['PHASE','AMOEBA',G.amo,{spikes:5,len:140,wob:150,lob:2,nuc:1}],['LOFI','DIATOM',G.dia,{spikes:8,len:90,wob:50,lob:4,nuc:1}],
+  ['VOICE','HYDRA',G.hyd,{spikes:6,len:160,wob:90,lob:3,nuc:2,sep:120}],['WHEEL','CILIATE',G.cil,{spikes:30,len:80,wob:70,lob:5,nuc:1}],
+  ['NOISE','SPORE',G.spo,{spikes:16,len:70,wob:110,lob:5,nuc:1,ripple:120}],['DRUM-X','COLONY',G.drm,{spikes:12,len:120,wob:60,lob:3,nuc:1}],
+  ['ANIMAL','LARVA',G.lar,{spikes:28,len:64,wob:72,lob:6,nuc:1}]];
+const gen=a=>({ax:a[4],tw:a[5],sh:a[6]});
+function iso(g,f,cx,cy,r,outer,t,nv){const pts=[];for(let i=0;i<=nv;i++){const th=(i%nv)/nv*TAU;const w=0.28*Math.sin(f.lob*th+t)+0.12*Math.sin((f.lob+2)*th-2*t);let rr=r+(r*f.wob/256)*w;
+  if(outer){const c2=Math.sin(f.spikes*th/2+g.tw*3000/65536*TAU+Math.PI/2);rr+=(r*f.len/256)*(c2>0?Math.pow(c2,g.sh):0)*26/16;rr+=(r*(f.ripple||0)/256)*Math.sin(th*18+3*t)/14;}
+  pts.push([cx+rr*Math.cos(th)*g.ax/16,cy+rr*Math.sin(th)]);}return pts;}
+function creature(ctx,sp,cx,cy,r,en,t,alpha){
+  const g=gen(sp[2]),E=en*256,f=Object.assign({sep:0,ripple:0},sp[3]);const e=E*0.4;
+  f.wob=clamp(f.wob+e*3/4,0,256);f.len=clamp(f.len+e,0,420);f.ripple=clamp(f.ripple+e,0,256);
+  r+=r*E*30/65536;const SC=[256,180,112,52],HT=[28,90,150,206];ctx.save();ctx.globalAlpha=alpha===undefined?1:alpha;ctx.lineWidth=1;
+  SC.forEach((s,i)=>{const p=iso(g,f,cx,cy,r*s/256,!i,t,i?40:80);ctx.beginPath();p.forEach((q,j)=>j?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.closePath();ctx.strokeStyle=heat(HT[i]+E*40/256);ctx.stroke();});
+  for(let n=0;n<f.nuc;n++){const a=t+n*TAU/f.nuc,d=f.nuc>1?r*(24+f.sep*40/256)/100:0,x=cx+d*Math.cos(a)*g.ax/16,y=cy+d*Math.sin(a)*0.7;
+    ctx.strokeStyle=heat(214+E*42/256);ctx.beginPath();ctx.arc(x,y,Math.max(.5,r*.15),0,TAU);ctx.stroke();ctx.strokeStyle=heat(240);ctx.beginPath();ctx.arc(x,y,Math.max(.5,r*.06),0,TAU);ctx.stroke();}
+  ctx.restore();}
+function fit(c){const r=c.getBoundingClientRect(),d=Math.min(window.devicePixelRatio||1,2);c.width=Math.max(1,Math.round(r.width*d));c.height=Math.max(1,Math.round(r.height*d));const x=c.getContext('2d');x.setTransform(d,0,0,d,0,0);return{w:r.width,h:r.height,x:x};}
+function loop(fn){if(reduce){requestAnimationFrame(()=>fn(4000));return;}const f=ms=>{fn(ms);requestAnimationFrame(f);};requestAnimationFrame(f);}
+/* a beat for each creature to swell with (118 BPM, each track its own division) */
+const BEAT=60/118,DIV=[1,2,4,3,8,6,2,1,3];
+const energy=(k,t)=>reduce?.35:Math.exp(-(((t/BEAT)*DIV[k%9]/4)%1)*5);
+
+/* the background: the species drifting, slow, far */
+(function(){
+  const c=document.getElementById('bg'),veil=document.getElementById('veil');let W,H,x,o=[],mx=0,my=0;
+  function init(){const f=fit(c);W=f.w;H=f.h;x=f.x;o=[];let s=7;const R=()=>{s=(s*16807)%2147483647;return s/2147483647;};
+    const n=Math.max(8,Math.min(18,Math.round(W*H/60000)));
+    for(let i=0;i<n;i++){const z=.45+R()*.8;o.push({k:i%SP.length,x:R()*W,y:R()*H,r:(12+R()*26)*z,z:z,vx:(R()-.5)*.14*z,vy:(-.04-R()*.1)*z,ph:R()*9});}}
+  addEventListener('pointermove',e=>{mx=e.clientX/W-.5;my=e.clientY/H-.5;},{passive:true});
+  function frame(ms){const t=ms/1000;x.fillStyle='#050409';x.fillRect(0,0,W,H);
+    x.strokeStyle='rgba(90,70,255,.18)';x.lineWidth=1;const gy=H*.7;
+    for(let i=0;i<=12;i++){const y=gy+Math.pow(i/12,2)*(H-gy);x.beginPath();x.moveTo(0,y);x.lineTo(W,y);x.stroke();}
+    for(let i=-14;i<=14;i++){x.beginPath();x.moveTo(W/2+i*18,gy);x.lineTo(W/2+i*W*.12,H);x.stroke();}
+    for(const b of o){if(!reduce){b.x+=b.vx;b.y+=b.vy;const m=b.r*4;if(b.y<-m)b.y=H+m;if(b.x<-m)b.x=W+m;if(b.x>W+m)b.x=-m;}
+      creature(x,SP[b.k],b.x-mx*30*b.z,b.y-my*30*b.z,b.r,energy(b.k,t+b.ph)*.8,t*.8+b.ph,.35+b.z*.45);}
+    const v=clamp((window.scrollY-H*.45)/(H*.5),0,1);if(veil)veil.style.opacity=v.toFixed(3);
+  }
+  init();addEventListener('resize',()=>{init();if(reduce)frame(4000);});
+  if(reduce)addEventListener('scroll',()=>requestAnimationFrame(()=>frame(4000)),{passive:true});
+  loop(frame);
+})();
+
+/* the FM-1 as it is, drawn on its own proportions (an 840 x 504 panel): MASTER, SELECT, PRESETS and ALGORITHM top
+   left over OCT- / OCT+, the small square screen with HOME live on it, KNOB1..4 top right over the 2 x 6 buttons, and
+   the touch keys below, 11 above (OP1..OP6, PIT, GLO, MONO, POLY and one more) and 16 under them, F3..G5. The demo
+   plays an arpeggio on them at 118 BPM and the keys it touches light orange */
+(function(){
+  const c=document.getElementById('fm1');let f=fit(c);addEventListener('resize',()=>{f=fit(c);});
+  const MONO='"IBM Plex Mono",monospace';
+  const KN=[['MASTER',67,80],['SELECT',157,80],['PRESETS',67,168],['ALGORITHM',157,168],
+    ['KNOB1',473,80],['KNOB2',568,80],['KNOB3',663,80],['KNOB4',758,80]];
+  const BT=[['FX','SEL','ENV','LFO','EDIT','GLO'],['HOME','SAVE','ARP','SEQ','PLAY','REC']],BX=[485,538,590,643,696,749],BY=[172,224];
+  const HOME=[0,1,2,4,6,7];   /* the six tracks' engines: ANALOG, FM6, PHASE, VOICE, NOISE, DRUM-X */
+  /* the 27 keys by semitone from F3: 16 below (white), 11 above at the black keys' places */
+  const UP=['OP1','OP2','OP3','OP4','OP5','OP6','PIT','GLO','MONO','POLY',''],KEYS=[];
+  for(let n=0,w=0,b=0;n<27;n++){if([1,3,6,8,10].includes((n+5)%12))KEYS.push({n,up:1,x:64+(w-.5)*47.6,lab:UP[b++]});else KEYS.push({n,up:0,x:64+(w++)*47.6});}
+  const ARP=[9,12,16,21,19,16,12,16,7,11,14,19,14,11,7,4],BASS=[2,0,4,7];
+  function rr(x,X,Y,w,h,r){x.beginPath();x.roundRect(X,Y,w,h,r);}
+  function well(x,X,Y,w,h,r){rr(x,X,Y,w,h,r);x.fillStyle='#1b1b1d';x.fill();
+    x.save();x.clip();x.strokeStyle='rgba(0,0,0,.55)';x.lineWidth=5;rr(x,X-1,Y-1.5,w+2,h+2,r);x.stroke();x.restore();
+    rr(x,X,Y,w,h,r);x.strokeStyle='rgba(255,255,255,.07)';x.lineWidth=1;x.stroke();}
+  function label(x,t,X,Y,sz,col){x.fillStyle=col||'#e4e4e2';x.font='500 '+sz+'px '+MONO;x.textAlign='center';x.fillText(t,X,Y);}
+  function knob(x,X,Y,a){x.fillStyle='rgba(0,0,0,.45)';x.beginPath();x.arc(X+1,Y+2.5,19,0,TAU);x.fill();
+    const g=x.createRadialGradient(X-5,Y-6,2,X,Y,18);g.addColorStop(0,'#3d3d40');g.addColorStop(1,'#0c0c0d');
+    x.fillStyle=g;x.beginPath();x.arc(X,Y,17,0,TAU);x.fill();x.strokeStyle='#050505';x.lineWidth=1.2;x.stroke();
+    x.strokeStyle='rgba(255,255,255,.13)';x.lineWidth=.8;for(let k=0;k<28;k++){const q=k/28*TAU;x.beginPath();x.moveTo(X+Math.cos(q)*14.5,Y+Math.sin(q)*14.5);x.lineTo(X+Math.cos(q)*16.6,Y+Math.sin(q)*16.6);x.stroke();}
+    x.fillStyle='#141415';x.beginPath();x.arc(X,Y,12.5,0,TAU);x.fill();
+    x.strokeStyle='#f2f2ee';x.lineWidth=2.4;x.lineCap='round';x.beginPath();x.moveTo(X+Math.cos(a)*5,Y+Math.sin(a)*5);x.lineTo(X+Math.cos(a)*15.5,Y+Math.sin(a)*15.5);x.stroke();x.lineCap='butt';}
+  function button(x,X,Y,w,h,r){x.fillStyle='rgba(0,0,0,.5)';rr(x,X,Y+1.5,w,h,r);x.fill();
+    const g=x.createLinearGradient(0,Y,0,Y+h);g.addColorStop(0,'#2c2c2f');g.addColorStop(1,'#121214');rr(x,X,Y,w,h,r);x.fillStyle=g;x.fill();
+    x.strokeStyle='#060607';x.lineWidth=1;x.stroke();rr(x,X+1,Y+1,w-2,h-2,r-1);x.strokeStyle='rgba(255,255,255,.06)';x.stroke();}
+  function pill(x,X,Y,w,h,bar0,bar1,lit){const r=w/2;x.fillStyle='rgba(0,0,0,.6)';rr(x,X-w/2,Y+1.5,w,h,r);x.fill();
+    const g=x.createLinearGradient(0,Y,0,Y+h);g.addColorStop(0,lit?'#3a2414':'#202022');g.addColorStop(1,'#09090a');rr(x,X-w/2,Y,w,h,r);x.fillStyle=g;x.fill();
+    x.strokeStyle=lit?'rgba(255,122,26,'+(.25+.5*lit)+')':'#040405';x.lineWidth=1;x.stroke();
+    if(lit){x.save();x.shadowColor='rgba(255,122,26,'+lit+')';x.shadowBlur=10;}
+    rr(x,X-2.4,Y+bar0,4.8,bar1-bar0,2.4);x.fillStyle=lit?'rgb(255,'+Math.round(122+(1-lit)*40)+','+Math.round(26+(1-lit)*40)+')':'#ececea';x.fill();
+    if(lit)x.restore();}
+  loop(function(ms){const t=ms/1000,w=f.w,h=f.h,x=f.x,s=w/840;
+    x.clearRect(0,0,w,h);x.save();x.scale(s,s);
+    /* the body: dark grey, rounded, lit from above */
+    x.fillStyle='rgba(0,0,0,.5)';rr(x,2,5,836,498,40);x.fill();
+    let g=x.createLinearGradient(0,0,0,502);g.addColorStop(0,'#3b3b3e');g.addColorStop(.5,'#323235');g.addColorStop(1,'#2a2a2c');
+    rr(x,1,1,838,498,40);x.fillStyle=g;x.fill();x.strokeStyle='#18181a';x.lineWidth=1.5;x.stroke();
+    rr(x,3,3,834,494,38);x.strokeStyle='rgba(255,255,255,.08)';x.lineWidth=1;x.stroke();
+    /* knobs and their names */
+    KN.forEach(([n,X,Y],i)=>{const a=i<4?t*.3+i*1.3:Math.PI*.75+(.35+.25*Math.sin(t*.7+i))*Math.PI*1.5;
+      knob(x,X,Y,a);label(x,n,X,Y-30,10.5);});
+    well(x,44,214,134,43,8);
+    [['OCT-',54],['OCT+',120]].forEach(([n,X])=>{button(x,X,222,54,28,6);label(x,n,X+27,240,9.5,'#f0f0ec');});
+    well(x,448,140,338,117,12);
+    BT.forEach((row,j)=>row.forEach((n,i)=>{const X=BX[i],Y=BY[j];button(x,X-21,Y-21,42,42,8);
+      const col=n==='HOME'?'#ffe14d':n==='PLAY'&&!reduce?'#8be06a':n==='REC'?'#ff5446':'#f0f0ec';x.font='600 10px '+MONO;
+      if(n==='PLAY'){label(x,'PLAY',X,Y-2,9.5,col);x.fillStyle=col;x.fillRect(X-12,Y+1,24,1);label(x,'STOP',X,Y+11,9.5,col);}else label(x,n,X,Y+3.5,10,col);}));
+    x.fillStyle='#9a9a98';x.beginPath();x.arc(617,198,1.2,0,TAU);x.fill();
+    /* the screen: a thick black bezel, a small square LCD, HOME on it */
+    g=x.createLinearGradient(0,39,0,237);g.addColorStop(0,'#141415');g.addColorStop(1,'#070708');
+    x.fillStyle='rgba(0,0,0,.45)';rr(x,216,41,199,198,22);x.fill();rr(x,216,39,199,198,22);x.fillStyle=g;x.fill();
+    x.strokeStyle='rgba(255,255,255,.1)';x.lineWidth=1;x.stroke();
+    const LX=241,LY=63,LS=150;x.save();rr(x,LX,LY,LS,LS,2);x.clip();x.translate(LX,LY);x.scale(LS/380,LS/380);
+    const SS=380;x.fillStyle='#04030a';x.fillRect(0,0,SS,SS);
+    x.fillStyle='#ff7a1a';rr(x,12,12,36,36,6);x.fill();x.fillStyle='#04030a';x.font='600 27px '+MONO;x.textAlign='center';x.fillText('1',30,40);
+    x.fillStyle='#b870ff';x.textAlign='right';x.font='600 29px '+MONO;x.fillText('▶ 118',SS-14,40);
+    const cx=SS/2,cy=SS*.53,R=SS*.29;
+    HOME.forEach((k,i)=>{const a=i/6*TAU-Math.PI/2+t*.03,px=cx+Math.cos(a)*R+6*Math.sin(t*.3+i),py=cy+Math.sin(a)*R*.74+5*Math.sin(t*.27+i*2);
+      creature(x,SP[k],px,py,i===0?40:32,energy(i,t),t*.8+i*1.9,1);});
+    x.fillStyle='#a39cba';x.font='500 22px '+MONO;x.textAlign='left';x.fillText(SP[HOME[0]][0],14,SS-14);x.textAlign='right';x.fillText('HOME',SS-14,SS-14);
+    g=x.createLinearGradient(0,0,SS,SS);g.addColorStop(0,'rgba(255,255,255,.07)');g.addColorStop(.45,'rgba(255,255,255,.02)');g.addColorStop(.46,'rgba(255,255,255,0)');
+    x.fillStyle=g;x.fillRect(0,0,SS,SS);x.restore();
+    rr(x,LX-.5,LY-.5,LS+1,LS+1,2.5);x.strokeStyle='#202022';x.lineWidth=1;x.stroke();
+    /* the touch keys, in their recessed panel; the demo's arpeggio lights them */
+    well(x,28,287,784,183,26);
+    const lit=new Array(27).fill(0);
+    if(reduce)[9,12,16,2].forEach(n=>lit[n]=1);
+    else{const st=t/(BEAT/2),i=Math.floor(st),ph=st-i;lit[ARP[i%16]]=.55+.45*Math.exp(-ph*3);
+      const bs=Math.floor(i/8),bp=(st-bs*8)/8;lit[BASS[bs%4]]=Math.max(lit[BASS[bs%4]],.45+.55*Math.exp(-bp*3));}
+    x.fillStyle='#9a9a98';[3,6,10,13].forEach(i=>{x.beginPath();x.arc(64+(i+.5)*47.6,379,1.3,0,TAU);x.fill();});
+    KEYS.forEach(k=>{if(k.up)return;pill(x,k.x,382,43,77,16,61,lit[k.n]);});
+    KEYS.forEach(k=>{if(!k.up)return;if(k.lab){pill(x,k.x,300,40,76,20,44,lit[k.n]);label(x,k.lab,k.x,61+300-5,8.5,'#e4e4e2');}else pill(x,k.x,300,40,76,15,62,lit[k.n]);});
+    x.restore();
+  });
+})();
+
+/* the nine species in a row (two rows on narrow screens), each named with its engine */
+(function(){
+  const c=document.getElementById('zoo');let f=fit(c);addEventListener('resize',()=>{f=fit(c);});
+  loop(function(ms){const t=ms/1000,w=f.w,h=f.h,x=f.x,narrow=w<520,cols=narrow?5:9,rows=narrow?2:1,cw=w/cols,ch=h/rows;
+    x.clearRect(0,0,w,h);
+    SP.forEach((sp,k)=>{const col=k%cols,row=Math.floor(k/cols),cx=cw*(col+.5),cy=ch*row+ch*.42,r=Math.min(cw,ch)*.2;
+      creature(x,sp,cx,cy,r,energy(k,t),t*.8+k,1);
+      x.textAlign='center';x.fillStyle='#efe6c8';x.font='500 '+Math.max(10,Math.min(13,cw/8))+'px "IBM Plex Mono",monospace';x.fillText(sp[0],cx,ch*row+ch*.86);
+      x.fillStyle='#a39cba';x.font=Math.max(9,Math.min(11,cw/10))+'px "IBM Plex Mono",monospace';x.fillText(sp[1],cx,ch*row+ch*.97);});
+  });
+})();
+})();
+</script>
+<script>
+/* languages: EN (the page's own text), ES, 中文, 日本語; the browser's language at first, then the choice (when storage allows) */
+(function(){
+  const ES={live:'gratis · código abierto · GPL-3.0',kicker:'un firmware para el M-VAVE FM-1',down:'entrar al organismo',
+    lede:'Un firmware gratis que convierte al FM-1 en un instrumento completo: seis pistas, once motores de síntesis, un secuenciador profundo y efectos, todo adentro del tecladito. Se instala desde el navegador en un par de minutos, y podés volver al firmware oficial cuando quieras.',
+    cta_install:'Instalar en tu FM-1',cta_emu:'Probarlo en el navegador',cta_editor:'Abrir el editor',ver:'Versión actual:',dev_cap:'HOME: una criatura por pista, se hincha con su sonido',
+    s_eb:'Empezá acá',s_h2:'Tres pasos, sin programar',s_in:'Todo funciona en el navegador. No hace falta instalar ningún programa, y podés probar JIANT antes de tocar tu FM-1.',
+    st1_h:'Probalo en el navegador',st1_p:'El emulador corre el firmware real en tu compu o tu celular. Tocá con el teclado, cargá una canción, escuchá cada motor.',st1_a:'No necesitás un FM-1',st1_b:'Renderiza los stems de una canción desde tu backup',st1_go:'Abrir el emulador',
+    st2_h:'Instalalo en tu FM-1',st2_p:'Abrí el instalador en Chrome o Edge, conectá el FM-1 con un cable USB de datos, apretá Instalar y esperá sin desenchufar.',st2_a:'El instalador revisa tu FM-1 primero y guarda un backup',st2_b:'¿Venís de otro firmware custom? Volvé primero al oficial V15, con el botón del instalador',st2_go:'Abrir el instalador',
+    st3_h:'Editá y hacé backup',st3_p:'El editor web muestra tus sonidos y ajustes en la pantalla de la compu mientras el FM-1 sigue sonando.',st3_a:'Mandá bancos DX7 a FM6, organizá presets',st3_b:'Backup de todos tus proyectos con un clic',st3_go:'Abrir el editor',
+    need:'Necesitás: Chrome o Edge en una computadora (WebUSB y Web MIDI) · un cable USB que pase datos, no solo carga.',
+    i_eb:'Qué tiene adentro',i_h2:'Un organismo, nueve especies',i_in:'Cada motor es una especie, dibujada por el propio firmware. En HOME cada pista es una criatura de la especie de su motor: su forma sale de sus perillas, y se hincha y se calienta con su propio audio.',zoo_k:'Los nueve motores, como los dibuja el FM-1',
+    a_o:'motores',a_h:'11 motores de síntesis',a_p:'ANALOG, FM6 (seis operadores, 32 algoritmos, bancos DX7), PHASE, LOFI, VOICE (canta palabras en castellano, inglés y japonés), WHEEL, NOISE, ANIMAL (pájaros, insectos y ranas con modelos físicos), STRING (una cuerda pulsada, golpeada o con arco), ADD (aditiva) y DRUM-X. Sin samples: todo es síntesis.',
+    b_o:'corazón',b_h:'DRUM-X',b_p:'Una batería de ocho sonidos sintetizados, cada uno con dos caras: MORPH lleva todo el kit de una a la otra, en vivo. En cada octava, las mismas teclas: ratchets arriba, golpes cortos, ghost y flam abajo.',
+    c_o:'sistema nervioso',c_h:'Secuenciador de 64 pasos',c_p:'Un piano roll por pista, acordes, probabilidad, ratchets, cabezales extra, grabación fuera de la grilla hasta 1/64 de paso, y MUTATE, que transforma sonido y patrón cada tantos compases.',
+    d_o:'membrana',d_h:'Efectos y master',d_p:'Delay, cinco reverbs (SHIMMER, RESO, CLOUD…), chorus, slicer, efectos punch-in en vivo, un filtro DJ sobre toda la mezcla y un master con limiter, clip, punch, cinta (TAPE) y EQ de 4 bandas.',
+    e_o:'memoria',e_h:'Canciones y generador',e_p:'Cuatro secciones por proyecto, una página ARRANGE para encadenarlas, y un generador que escribe una idea de canción entera: desde un género, o en EXPLORE, rompiendo todas las reglas.',
+    f_o:'raíces',f_h:'Audio USB y MIDI',f_p:'El FM-1 se vuelve una interfaz de audio que no pierde el tiempo: cada pista en su propio canal hacia tu DAW (STEMS), listo para grabar cada parte por separado. MIDI por USB, Bluetooth y TRS.',f_go:'Producto aparte: muy pronto',
+    nv_eb:'Orientarse',nv_h2:'Seis reglas, un mapa',nv_in:'Desde la 0.9.2 todas las secciones se manejan igual: aprendés seis reglas una vez y conocés todo el sinte. El mapa muestra los grupos y las páginas de cada botón en el orden en que los recorre SELECT, en cualquiera de las tres pieles (AIR, COLORS, HUD).',nv_cap:'El mapa de navegación · hacé clic para verlo grande (SVG, con zoom)',
+    nv1_o:'SELECT',nv1_h:'SELECT recorre las páginas',nv1_p:'Una cadena por sección, una página por paso; frena en la primera y en la última.',
+    nv2_o:'botón',nv2_h:'El botón: entrar o saltar',nv2_p:'Desde otra sección, la página donde la dejaste. Adentro, la primera página del grupo siguiente, en ronda.',
+    nv3_o:'PRESETS',nv3_h:'PRESETS carga presets',nv3_p:'Los sonidos de la pista en todos lados, los patrones en SEQ, el género en GEN. Nunca una página ni una pista.',
+    nv4_o:'KNOB 1',nv4_h:'KNOB 1 elige',nv4_p:'El paso, el compás, el slot, la etapa, el sonido del kit. La pista, siempre ALGORITHM.',
+    nv5_o:'mantener',nv5_h:'Mantener = la capa',nv5_p:'Un botón mantenido pone sus atajos en las teclas: SEQ + G5 borra un paso, SAVE + C5 nombra, GLO + G4 deshace. Mantenido + SELECT: GEN, los dados, el tempo.',
+    nv6_o:'pantalla',nv6_h:'La pantalla dice dónde',nv6_p:'Arriba las pestañas son los grupos de la sección, un punto por página; abajo, SECCIÓN · GRUPO · página y n/N.',
+    m_eb:'Aprender',m_h2:'Manual y cheat sheets',m_in:'El manual completo explica cada página y cada perilla. Las cheat sheets resumen los controles y las páginas de sonido en una hoja cada una, para tener al lado del FM-1.',
+    mi_k:'Nuevo · manual interactivo',mi_h:'El manual interactivo',mi_p:'Tocá cualquier control del FM-1 y mirá qué hace solo, mantenido y en combinación, con las pantallas reales del firmware. Buscá cada comando, seguí recetas paso a paso, ponete al día con las novedades.',mi_go:'Abrir el manual →',
+    m1_h:'User manual',m1_p:'Cada página, capa y motor, en inglés.',m2_h:'Manual de usuario',m2_p:'El mismo manual, en castellano.',m3_h:'Cheat sheet de controles',m3_p:'Botones, capas y combinaciones en una página.',m4_h:'Cheat sheet de sonido',m4_p:'Motores, filtro, envolventes y efectos en una página.',
+    n_eb:'Lo que viene',n_h2:'Próximas actualizaciones',n_in:'Lo que se está construyendo y probando en el laboratorio ahora. Las fechas dependen de las pruebas en FM-1 reales.',
+    r1:'Stems + tu voz (STEMS+IN)',r2:'Producto aparte, muy pronto',r3:'Visuales en vivo',r4:'Buses de FX A–D, ruteados por pista',r5:'JIANT en el SMK',r_test:'EN PRUEBA',r_test2:'SALIÓ · 1.0',r_lab:'EN EL LAB',r_lab2:'EN EL LAB',r_plan:'PLANEADO',r_more:'más ideas de la comunidad',
+    e_k:'Acceso anticipado',e_h3:'Quienes apoyan tocan cada versión nueva primero',e_p1:'Quienes apoyan JIANT en Ko-fi o Cafecito reciben las versiones nuevas antes de que salgan al público, y ayudan a decidir qué viene después.',e_go:'Sumate en Ko-fi',
+    sup_eb:'Apoyar',sup_h2:'JIANT es gratis. Si hace música con vos, invitame un café.',sup_in:'JIANT lo hace Juan Jiant, muralista y artista visual de Buenos Aires. Cada aporte paga horas de desarrollo y mantiene el firmware gratis para todos.',
+    k_z:'global · usd',k_p:'Desde cualquier país, con tarjeta o PayPal. Único o mensual, con acceso anticipado a las versiones nuevas.',c_z:'argentina · ars',cf_p:'Desde Argentina, en pesos, con Mercado Pago o tarjeta.',
+    q_h2:'Antes de instalar',q1:'¿Puedo volver al firmware oficial?',a1:'Sí. El instalador tiene un botón para volver al firmware oficial V15 (elegís el FM-1.fwsc oficial de M-VAVE). Antes guarda un backup completo.',
+    q2:'¿Qué navegador necesito?',a2:'Chrome o Edge en una computadora, para el instalador y el editor: hablan con el FM-1 por USB. El emulador funciona también en otros navegadores y en celulares.',
+    q3:'¿Pierdo mis sonidos o proyectos?',a3:'Hacé backup con el editor antes de instalar o cambiar de versión. El instalador también puede instalar versiones anteriores, pero un proyecto guardado por una versión más nueva puede no abrir bien en una más vieja.',
+    q4:'El instalador no encuentra mi FM-1.',a4:'Usá un cable USB que pase datos (muchos solo cargan), conectalo directo a la compu sin hub, y cerrá otros programas que usen el FM-1 por MIDI.',
+    nat_k:'Página nueva · frecuencia',nat_h:'La frecuencia en la naturaleza',nat_p:'La materia es luz, el color es frecuencia: una escalera del ciclo solar a los rayos gamma, y cuatro ejemplos que suenan de cómo un sintetizador ya vive ahí.',nat_go:'Subir la escalera →',f_nat:'La frecuencia en la naturaleza',
+    tm:'Hecho sobre Felucca de Hügelton Instruments. M-VAVE y FM-1 son marcas de sus respectivos dueños; JIANT no está afiliado ni avalado por ellos, ni por Hügelton Instruments.'};
+  const ZH={live:'免费 · 开源 · GPL-3.0',kicker:'M-VAVE FM-1 的固件',down:'进入有机体',
+    lede:'一款免费固件，把 FM-1 变成一件完整的乐器：六条音轨、十一种合成引擎、深度音序器和效果器，全部装进这台小键盘里。在浏览器里几分钟就能装好，想回到官方固件随时都可以。',
+    cta_install:'安装到你的 FM-1',cta_emu:'在浏览器里试玩',cta_editor:'打开编辑器',ver:'当前版本：',dev_cap:'HOME：每条音轨一个生物，随声音膨胀',
+    s_eb:'从这里开始',s_h2:'三步完成，无需编程',s_in:'一切都在浏览器中运行。无需安装任何程序，还可以在动你的 FM-1 之前先试玩 JIANT。',
+    st1_h:'在浏览器里试玩',st1_p:'模拟器在你的电脑或手机上运行真正的固件。用键盘演奏，载入一首歌，听听每一种引擎。',st1_a:'不需要 FM-1',st1_b:'可从你的备份渲染一首歌的分轨',st1_go:'打开模拟器',
+    st2_h:'安装到你的 FM-1',st2_p:'用 Chrome 或 Edge 打开安装器，用可传输数据的 USB 线连接 FM-1，点击安装，等待完成，期间不要拔线。',st2_a:'安装器会先检查你的 FM-1 并保存备份',st2_b:'用过其他自制固件？请先用安装器的按钮恢复到官方 V15',st2_go:'打开安装器',
+    st3_h:'编辑与备份',st3_p:'网页编辑器在电脑屏幕上显示你的音色和设置，FM-1 同时照常演奏。',st3_a:'把 DX7 音色库发送到 FM6，管理预设',st3_b:'一键备份所有工程',st3_go:'打开编辑器',
+    need:'需要：电脑上的 Chrome 或 Edge（WebUSB 与 Web MIDI）· 一根能传数据的 USB 线，而不只是充电线。',
+    i_eb:'里面有什么',i_h2:'一个有机体，九个物种',i_in:'每种引擎都是一个物种，由固件亲自绘制。在 HOME 页面，每条音轨都是其引擎物种的一个生物：形状来自它的旋钮，并随自身的音频膨胀、升温。',zoo_k:'九种引擎，正如 FM-1 所绘',
+    a_o:'引擎',a_h:'11 种合成引擎',a_p:'ANALOG、FM6（六算子、32 种算法、DX7 音色库）、PHASE、LOFI、VOICE（能用西班牙语、英语和日语唱出歌词）、WHEEL、NOISE、ANIMAL（用物理模型模拟鸟、昆虫和青蛙的叫声）、STRING（拨奏、敲击或弓奏的琴弦）、ADD（加法合成）和 DRUM-X。没有采样：一切都是合成的。',
+    b_o:'心脏',b_h:'DRUM-X',b_p:'由八种合成声音组成的鼓组，每种声音都有两面：MORPH 可以现场把整个鼓组从一面推到另一面。每个八度都是同样的琴键：往上是连击，往下是短击、幽灵音和装饰音（flam）。',
+    c_o:'神经系统',c_h:'64 步音序器',c_p:'每条音轨一个钢琴卷帘，和弦、概率、连击、额外播放头，精确到 1/64 步的离网格录音，以及每隔几小节变换声音与节奏型的 MUTATE。',
+    d_o:'细胞膜',d_h:'效果器与总线',d_p:'延迟、五种混响（SHIMMER、RESO、CLOUD…）、合唱、切片器、现场即时效果、作用于整个混音的 DJ 滤波器，以及带限幅、削波、冲击力、磁带饱和和四段均衡器的总线。',
+    e_o:'记忆',e_h:'歌曲与生成器',e_p:'每个工程四个段落，用 ARRANGE 页面串联，还有一个写出完整歌曲构思的生成器：按曲风，或在 EXPLORE 模式下打破所有规则。',
+    f_o:'根系',f_h:'USB 音频与 MIDI',f_p:'FM-1 变成一台时间稳定的音频接口：每条音轨各占一个通道送进你的 DAW（STEMS），可分别录制每一轨。支持 USB、蓝牙和 TRS MIDI。',f_go:'独立产品：即将推出',
+    nv_eb:'找到方向',nv_h2:'六条规则，一张地图',nv_in:'从 0.9.2 起，每个分区的操作方式都一样：六条规则学一次，就认识整台合成器。地图按 SELECT 走过的顺序列出每个按键的分组和页面，三种外观（AIR、COLORS、HUD）通用。',nv_cap:'导航地图 · 点击查看大图（SVG，可缩放）',
+    nv1_o:'SELECT',nv1_h:'SELECT 翻页',nv1_p:'每个分区一条页面链，转一格一页；到第一页和最后一页就停下。',
+    nv2_o:'按键',nv2_h:'分区按键：进入或跳转',nv2_p:'从别的分区按下，回到你上次离开的页面；已在分区内，跳到下一组的第一页，循环。',
+    nv3_o:'PRESETS',nv3_h:'PRESETS 载入预设',nv3_p:'到处都是音轨的音色，SEQ 里是节奏型，GEN 里是曲风。从不切换页面或音轨。',
+    nv4_o:'KNOB 1',nv4_h:'KNOB 1 负责选择',nv4_p:'步、小节、槽位、阶段、鼓组里的声音。音轨永远由 ALGORITHM 选择。',
+    nv5_o:'按住',nv5_h:'按住 = 快捷层',nv5_p:'按住一个按键，琴键上就是它的快捷功能：SEQ + G5 清除一步，SAVE + C5 命名，GLO + G4 撤销。按住 + SELECT：GEN、骰子、速度。',
+    nv6_o:'屏幕',nv6_h:'屏幕告诉你在哪',nv6_p:'顶部的标签是分区的分组，每页一个点；底部显示 分区 · 分组 · 页面 和 n/N。',
+    m_eb:'学习',m_h2:'手册与速查表',m_in:'完整手册讲解每个页面和每个旋钮。速查表把控制和音色页面各浓缩成一张，方便放在 FM-1 旁边。',
+    mi_k:'新 · 交互式手册',mi_h:'交互式手册',mi_p:'点击 FM-1 上的任意控件，查看它单独、按住和组合时的作用，并配有固件的真实画面。搜索每条命令，跟着分步教程操作，了解各版本的新内容（西班牙文 / 英文）。',mi_go:'打开手册 →',
+    m1_h:'用户手册（英文）',m1_p:'所有页面、层和引擎，英文版。',m2_h:'用户手册（西班牙文）',m2_p:'同一本手册，西班牙文版。',m3_h:'控制速查表',m3_p:'按键、层与组合键，一页看完。',m4_h:'音色速查表',m4_p:'引擎、滤波器、包络与效果器，一页看完。',
+    n_eb:'即将推出',n_h2:'未来更新',n_in:'实验室里正在开发和测试的内容。上线时间取决于在真实 FM-1 上的测试。',
+    r1:'分轨 + 你的声音（STEMS+IN）',r2:'独立产品，即将推出',r3:'实时视觉',r4:'FX 总线 A–D，按音轨路由',r5:'JIANT 移植到 SMK',r_test:'测试中',r_test2:'已发布 · 1.0',r_lab:'实验室中',r_lab2:'实验室中',r_plan:'计划中',r_more:'更多来自社区的想法',
+    e_k:'抢先体验',e_h3:'支持者最先玩到每个新版本',e_p1:'在 Ko-fi 或 Cafecito 支持 JIANT 的朋友，会在公开发布前拿到新版本，并一起决定接下来做什么。',e_go:'在 Ko-fi 加入',
+    sup_eb:'支持',sup_h2:'JIANT 是免费的。如果它陪你做音乐，请我喝杯咖啡吧。',sup_in:'JIANT 由 Juan Jiant 制作，他是来自布宜诺斯艾利斯的壁画家和视觉艺术家。每一份支持都用于开发时间，让固件对所有人保持免费。',
+    k_z:'全球 · 美元',k_p:'任何国家都可以用银行卡或 PayPal 支持。一次性或按月，并可抢先体验新版本。',c_z:'阿根廷 · 比索',cf_p:'在阿根廷用比索支持，可用 Mercado Pago 或银行卡。',
+    q_h2:'安装之前',q1:'可以回到官方固件吗？',a1:'可以。安装器有一个按钮可以恢复到官方 V15 固件（需选择 M-VAVE 官方的 FM-1.fwsc）。它会先保存完整备份。',
+    q2:'需要什么浏览器？',a2:'安装器和编辑器需要电脑上的 Chrome 或 Edge：它们通过 USB 与 FM-1 通信。模拟器在其他浏览器和手机上也能运行。',
+    q3:'会丢失我的音色或工程吗？',a3:'安装或更换版本前，请先用编辑器备份。安装器也能安装旧版本，但新版本保存的工程在旧版本里可能无法正常打开。',
+    q4:'安装器找不到我的 FM-1。',a4:'请使用能传输数据的 USB 线（很多线只能充电），直接连到电脑不要经过集线器，并关闭其他通过 MIDI 使用 FM-1 的程序。',
+    nat_k:'新页面 · 频率',nat_h:'自然中的频率',nat_p:'物质是光，颜色是频率：一架从太阳周期到伽马射线的阶梯，以及四个会发声的例子，说明合成器早已身在其中。',nat_go:'登上阶梯 →',f_nat:'自然中的频率',
+    tm:'基于 Hügelton Instruments 的 Felucca 开发。M-VAVE 和 FM-1 是其各自所有者的商标；JIANT 与它们以及 Hügelton Instruments 均无关联，也未获其认可。'};
+  const JA={live:'無料 · オープンソース · GPL-3.0',kicker:'M-VAVE FM-1 のためのファームウェア',down:'有機体の中へ',
+    lede:'FM-1 をひとつの完全な楽器に変える無料のファームウェア。6 トラック、11 のシンセシスエンジン、奥深いシーケンサーとエフェクトが、この小さなキーボードに収まります。ブラウザから数分でインストールでき、いつでも公式ファームウェアに戻せます。',
+    cta_install:'FM-1 にインストール',cta_emu:'ブラウザで試す',cta_editor:'エディターを開く',ver:'現在のバージョン：',dev_cap:'HOME：トラックごとに一匹の生き物、音にあわせてふくらむ',
+    s_eb:'はじめに',s_h2:'3 ステップ、プログラミング不要',s_in:'すべてブラウザで動きます。ソフトのインストールは不要で、FM-1 に触れる前に JIANT を試せます。',
+    st1_h:'ブラウザで試す',st1_p:'エミュレーターが本物のファームウェアをパソコンやスマホで動かします。キーボードで弾き、曲を読み込み、すべてのエンジンを聴けます。',st1_a:'FM-1 がなくても OK',st1_b:'バックアップから曲のステムを書き出せます',st1_go:'エミュレーターを開く',
+    st2_h:'FM-1 にインストール',st2_p:'Chrome か Edge でインストーラーを開き、データ通信できる USB ケーブルで FM-1 をつなぎ、「インストール」を押して、抜かずに待ちます。',st2_a:'インストーラーがまず FM-1 を確認し、バックアップを保存します',st2_b:'他のカスタムファームウェアから移る場合は、まずインストーラーのボタンで公式 V15 に戻してください',st2_go:'インストーラーを開く',
+    st3_h:'編集とバックアップ',st3_p:'Web エディターは、FM-1 が鳴り続けたまま、音色と設定をパソコンの画面に表示します。',st3_a:'DX7 のバンクを FM6 に送る、プリセットを整理する',st3_b:'すべてのプロジェクトをワンクリックでバックアップ',st3_go:'エディターを開く',
+    need:'必要なもの：パソコンの Chrome または Edge（WebUSB と Web MIDI）· 充電専用ではない、データ通信できる USB ケーブル。',
+    i_eb:'中身',i_h2:'ひとつの有機体、9 つの種',i_in:'エンジンはそれぞれひとつの種で、ファームウェア自身が描きます。HOME では各トラックがそのエンジンの種の生き物になり、形はノブから生まれ、自分の音でふくらみ、熱を帯びます。',zoo_k:'9 つのエンジン、FM-1 が描くとおりに',
+    a_o:'エンジン',a_h:'11 のシンセシスエンジン',a_p:'ANALOG、FM6（6 オペレーター、32 アルゴリズム、DX7 バンク）、PHASE、LOFI、VOICE（スペイン語・英語・日本語で歌詞を歌う）、WHEEL、NOISE、ANIMAL（物理モデルによる鳥・虫・カエルの声）、STRING（はじく・たたく・弓でこする弦）、ADD（加算合成）、DRUM-X。サンプルなし、すべてシンセシス。',
+    b_o:'心臓',b_h:'DRUM-X',b_p:'8 つの合成サウンドのドラムキット。各サウンドに A と B の 2 つの顔があり、MORPH でキット全体をライブで行き来できます。どのオクターブでも同じ鍵盤：上はラチェット、下はショート・ゴースト・フラム。',
+    c_o:'神経系',c_h:'64 ステップのシーケンサー',c_p:'トラックごとのピアノロール、コード、確率、ラチェット、追加のプレイヘッド、1/64 ステップ単位でグリッドを外せる録音、そして数小節ごとに音とパターンを変える MUTATE。',
+    d_o:'膜',d_h:'エフェクトとマスター',d_p:'ディレイ、5 種類のリバーブ（SHIMMER、RESO、CLOUD…）、コーラス、スライサー、ライブのパンチインエフェクト、ミックス全体にかかる DJ フィルター、リミッター・クリップ・パンチ・テープ・4 バンド EQ 付きのマスター。',
+    e_o:'記憶',e_h:'ソングとジェネレーター',e_p:'プロジェクトごとに 4 つのセクション、それをつなぐ ARRANGE ページ、そして曲のアイデアを丸ごと書くジェネレーター：ジャンルから、または EXPLORE ですべてのルールを破って。',
+    f_o:'根',f_h:'USB オーディオと MIDI',f_p:'FM-1 がタイミングの正確なオーディオインターフェースに。各トラックを別々のチャンネルで DAW へ（STEMS）。パートごとに別々に録音できます。USB、Bluetooth、TRS の MIDI に対応。',f_go:'別製品：近日公開',
+    nv_eb:'迷わない',nv_h2:'6 つのルール、1 枚の地図',nv_in:'0.9.2 から、どのセクションも同じ操作です。6 つのルールを一度覚えれば、シンセ全体がわかります。地図は各ボタンのグループとページを SELECT がたどる順に示し、3 つのスキン（AIR、COLORS、HUD）すべてで同じです。',nv_cap:'ナビゲーションマップ · クリックで拡大（SVG、ズーム可）',
+    nv1_o:'SELECT',nv1_h:'SELECT でページをめくる',nv1_p:'セクションごとに 1 本のページの鎖。1 クリックで 1 ページ、最初と最後のページで止まります。',
+    nv2_o:'ボタン',nv2_h:'ボタン：入る、または進む',nv2_p:'別のセクションからは、前回いたページへ。中にいれば、次のグループの最初のページへ（一巡します）。',
+    nv3_o:'PRESETS',nv3_h:'PRESETS はプリセット',nv3_p:'どこでもトラックの音色、SEQ ではパターン、GEN ではジャンル。ページやトラックは変えません。',
+    nv4_o:'KNOB 1',nv4_h:'KNOB 1 で選ぶ',nv4_p:'ステップ、小節、スロット、ステージ、キットの音。トラックは常に ALGORITHM で選びます。',
+    nv5_o:'長押し',nv5_h:'長押し = レイヤー',nv5_p:'ボタンを押さえると鍵盤がショートカットに：SEQ + G5 でステップ消去、SAVE + C5 で名前、GLO + G4 で UNDO。押さえて SELECT：GEN、ダイス、テンポ。',
+    nv6_o:'画面',nv6_h:'画面が居場所を示す',nv6_p:'上のタブはセクションのグループ（1 ページに 1 つの点）、下には セクション · グループ · ページ と n/N。',
+    m_eb:'学ぶ',m_h2:'マニュアルとチートシート',m_in:'フルマニュアルはすべてのページとノブを説明します。チートシートは操作とサウンドのページをそれぞれ 1 枚にまとめたもので、FM-1 の横に置いておけます。',
+    mi_k:'新着 · インタラクティブマニュアル',mi_h:'インタラクティブマニュアル',mi_p:'FM-1 のどの操作子でも触れると、単独・長押し・組み合わせで何をするかが、ファームウェアの実際の画面とともにわかります。すべてのコマンドを検索し、手順どおりのレシピや新機能も確認できます（スペイン語 / 英語）。',mi_go:'マニュアルを開く →',
+    m1_h:'ユーザーマニュアル（英語）',m1_p:'すべてのページ、レイヤー、エンジンを英語で。',m2_h:'ユーザーマニュアル（スペイン語）',m2_p:'同じマニュアルのスペイン語版。',m3_h:'操作チートシート',m3_p:'ボタン、レイヤー、組み合わせを 1 ページに。',m4_h:'サウンドチートシート',m4_p:'エンジン、フィルター、エンベロープ、エフェクトを 1 ページに。',
+    n_eb:'次に来るもの',n_h2:'今後のアップデート',n_in:'いまラボで作り、テストしているもの。時期は実機 FM-1 でのテスト次第です。',
+    r1:'ステム + あなたの声（STEMS+IN）',r2:'別製品、近日公開',r3:'ライブビジュアル',r4:'FX バス A–D、トラックごとにルーティング',r5:'SMK への JIANT 移植',r_test:'テスト中',r_test2:'公開中 · 1.0',r_lab:'ラボで開発中',r_lab2:'ラボで開発中',r_plan:'予定',r_more:'コミュニティからのアイデア',
+    e_k:'先行アクセス',e_h3:'サポーターは新バージョンをいちばん先に',e_p1:'Ko-fi や Cafecito で JIANT を支援してくれた方は、公開前に新バージョンを受け取り、次に作るものを一緒に決められます。',e_go:'Ko-fi で参加する',
+    sup_eb:'支援',sup_h2:'JIANT は無料です。音楽づくりの役に立ったら、コーヒーを一杯おごってください。',sup_in:'JIANT を作っているのは、ブエノスアイレスの壁画家でビジュアルアーティストの Juan Jiant です。支援は開発の時間にあてられ、ファームウェアを誰にでも無料のままにします。',
+    k_z:'世界 · usd',k_p:'どの国からでも、カードまたは PayPal で。1 回でも毎月でも、新バージョンへの先行アクセス付き。',c_z:'アルゼンチン · ars',cf_p:'アルゼンチンからペソで、Mercado Pago またはカードで。',
+    q_h2:'インストールの前に',q1:'公式ファームウェアに戻せますか？',a1:'はい。インストーラーに公式 V15 ファームウェアへ戻すボタンがあります（M-VAVE 公式の FM-1.fwsc を選びます）。先に完全なバックアップを保存します。',
+    q2:'どのブラウザが必要ですか？',a2:'インストーラーとエディターには、パソコンの Chrome か Edge が必要です（USB で FM-1 と通信します）。エミュレーターは他のブラウザやスマホでも動きます。',
+    q3:'音色やプロジェクトは消えますか？',a3:'インストールやバージョン変更の前に、エディターでバックアップしてください。インストーラーは以前のバージョンも入れられますが、新しいバージョンで保存したプロジェクトは古いバージョンで正しく開けないことがあります。',
+    q4:'インストーラーが FM-1 を見つけません。',a4:'データ通信できる USB ケーブルを使い（充電専用のケーブルが多いです）、ハブを通さずパソコンに直接つなぎ、MIDI で FM-1 を使う他のソフトを閉じてください。',
+    nat_k:'新しいページ · 周波数',nat_h:'自然の中の周波数',nat_p:'物質は光、色は周波数。太陽周期からガンマ線までのはしごと、シンセがすでにその中にいることを示す 4 つの鳴る例。',nat_go:'はしごを登る →',f_nat:'自然の中の周波数',
+    tm:'Hügelton Instruments の Felucca をもとに作られています。M-VAVE と FM-1 は各所有者の商標です。JIANT はそれらおよび Hügelton Instruments とは無関係で、承認も受けていません。'};
+  const EN={};document.querySelectorAll('[data-i18n]').forEach(el=>{EN[el.getAttribute('data-i18n')]=el.textContent;});
+  const D={en:EN,es:ES,zh:ZH,ja:JA};
+  function set(l){if(!D[l])l='en';const d=D[l];document.documentElement.lang=l==='zh'?'zh-Hans':l;
+    document.querySelectorAll('[data-i18n]').forEach(el=>{const v=d[el.getAttribute('data-i18n')];if(typeof v==='string')el.textContent=v;});
+    document.querySelectorAll('.lang button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===l)));
+    const nm=document.getElementById('navmap'),nl=document.getElementById('navmap-link'),sf=l==='es'?'.es':'';
+    if(nm){nm.src='docs/navigation-map'+sf+'.png';}if(nl){nl.href='docs/navigation-map'+sf+'.svg';}
+    try{localStorage.setItem('jiant-lang',l);}catch(e){}}
+  document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',()=>set(b.dataset.lang)));
+  let l=null;try{l=localStorage.getItem('jiant-lang');}catch(e){}
+  if(!l){const n=(navigator.language||'').toLowerCase();l=n.startsWith('es')?'es':n.startsWith('zh')?'zh':n.startsWith('ja')?'ja':'en';}
+  set(l);
+  /* the version the installer offers now (firmware/versions.json, next to this page on the site) */
+  fetch('firmware/versions.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(v=>{
+    if(Array.isArray(v)&&v[0]&&v[0].version)document.getElementById('ver').textContent='v'+String(v[0].version).replace(/^v/,'');
+  }).catch(()=>{});
+})();
+</script>
+</body>
+</html>
