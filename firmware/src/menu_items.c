@@ -5,7 +5,7 @@
  * MENU_DESC / MENU_SET). One apply path for both: menu_put. A row is a setting (its MI_* is its place in the menu's
  * tables, not stored: the editor's ids are editor_menu.c ED_MENU's). Live: eight pages of up to four knobs in five
  * tabs (MPAGE): SCREEN (SCOPE SCREEN SLEEP; LEDS: LED GLOW SCALE LEDS), AUDIO
- * (SPEAKER EQ TRACKS LOAD BPM LOCK; CLICK CLICK LEVEL COUNT-IN), MIDI (MIDI OUT LEARN LEARN CLEAR RX CHANNEL), USB (USB AUDIO USB
+ * (SPEAKER EQ TRACKS LOAD BPM LOCK; CLICK CLICK LEVEL COUNT-IN), MIDI (MIDI OUT LEARN LEARN CLEAR), USB (USB AUDIO USB
  * LEVEL), SYSTEM (CONTROLS: HOLD TIME KNOB SPEEDUP FX LATCH CALIBRATION; SYSTEM: RESTORE LAST CPU CORES CPU CLOCK, what
  * a power-on does, and ABOUT). Until 0.9.17 one list in the
  * tabs DISPLAY CONTROL AUDIO MIDI SYSTEM, SELECT a row, any knob its value; the stored values and their meanings are
@@ -39,16 +39,14 @@ static const char *const MI_NAME[MI_COUNT] = {"COLOR", "SKIN", "SCOPE", "STYLE",
  * OCT+ does it */
 enum { MTAB_SCREEN, MTAB_AUDIO, MTAB_MIDI, MTAB_USB, MTAB_SYSTEM, MTAB_COUNT };
 static const char *const MTAB_NAME[MTAB_COUNT] = {"SCREEN", "AUDIO", "MIDI", "USB", "SYSTEM"};
-#define MP_COUNT 10u
+#define MP_COUNT 8u
 typedef struct { char name[9]; uint8_t tab, row[4]; } menu_page_t;
 static const menu_page_t MPAGE[MP_COUNT] = {   /* (a page opens on its first setting: a value, never an action) */
     {"SCREEN", MTAB_SCREEN, {MI_SCOPE, MI_NONE, MI_SCROFF, MI_NONE}},
     {"LEDS", MTAB_SCREEN, {MI_LEDS, MI_SCLLED, MI_NONE, MI_NONE}},
     {"AUDIO", MTAB_AUDIO, {MI_LOWCUT, MI_TRACKS, MI_LOAD, MI_BPMLOCK}},
     {"CLICK", MTAB_AUDIO, {MI_CLICK, MI_CLKLVL, MI_COUNTIN, MI_NONE}},
-    {"MIDI", MTAB_MIDI, {MI_MIDIOUT, MI_LEARN, MI_LCLEAR, MI_T1_RX}},
-    {"MIDI", MTAB_MIDI, {MI_T2_RX, MI_T3_RX, MI_T4_RX, MI_T5_RX}},
-    {"MIDI", MTAB_MIDI, {MI_T6_RX, MI_NONE, MI_NONE, MI_NONE}},
+    {"MIDI", MTAB_MIDI, {MI_MIDIOUT, MI_LEARN, MI_LCLEAR, MI_NONE}},
     {"USB", MTAB_USB, {MI_SERIAL, MI_USB, MI_NONE, MI_NONE}},
     {"CONTROLS", MTAB_SYSTEM, {MI_HOLD, MI_ACCEL, MI_LATCH, MI_PANEL}},
     {"SYSTEM", MTAB_SYSTEM, {MI_RESTORE, MI_CPU, MI_CLOCK, MI_ABOUT}},   /* (RESTORE LAST, CPU CORES, CPU CLOCK: at power-on) */
@@ -62,7 +60,8 @@ static uint32_t menu_page_of(uint32_t row)             /* the page a row is on *
                 return p;
     return 0;
 }
-static uint32_t mi_tab(uint32_t row) { return MPAGE[menu_page_of(row)].tab; }
+/* T1..T6 RX remain accessible through the editor\'s stable MENU IDs,\n * even though the device edits them exclusively in GLO > MIXER. */
+static uint32_t mi_tab(uint32_t row) { return row >= MI_T1_RX && row <= MI_T6_RX ? MTAB_MIDI : MPAGE[menu_page_of(row)].tab; }
 static uint32_t mtab_page(uint32_t t)                  /* a tab's first page */
 {
     uint32_t p = 0;
