@@ -266,10 +266,13 @@ static void midi_cc_set(track_t *t, uint32_t id, uint32_t value)
  * CC64 the pedal, CC120..127 the channel modes, and the standard map's (MIDI_CC_MAP): so a learned CC and the map never
  * meet. The UI writes the entries with the interrupts off; ml.arm / ml.heard hand it a CC heard while learning. Its
  * state in the pool (not among the globals the audio ISR reaches) */
-#define ML_N 10u
+#define ML_N 32u
+#define ML_OLD_N 10u
+#define FELUCCA_MIDI_LEARN 1
 #define ML_E0 120u
 typedef char ml_ids_fit[P_E0 < ML_E0 && P_COUNT - P_E0 <= 256u - ML_E0 && NTRK <= 8 ? 1 : -1];
-static uint8_t *const ml_tab;               /* (midi_learn.c: favorites.factory[ENGI_DIGITAL] + 2; a build without the UI none) */
+static uint8_t ml_table[3u * ML_N];          /* runtime mirror: first ten migrate from PER5, rest from PER6 */
+static uint8_t *const ml_tab = ml_table;
 static struct {
     uint8_t on, pick, trk, id;               /* LEARN on; a parameter picked (a knob turned): track, P_* id */
     volatile uint8_t arm, heard;             /* the UI waits for a CC; the CC that came meanwhile + 1 (0 none) */
