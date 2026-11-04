@@ -86,25 +86,26 @@ static void up_set_value(up_rec_t *r, uint32_t k, int16_t v)
 /* Legacy PHYS drums map through decoded parameters, not their disk representation. */
 static void up_migrate(up_rec_t *r)
 {
-    int16_t e[8]; uint32_t k;
+    int16_t e[8]; uint32_t k, pe;
     if (!up_valid(r)) return;
-    for (k = 0; k < 8u; k++) e[k] = up_value(r, r->np - 8u + k);
+    pe = r->np == P_COUNT ? P_E0 : r->np - 8u;
+    for (k = 0; k < 8u; k++) e[k] = up_value(r, pe + k);
     if (drum_from_phys(r->engine, e) || drum_from_perc(r->engine, e)) {   /* (SAMPLE PERC: see the top) */
         r->engine = ENGI_DRUM;
-        for (k = 0; k < 8u; k++) up_set_value(r, r->np - 8u + k, e[k]);
+        for (k = 0; k < 8u; k++) up_set_value(r, pe + k, e[k]);
     }
     if (analog_from_trio(r->engine, e)) {               /* (JIANT 0.4) TRIO: ANALOG's nearest */
         r->engine = 0;
-        for (k = 0; k < 8u; k++) up_set_value(r, r->np - 8u + k, e[k]);
+        for (k = 0; k < 8u; k++) up_set_value(r, pe + k, e[k]);
     }
     {
         uint32_t mk = r->ver >= 4u && r->np <= UP_FM_AT ? r->packed[UP_FM_AT] : 0u;
         if (r->engine == ENGI_DRUM && mk != UP_FM_MARK && mk != UP_V04_MARK)
-            up_set_value(r, r->np - 3u, 0);             /* (JIANT 0.3) ACC there: FM off */
+            up_set_value(r, pe + 5u, 0);             /* (JIANT 0.3) ACC there: FM off */
         if (mk != UP_V04_MARK && r->ver >= 4u && r->np <= UP_FM_AT) {   /* (0.4) LOFI, ANALOG: today's values (records */
-            for (k = 0; k < 8u; k++) e[k] = up_value(r, r->np - 8u + k);   /* before 1.0, unmarkable: as they are) */
+            for (k = 0; k < 8u; k++) e[k] = up_value(r, pe + k);   /* before 1.0, unmarkable: as they are) */
             sound_v04(r->engine, e);
-            for (k = 0; k < 8u; k++) up_set_value(r, r->np - 8u + k, e[k]);
+            for (k = 0; k < 8u; k++) up_set_value(r, pe + k, e[k]);
             r->packed[UP_FM_AT] = UP_V04_MARK;
         }
     }
