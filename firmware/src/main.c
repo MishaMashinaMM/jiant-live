@@ -240,7 +240,6 @@ static void fm1_main(void)
     prefs_update();                                     /* (JIANT 0.6.44) FX LATCH ON by default, once */
     usb_serial_apply();                                 /* (#67: the saved USB SERIAL before usb_start) */
     lcd_init();
-    spl_anim = 1;                                       /* (JIANT 0.5) the signature written: splash_write */
     draw_splash();                                      /* ui_draw.c (1.1.5) */
     if (felucca_dbg.magic != DBG_MAGIC) {
         memset(&felucca_dbg, 0, sizeof felucca_dbg);
@@ -296,9 +295,8 @@ static void fm1_main(void)
                                                * followed (MIDI IN plays under it). (0.5.2) On the clock: drawing the
                                                * beings does not make it longer */
         uint32_t t0 = fm1_ms, n;
-        for (n = 0; n < 600u && (ms = fm1_ms - t0) < SPL_WRITE + SPL_HOLD; n++) {   /* (600: a stalled clock still
+        for (n = 0; n < 600u && (ms = fm1_ms - t0) < SPL_HOLD; n++) {   /* (600: a stalled clock still
                                                                                    * ends it, in ~2.4 s) */
-            splash_write(ms);
             fm1_delay_ms(4);
             master_poll();
         }
