@@ -197,7 +197,7 @@ static void old_image(uint8_t *o, const project_store_t *st, uint32_t np, uint32
     for (k = 0; k < MOTION_MAX; k++) {
         uint8_t *p = o + old_motion + k * 4u + 1u;
         if ((*p & 0x7Fu) >= P_E0)
-            *p = (uint8_t)((*p & MOTION_LOCK) | ((*p & 0x7Fu) - (P_COUNT - np)));
+            *p = (uint8_t)((*p & MOTION_LOCK) | ((*p & 0x7Fu) - (P_E0 - (np - 8u))));
     }
     if (size == PROJ_STORE_VA) {
         memcpy(o + fm6 - 96u - 48u, b + PROJ_PFX_OFF, 37u);   /* (the lane, its tracks, the macros: no new globals) */
@@ -230,7 +230,7 @@ int main(void)
 
     bad += check("layout: SLICER after DETUNE, then the matrix just before P_E0",
                  P_SLCR == P_DETUNE + 1 && P_SLDEPTH + 1 == P_M1SRC && P_M4AMT + 1 == P_FM1_ATK && P_FM4_LEVEL + 1 == P_SOFS && P_POFS + 1 == P_LN0 &&
-                 P_LN7 + 1 == P_DTYPE && P_MS15 + 1 == P_FTYPE && P_FRES + 1 == P_E0 && P_E0 == 115 && P_COUNT == PROJ_NP_V3 + 66u &&
+                 P_LN7 + 1 == P_DTYPE && P_MS15 + 1 == P_FTYPE && P_FRES + 1 == P_E0 && P_E0 == 115 && P_COUNT == PROJ_NP_V3 + 70u && P_LN8 == 123 && P_LN11 == 126 &&
                  PROJ_NP_V3 == PROJ_NP_V2 + 4u);
     bad += check("FUNB fits one flash object (its whole payload), the retained cache in NOINIT",
                  sizeof(project_store_t) == 4096u - 256u && 0xC8u + 4u * sizeof(project_store_t) <= 0x3D50u);
