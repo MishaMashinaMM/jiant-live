@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  * Portions Copyright (C) 2026 Juan Ignacio Antonucci (Juan Jiant) */
-/* Shared PER5 layout (unchanged PER4 prefix, eight-byte MIDI RX extension): each feature updates only its own fields, preserving
+/* Shared PER6 layout (unchanged PER5 prefix, 66-byte MIDI LEARN extension): each feature updates only its own fields, preserving
  * the other feature's saved preferences when either is built independently.
- * PER1/PER2 are upstream; PER3 added bold; PER4 added favorites; PER5 adds six receive channels.
+ * PER1/PER2 are upstream; PER3 added bold; PER4 added favorites; PER5 adds six receive channels; PER6 adds 22 MIDI LEARN assignments.
  * palette: UI_PAL_TAG + index; Live normalizes every imported/exported value to JIANT (74).
  * bold: no longer used (one font weight); kept as it was saved, unless it holds the HOLD setting (panel.c).
  * zoom: no longer used (the large readout); kept as it was saved, unless it holds the LEDS setting (panel.c).
@@ -19,21 +19,26 @@ typedef struct {
     uint32_t bold;
     struct { uint8_t factory[16][32]; uint32_t user, filter; } favorites;
     uint8_t midi_rx[6], rx_reserved[2];         /* PER5 extension; the PER4 prefix is unchanged */
+    uint8_t ml_extra[66];                       /* PER6: learned CC entries 11..32, three bytes each */
+    uint8_t ml_reserved[2];                      /* explicit alignment, zero on export */
 } persist_t;
-#define PERSIST_V4_SIZE (sizeof(persist_t) - 8u)
+#define PERSIST_V5_SIZE (sizeof(persist_t) - 68u)
+#define PERSIST_V4_SIZE (PERSIST_V5_SIZE - 8u)
 #define PERSIST_MAGIC_V4 0x50455234u
-#define PERSIST_MAGIC 0x50455235u
+#define PERSIST_MAGIC_V5 0x50455235u
+#define PERSIST_MAGIC 0x50455236u
 #define JIANT_PAL_SEEN 0x4Au                    /* favorites.factory[15][23]: the palette set to JIANT once */
 
 /* Normalize in place; 1 = current, 2 = migrated, 0 = invalid. */
 static int settings_import(persist_t *p, int n)
 {
     int current = n == (int)sizeof *p && p->magic == PERSIST_MAGIC;
+    int old5 = n == (int)PERSIST_V5_SIZE && p->magic == PERSIST_MAGIC_V5;
     int old4 = n == (int)PERSIST_V4_SIZE && p->magic == PERSIST_MAGIC_V4;
     int old3 = n == (int)(PERSIST_V4_SIZE - sizeof p->favorites) && p->magic == 0x50455233u;
     int old2 = n == (int)(PERSIST_V4_SIZE - sizeof p->favorites - sizeof p->bold) && p->magic == 0x50455232u;
     int old1 = n == (int)(8u + sizeof(panel_t)) && p->magic == 0x50455231u;
-    if (!(current || old4 || old3 || old2 || old1)) return 0;
+    if (!(current || old5 || old4 || old3 || old2 || old1)) return 0;
     if (old1) {
         panel_t old;
         memcpy(&old, (uint8_t *)p + 8, sizeof old);
@@ -41,13 +46,24 @@ static int settings_import(persist_t *p, int n)
         p->lowcut = p->zoom = 0;
     }
     if (old1 || old2) p->bold = 0;
-    if (!(current || old4)) memset(&p->favorites, 0, sizeof p->favorites);
+    if (!(current || old5 || old4)) memset(&p->favorites, 0, sizeof p->favorites);
     for (uint32_t i = 0; i < 6u; i++) {
-        if (!current || p->midi_rx[i] < 1u || p->midi_rx[i] > 16u)
+        if (!(current || old5) || p->midi_rx[i] < 1u || p->midi_rx[i] > 16u)
             p->midi_rx[i] = (uint8_t)(i + 1u);
         midi_rx[i] = p->midi_rx[i];
     }
     memset(p->rx_reserved, 0, sizeof p->rx_reserved);
+#ifdef FELUCCA_MIDI_LEARN
+    /* Old settings kept ten entries in DIGITAL's retired favorites row.
+     * PER6 adds the other 22; a PER5 import must not read beyond its length. */
+    memcpy(ml_table, &p->favorites.factory[ENGI_DIGITAL][2], 3u * ML_OLD_N);
+    if (current)
+        memcpy(ml_table + 3u * ML_OLD_N, p->ml_extra, sizeof p->ml_extra);
+    else
+        memset(ml_table + 3u * ML_OLD_N, 0, sizeof p->ml_extra);
+#endif
+    if (!current) memset(p->ml_extra, 0, sizeof p->ml_extra);
+    memset(p->ml_reserved, 0, sizeof p->ml_reserved);
     p->favorites.factory[15][20] = 3u;           /* Live: SKIN AIR, including legacy and restored settings. */
     if (p->favorites.factory[15][19] > 1u)         /* SCOPE (0.9.7, ui.c ui_scope): unknown = OFF (0, older settings too) */
         p->favorites.factory[15][19] = 0;
@@ -119,6 +135,9 @@ static void settings_jiant_once(persist_t *p)
 static void settings_fresh(void)
 {
     for (uint32_t i = 0; i < 6u; i++) midi_rx[i] = (uint8_t)(i + 1u);
+#ifdef FELUCCA_MIDI_LEARN
+    memset(ml_table, 0, sizeof ml_table);
+#endif
 #ifdef FELUCCA_FAVORITES
     favorites.factory[15][20] = SKIN_AIR;
     favorites.factory[15][29] = 0;
@@ -133,6 +152,10 @@ static void settings_export(persist_t *p)
     p->magic = PERSIST_MAGIC;
     for (uint32_t i = 0; i < 6u; i++) p->midi_rx[i] = (uint8_t)midi_rx_channel(i);
     memset(p->rx_reserved, 0, sizeof p->rx_reserved);
+#ifdef FELUCCA_MIDI_LEARN
+    memcpy(p->ml_extra, ml_table + 3u * ML_OLD_N, sizeof p->ml_extra);
+#endif
+    memset(p->ml_reserved, 0, sizeof p->ml_reserved);
     p->palette = palette_to_stored(UI_JIANT_INDEX);
     p->lowcut = settings.lowcut;
     p->zoom = settings.zoom = leds_to_stored(settings.zoom, settings_leds);
@@ -143,6 +166,10 @@ static void settings_export(persist_t *p)
     favorites.factory[15][29] = 0;
     favorites.factory[15][30] |= 34u;
     memcpy(&p->favorites, &favorites, sizeof favorites);
+#endif
+#ifdef FELUCCA_MIDI_LEARN
+    /* Write the legacy ten *after* copying favorites so they are not overwritten. */
+    memcpy(&p->favorites.factory[ENGI_DIGITAL][2], ml_table, 3u * ML_OLD_N);
 #endif
     p->favorites.factory[15][30] |= 34u; /* Live display policy, including builds without favorites. */
     p->favorites.factory[15][29] = 0;
