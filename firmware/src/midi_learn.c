@@ -10,8 +10,7 @@
  * turn the next knob. LEARN OFF (or the menu's LEARN CLEAR, every CC) ends it. One CC sets one parameter, a parameter
  * has one CC: learning one again replaces both. A CC with a meaning of its own is refused ("CC64 RESERVED"); with
  * ML_N learned, "LEARN FULL". Saved with the settings as each one changes (deferred while playing) */
-static uint8_t *const ml_tab = &favorites.factory[ENGI_DIGITAL][2];
-typedef char ml_row_fits[2u + 3u * ML_N <= sizeof favorites.factory[0] ? 1 : -1];
+typedef char ml_legacy_row_fits[2u + 3u * ML_OLD_N <= sizeof favorites.factory[0] ? 1 : -1];
 
 static uint32_t ml_code(uint32_t id) { return id >= P_E0 ? ML_E0 + id - P_E0 : id + 1u; }
 static void ml_put(uint32_t i, uint32_t cc, uint32_t k, uint32_t code)   /* (the ISR reads the three: never part of one) */
