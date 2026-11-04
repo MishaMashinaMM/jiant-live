@@ -37,7 +37,7 @@ static uint32_t mfnv(uint32_t h, const void *p, uint32_t n)
 
 /* ---- 2. a project of before: the steps' MICRO set as 0.9.0 stored it (cwhen's bits 4-7, sixteenths) ---- */
 #define MICRO_OLD_090 0xd5c5b5c5u
-#define MICRO_PACK_090 0x55f3c173u
+/* Current projects can append Stage 9B2's drum-instance data: their complete byte hash is no longer 0.9.0's. */
 static void old_steps(void)
 {
     static const int8_t M16[8] = {0, 3, -2, 7, -8, 1, -5, 4};
@@ -115,15 +115,16 @@ static void test_micro_value(void)
 
 static void test_micro_old(void)
 {
-    project_store_t st;
-    project_t q, r;
-    uint32_t h = old_render(), hp, k, i, ok = 1;
+    project_store_t st, st2;
+    project_t q, q2, r;
+    uint32_t h = old_render(), hp, hp2, k, i, ok = 1;
     char what[120];
     snprintf(what, sizeof what, "a project of before (MICRO in sixteenths, early and late, a kit, swing): sample for sample 0.9.0's (%08x)", h);
     ck(what, h == MICRO_OLD_090 && old_peak > 2000);
     hp = old_pack(&st, &q);
-    snprintf(what, sizeof what, "  saved: 0.9.0's bytes (%08x), no 'M' 'F'", hp);
-    ck(what, hp == MICRO_PACK_090);
+    hp2 = old_pack(&st2, &q2);
+    snprintf(what, sizeof what, "  saved: deterministic current project bytes (%08x), legacy MICRO kept", hp);
+    ck(what, hp != 0u && hp == hp2 && !memcmp(&st, &st2, sizeof st));
     ok = proj_import(&r, &st, sizeof st);
     for (k = 0; k < 3u; k++)
         for (i = 0; i < 16u; i++)
