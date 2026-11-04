@@ -184,7 +184,7 @@ _Static_assert(sizeof(dx_lane_t[8]) == 88u && PROJ_DX_OFF == 3216u, "the kit's p
 #define G_GX_END G_SLMODE                       /* (0.6.3: the SLICER's globals after them, in their own block) */
 _Static_assert(37u + 1u + (G_GX_END - G_NSTORE) <= 48u, "the new globals in the punch-in block's spare bytes");
 _Static_assert(G_GX_END - G_NSTORE == 10u, "marker 3 holds ten new globals");
-_Static_assert(68u + PROJ_LT * (P_COUNT + 2u + NSTEP * 9u) + sizeof(chain_config_t) + sizeof(motion_store_t) <= PROJ_PFX_OFF,
+_Static_assert(68u + PROJ_LT * (P_E0 + 8u + 2u + NSTEP * 9u) + sizeof(chain_config_t) + sizeof(motion_store_t) <= PROJ_PFX_OFF,
                "the punch-in lane after the serialized part");
 typedef struct {                               /* a track of format 4, read only */
     int16_t p[PROJ_NP_V4];
@@ -1073,11 +1073,11 @@ static int proj_pack_vb(project_store_t *out, const project_t *q)
     for (t = 0; t < PROJ_LT; t++)
         for (i = 0; i < FM6_PACKED; i++)
             if (q->fm6[t][i] > 127u) return 0;
-    if (!chain_valid(&q->chain) || !motion_valid(&q->motion) || P_COUNT > 127u) return 0;
+    if (!chain_valid(&q->chain) || !motion_valid(&q->motion) || P_E0 + 8u > 127u) return 0;
     memset(out, 0, sizeof *out); memcpy(b, &magic, 4); memcpy(b + 4, &size, 4);
-    memcpy(b + 8, q->g, G_NSTORE * 2u); b[62] = q->sel; b[63] = q->parts; b[64] = q->phys; b[66] = P_COUNT;
+    memcpy(b + 8, q->g, G_NSTORE * 2u); b[62] = q->sel; b[63] = q->parts; b[64] = q->phys; b[66] = P_E0 + 8u;
     for (t = 0; t < PROJ_LT; t++) {
-        for (i = 0; i < P_COUNT; i++) {
+        for (i = 0; i < P_E0 + 8u; i++) {
             if (q->t[t].p[i] < -64 || q->t[t].p[i] > 127) return 0;
             b[pos++] = (uint8_t)(q->t[t].p[i] + 64);
         }
