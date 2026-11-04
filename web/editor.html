@@ -1963,13 +1963,13 @@ function makeMockDevice(opt = {}) {
   for (let k = 0; k < 16; k++) TP.push(D("LEVEL", F.PCT, 0, 127, 0));                     /* 96..111: its levels */
   TP.push(E("TYPE", extendedEdition ? ["LP", "HP", "BP", "COMB", "COMB-", "MS20"] : ["LP", "HP", "BP", "COMB"], 0), /* 112 */
     D("CUT", F.CUTOFF, 0, 127, 127), D("RES", F.PCT, 0, 127, 0));                       /* 113, 114: the other engines' */
-  const P_COUNT = 123, G_COUNT = extendedEdition ? 72 : 71, NSTEP = 64, P_E0 = 115, G_ENGSEL = 20, P_SLCR = 45;
+  const P_COUNT = 127, G_COUNT = extendedEdition ? 72 : 71, NSTEP = 64, P_E0 = 115, G_ENGSEL = 20, P_SLCR = 45;
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const enumOrig = (d, v) => d.fmt === F.ENUM && d.names ? aliasOf(d.names, v - d.min) + d.min : v;   /* params.c enum_orig */
   /* tracks (firmware v3): four synth parts (1.0), six (JIANT 0.6); engine / preset / p / step below are the selected track's */
   const NTRK = 6;
   const newTrack = () => ({ engine: 0, preset: 0, fm6: FM6.INIT_PK.slice(),
-    p: TP.map((d) => d.def).concat(new Array(8).fill(0)),
+    p: TP.map((d) => d.def).concat(new Array(8).fill(0), [127, 127, 127, 127]),
     motion: {on: true, events: []},
     step: Array.from({ length: NSTEP }, () => ({ chance: 100, ratchet: 1, n: 0, notes: [0, 0, 0, 0], time: 2, flags: 0, vel: 0, hit: 0, acc: 0 })) });
   const st = {
@@ -1989,7 +1989,9 @@ function makeMockDevice(opt = {}) {
     Object.defineProperty(st, k, { enumerable: false, get: () => st.tracks[st.sel][k], set: (v) => { st.tracks[st.sel][k] = v; } });
   }
   const watchMs = opt.watchMs || 3000;
-  const desc = (scope, id) => (scope === 0 && id < P_COUNT ? (id >= P_E0 ? ENG[st.engine].edit[id - P_E0] : TP[id])
+  const LN_EXTRA = ["B2", "S2", "O2", "T2"].map((x) => D(x, F.PCT, 0, 127, 127));
+  const trackDesc = (id, engine) => id >= P_E0 && id < P_E0 + 8 ? ENG[engine].edit[id - P_E0] : id >= P_E0 + 8 ? LN_EXTRA[id - P_E0 - 8] : TP[id];
+  const desc = (scope, id) => (scope === 0 && id < P_COUNT ? trackDesc(id, st.engine)
     : scope === 1 && id < G_COUNT ? GP[id] : null);
   const EMPTY = { n: 0, notes: [0, 0, 0, 0], time: 2, flags: 0, vel: 0, hit: 0, acc: 0, chance: 100, ratchet: 1 };
   const isDrum = () => ENG[st.engine].name === "DRUM";
@@ -2328,7 +2330,7 @@ function makeMockDevice(opt = {}) {
       }
       case CMD.TRACK_PARAM: {
         if (a.length < 2 || a[0] >= NTRK || a[1] >= P_COUNT) return null;
-        const t = st.tracks[a[0]], d = a[1] >= P_E0 ? ENG[t.engine].edit[a[1] - P_E0] : TP[a[1]];
+        const t = st.tracks[a[0]], d = trackDesc(a[1], t.engine);
         if (a.length >= 4 && d.max > d.min) t.p[a[1]] = enumOrig(d, clamp(v14dec(a[2], a[3]), d.min, d.max));
         b(a[0]); b(a[1]); v(t.p[a[1]]);
         break;
@@ -2566,7 +2568,7 @@ function makeMockDevice(opt = {}) {
     mute(on = !st.p[40]) { st.p[40] = on ? 1 : 0; push(CMD.CHANGED, [0, 40, ...v14enc(st.p[40])]); return st.p[40]; },
     /* a parameter of track i changed on the device: CHANGED for the selected track, else TRACK_CHANGED (v4 watch) */
     param(i, id, val) {
-      const t = st.tracks[i], d = id >= P_E0 ? ENG[t.engine].edit[id - P_E0] : TP[id];
+      const t = st.tracks[i], d = trackDesc(id, t.engine);
       t.p[id] = clamp(val, d.min, d.max);
       if (i === st.sel) push(CMD.CHANGED, [0, id, ...v14enc(t.p[id])]);
       else if (st.v4) push(CMD.TRACK_CHANGED, [i, id, ...v14enc(t.p[id])]);
