@@ -2544,8 +2544,14 @@ static int test_menu_tabs(void)
             ok &= menu_get(i) == (i == MI_COLOR ? UI_JIANT_INDEX : i == MI_SKIN || i == MI_STYLE ? 0u : 1u);
             continue;
         }
-        if (i >= MI_T1_RX && i <= MI_T6_RX)
+        if (i >= MI_T1_RX && i <= MI_T6_RX) {
+            uint32_t original = menu_get(i);
             ok &= n == 16u && str_eq(menu_vname(i, 0), "1") && str_eq(menu_vname(i, 15), "16");
+            menu_put(i, 15u); /* kept for editor MENU_SET compatibility, but hidden on device */
+            ok &= menu_get(i) == 15u && mi_tab(i) == MTAB_MIDI;
+            menu_put(i, original);
+            continue;
+        }
         for (j = 0; j <= n; j++)                       /* down to the first value (COLOR: round) */
             press(B_OCTDN);
         seen = 1u << menu_get(i);
