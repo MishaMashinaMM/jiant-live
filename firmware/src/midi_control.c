@@ -268,7 +268,7 @@ static void midi_cc_set(track_t *t, uint32_t id, uint32_t value)
  * state in the pool (not among the globals the audio ISR reaches) */
 #define ML_N 10u
 #define ML_E0 120u
-typedef char ml_ids_fit[P_E0 < ML_E0 && P_COUNT - P_E0 == 8 && NTRK <= 8 ? 1 : -1];
+typedef char ml_ids_fit[P_E0 < ML_E0 && P_COUNT - P_E0 <= 256u - ML_E0 && NTRK <= 8 ? 1 : -1];
 static uint8_t *const ml_tab;               /* (midi_learn.c: favorites.factory[ENGI_DIGITAL] + 2; a build without the UI none) */
 static struct {
     uint8_t on, pick, trk, id;               /* LEARN on; a parameter picked (a knob turned): track, P_* id */
