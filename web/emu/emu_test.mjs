@@ -19,6 +19,14 @@ const B = { FX: 0, SCL: 1, ENV: 2, LFO: 3, EDIT: 4, GLO: 5, HOME: 6, SAVE: 7, AR
 const EN = { SELECT: 0, ALGO: 1, PRESETS: 2, K1: 3, K2: 4, K3: 5, K4: 6 };
 let fails = 0;
 const check = (what, ok) => { console.log(`emu: ${what.padEnd(76)} ${ok ? "ok" : "FAIL"}`); if (!ok) fails++; };
+const emulatorPage = fs.readFileSync("web/emu/index.html", "utf8");
+check("Stage 10A: browser has a channel, note, velocity and 12-note drum test input",
+      ["midi-test-channel", "midi-test-note", "midi-test-velocity",
+       "midi-test-on", "midi-test-off", "midi-test-pulse", "midi-test-panic",
+       "midi-test-pads"].every((id) => emulatorPage.includes('id="' + id + '"')) &&
+      emulatorPage.includes("n < 48") && emulatorPage.includes("0x90 | ch") &&
+      emulatorPage.includes("0x80 | ch") && emulatorPage.includes("0xB0 | ch"));
+
 
 async function device(saved) {
   const { instance } = await WebAssembly.instantiate(bytes, {});
