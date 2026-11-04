@@ -7,39 +7,42 @@ int main(void)
 {
     ui_power_on(); trks_put(0); frame();
 
-    /* Six independent RX controls on three MIDI pages: T1 on page 4, T2-T5 on page 5, T6 on page 6 */
-    hold(B_HOME); menu_page_go(menu_page_of(MI_T1_RX)); frame();
+    /* The device has one MIDI page; RX assignments live in GLO > MIXER.
+     * Their stable MENU IDs remain for the editor protocol, but are not
+     * reachable from the physical MENU's cards or page navigation. */
+    hold(B_HOME); menu_page_go(mtab_page(MTAB_MIDI)); frame();
+    assert(MP_COUNT == 8u);
+    assert(menu_tab() == MTAB_MIDI);
+    assert(ui.menu_sel == MI_MIDIOUT);
+    assert(MPAGE[menu_page()].row[0] == MI_MIDIOUT);
+    assert(MPAGE[menu_page()].row[1] == MI_LEARN);
+    assert(MPAGE[menu_page()].row[2] == MI_LCLEAR);
+    assert(MPAGE[menu_page()].row[3] == MI_NONE);
+    for (uint32_t p = 0; p < MP_COUNT; p++)
+        for (uint32_t k = 0; k < 4u; k++)
+            assert(MPAGE[p].row[k] < MI_T1_RX || MPAGE[p].row[k] > MI_T6_RX);
+
+    /* The empty MIDI card does not select or edit a hidden RX setting. */
+    turn(EN_K4, 1);
+    assert(ui.menu_sel == MI_MIDIOUT);
+    turn(EN_SELECT, 1);
+    assert(menu_tab() == MTAB_USB);
+    turn(EN_SELECT, -1);
     assert(menu_tab() == MTAB_MIDI);
 
-    /* Page 1: K4 = T1 RX CH */
-    assert(ui.menu_sel == MI_MIDIOUT || ui.menu_sel == MI_LEARN || ui.menu_sel == MI_LCLEAR || ui.menu_sel == MI_T1_RX);
-    turn(EN_K4, 1);
-    assert(ui.menu_sel == MI_T1_RX);
+    /* The editor's six stable IDs still edit six independent tracks. */
+    for (uint32_t i = 0; i < 6u; i++) {
+        assert(mi_tab(MI_T1_RX + i) == MTAB_MIDI);
+        assert(menu_n(MI_T1_RX + i) == 16u);
+    }
     menu_put(MI_T1_RX, 2); assert(midi_rx[0] == 3);
-
-    /* Page 2: K1-K4 = T2-T5 RX CH */
-    turn(EN_SELECT, 1);
-    assert(ui.menu_sel == MI_T2_RX);
     menu_put(MI_T2_RX, 5); assert(midi_rx[1] == 6);
-    turn(EN_K2, 1);
-    assert(ui.menu_sel == MI_T3_RX);
     menu_put(MI_T3_RX, 9); assert(midi_rx[2] == 10);
-    turn(EN_K3, 1);
-    assert(ui.menu_sel == MI_T4_RX);
     menu_put(MI_T4_RX, 0); assert(midi_rx[3] == 1);
-    turn(EN_K4, 1);
-    assert(ui.menu_sel == MI_T5_RX);
     menu_put(MI_T5_RX, 15); assert(midi_rx[4] == 16);
-
-    /* Page 3: K1 = T6 RX CH, K2-K4 empty */
-    turn(EN_SELECT, 1);
-    assert(ui.menu_sel == MI_T6_RX);
     menu_put(MI_T6_RX, 7); assert(midi_rx[5] == 8);
-
-    /* Empty cards on page 3 do nothing */
-    turn(EN_K2, 1); assert(ui.menu_sel == MI_T6_RX);
-    turn(EN_K3, 1); assert(ui.menu_sel == MI_T6_RX);
-    turn(EN_K4, 1); assert(ui.menu_sel == MI_T6_RX);
+    for (uint32_t i = 0; i < 6u; i++)
+        assert(menu_get(MI_T1_RX + i) == midi_rx[i] - 1u);
 
     /* Each row edits its fixed track regardless of song.sel */
     song.sel = 0;
@@ -49,9 +52,9 @@ int main(void)
 
     /* Channel values 1-16, boundary clamping */
     menu_put(MI_T1_RX, 0); assert(midi_rx[0] == 1);
-    turn(EN_K4, -1); assert(midi_rx[0] == 1);            /* clamped at bottom */
+    assert(menu_get(MI_T1_RX) == 0);                  /* lower bound */
     menu_put(MI_T1_RX, 15); assert(midi_rx[0] == 16);
-    turn(EN_K4, 1); assert(midi_rx[0] == 16);            /* clamped at top */
+    assert(menu_get(MI_T1_RX) == 15);                 /* upper bound */
 
     /* Duplicate channel assignments allowed */
     menu_put(MI_T1_RX, 0); assert(midi_rx[0] == 1);
@@ -72,14 +75,13 @@ int main(void)
     /* ED_MENU[id-25] = MI_T1_RX..MI_T6_RX, editor sets midi_rx[id-25] */
     menu_put(MI_T1_RX, 0); assert(midi_rx[0] == 1);
 
-    fprintf(stderr, "BEFORE: ");
     menu_close(); project_capture(&proj_scratch);
     project_restore_runtime(&proj_scratch);
     apply_preset_to(&trk[0], 0); system_init();
 
     uint8_t expected[6] = {1, 1, 10, 12, 16, 8};
     assert(!memcmp(expected, midi_rx, sizeof expected));
-    puts("RX UI: six independent controls, pages, bounds, duplicates, TRACKS 4/6 persistence passed");
+    puts("RX UI: hidden MENU rows, six editor IDs, bounds, duplicates, TRACKS 4/6 persistence passed");
 
     /* ROUTE formatting unchanged */
     char value[8]; const char *unit;
