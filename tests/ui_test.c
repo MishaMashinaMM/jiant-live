@@ -2692,7 +2692,7 @@ static int test_menu_tabs(void)
  * arms it; a knob turned on a sound page picks that track's parameter, the next CC is learned to it (USB and the TRS
  * jack: one queue) and sets it as the knob does on any channel; another knob, another CC; the same CC again moves to the
  * new one, a parameter keeps one CC; the reserved CCs (CC1 6 11 64 120.., the standard map's: CC7 74 ..) refused and
- * still doing their own; ten at most ("LEARN FULL"); LEARN CLEAR clears them, NONE after; kept with the settings (the
+ * still doing their own; 32 at most ("LEARN FULL"); LEARN CLEAR clears them, NONE after; kept with the settings (the
  * row the old DIGITAL stars' migration leaves), not in a project; with LEARN off a knob picks nothing */
 static void ml_cc(uint32_t ch, uint32_t cc, uint32_t v, int uart)   /* a CC over USB-MIDI (as usb.c queues it) or TRS */
 {
@@ -2735,7 +2735,7 @@ static int test_midi_learn(void)
     ml_cc(0, 25, 0, 1);                                 /* .. the TRS jack */
     ok &= trk[song.sel].p[P_PAN] == TP[P_PAN].min;
     bad += check("0.9.12 MIDI LEARN: a knob picks its parameter, the next CC is learned, then sets it on any channel, USB or TRS", ok);
-    {   /* an EDIT page's knob: the engine's parameter, of the selected track; then the same CC to another parameter */
+    {   /* an EDIT page's knob: CC30 may control it and another parameter on this track */
         const page_t *pg;
         int16_t *vp;
         go_title("EDIT 1");
@@ -2747,42 +2747,45 @@ static int test_midi_learn(void)
         ml_cc(0, 30, 0, 0); frame();
         ok &= ml_cc_of(song.sel, id) == 31u && ml_count() == 2u;
         go_title("MIXER");
-        turn(EN_K2, 1);                                 /* LEVEL picked, CC30 again: moves there */
+        turn(EN_K2, 1);                                 /* LEVEL picked, CC30 again: adds a second destination */
         ml_cc(0, 30, 0, 0); frame();
-        ok &= ml_cc_of(song.sel, P_LEVEL) == 31u && !ml_cc_of(song.sel, id) && ml_count() == 2u;
+        ok &= ml_cc_of(song.sel, P_LEVEL) == 31u && ml_cc_of(song.sel, id) == 31u && ml_count() == 3u;
         turn(EN_K2, -1);                                /* LEVEL again, CC40: one CC a parameter */
         ml_cc(0, 40, 0, 0); frame();
-        ok &= ml_cc_of(song.sel, P_LEVEL) == 41u && ml_count() == 2u;
-        bad += check("0.9.12 MIDI LEARN: EDIT pages too; a CC learned again moves, a parameter keeps one CC", ok);
+        ok &= ml_cc_of(song.sel, P_LEVEL) == 41u && ml_cc_of(song.sel, id) == 31u && ml_count() == 3u;
+        bad += check("Stage 11 MIDI LEARN: EDIT pages too; one CC fans out, a parameter keeps one CC", ok);
     }
     {   /* the reserved CCs: refused, still doing their own */
         static const uint8_t R[] = {0, 1, 6, 11, 32, 38, 64, 96, 101, 120, 121, 123, 127, 5, 7, 10, 16, 23, 71, 74, 75, 91, 93, 94, 102, 105};
         ok = 1;
         for (i = 0; i < NELEM(R); i++) ok &= !ml_free_cc(R[i]) && ml_learn(R[i], 0, P_PAN) == 2u;
-        ok &= ml_free_cc(2) && ml_free_cc(24) && ml_free_cc(70) && ml_free_cc(119) && ml_count() == 2u;
+        ok &= ml_free_cc(2) && ml_free_cc(24) && ml_free_cc(70) && ml_free_cc(119) && ml_count() == 3u;
         go_title("MIXER");
         turn(EN_K3, 1);                                 /* PAN picked, CC7 (the map's LEVEL) sent: refused, LEVEL set */
         v0 = trk[0].p[P_LEVEL];
         ml_cc(0, 7, v0 > 60 ? 10 : 120, 0); frame();
-        ok &= msg_is("CC7 RESERVED") && ml.pick && ml_count() == 2u && trk[0].p[P_LEVEL] != v0;
+        ok &= msg_is("CC7 RESERVED") && ml.pick && ml_count() == 3u && trk[0].p[P_LEVEL] != v0;
         bad += check("0.9.12 MIDI LEARN: CC0 1 6 11 32 38 64 96..101 120..127 and the standard map's refused, still doing their own", ok);
     }
-    {   /* ten at most */
-        ok = 1;
-        for (i = 0; i < 12u; i++)
-            ok &= ml_learn(50u + i, i % NTRK, P_E0 + i / NTRK) == (i < 8u ? 1u : 0u);
+    {   /* Fill all 32 entries without overwriting another destination. */
+        uint32_t cc = 42u;
+        ok = ml_count() == 3u;
+        for (i = 0; i < ML_N - 3u; i++) {
+            while (cc < 120u && !ml_free_cc(cc)) cc++;
+            ok &= cc < 120u && ml_learn(cc++, i % NTRK, P_ATK + i / NTRK) == 1u;
+        }
         ok &= ml_count() == ML_N;
         go_title("EDIT 1");
         turn(EN_K2, 1);                                 /* T4's E2: none; CC90, no room */
         ml_cc(0, 90, 0, 0); frame();
         ok &= msg_is("CC90: LEARN FULL") && ml_count() == ML_N;
-        bad += check("0.9.12 MIDI LEARN: ten CCs at most (LEARN FULL)", ok);
+        bad += check("Stage 11 MIDI LEARN: 32 CC destinations at most (LEARN FULL)", ok);
     }
     {   /* kept with the settings, not with a project; LEARN CLEAR */
         persist_t p;
         uint8_t keep[32];
-        memcpy(keep, favorites.factory[ENGI_DIGITAL], 32);
         settings_export(&p);
+        memcpy(keep, p.favorites.factory[ENGI_DIGITAL], 32);
         ml_put(0, 0, 0, 0);
         ok = settings_import(&p, (int)sizeof p) && !memcmp(keep, favorites.factory[ENGI_DIGITAL], 32) && ml_count() == ML_N;
         p.favorites.factory[ENGI_DIGITAL][0] = 0xFF;       /* (an old setting's DIGITAL stars: to FM6's, MIDI LEARN's kept) */
