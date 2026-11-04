@@ -299,18 +299,20 @@ int main(void)
         bad += check("UP_PUT of SAMPLE PERC -> DRUM kit", ok);
     }
 
-    /* map by count: a record from a build with 2 parameters fewer */
+    /* map by count: a saved record of the previous 123-parameter layout, before four appended DRUM levels */
     for (i = 0; i < P_COUNT; i++)
         def[i] = (int16_t)(1000 + i);
-    r.np = P_COUNT - 2u;
+    r.np = P_E0 + 8u;
     for (i = 0; i < P_COUNT; i++)
         up_set_value(&r, i, (int16_t)i);
     up_params(&r, v, def);
     ok = 1;
     for (i = 0; i < P_E0; i++)
-        ok &= v[i] == (i < P_E0 - 2u ? (int16_t)i : def[i]);
+        ok &= v[i] == (int16_t)i;
     for (i = 0; i < 8u; i++)
-        ok &= v[P_E0 + i] == (int16_t)(P_E0 - 2u + i);
+        ok &= v[P_E0 + i] == (int16_t)(P_E0 + i);
+    ok &= v[P_LN8] == v[P_LN0] && v[P_LN9] == v[P_LN1] &&
+          v[P_LN10] == v[P_LN4] && v[P_LN11] == v[P_LN5];
     bad += check("np < P_COUNT: mapped by count", ok);
     /* a record saved before the SLICER (P_COUNT 53, P_E0 45): the four SLICER parameters (just
      * before P_E0) take their defaults, everything else keeps its id */
@@ -320,7 +322,8 @@ int main(void)
         r.p[i] = (int16_t)(2000 + i);
     up_params(&r, v, def);
     ok = P_SLCR == 45 && P_SLDEPTH + 1 == P_M1SRC && P_M4AMT + 1 == P_FM1_ATK && P_FM4_LEVEL + 1 == P_SOFS &&
-         P_POFS + 1 == P_LN0 && P_LN7 + 1 == P_DTYPE && P_MS15 + 1 == P_FTYPE && P_FRES + 1 == P_E0 && P_E0 == 115 && P_COUNT == 123;
+         P_POFS + 1 == P_LN0 && P_LN7 + 1 == P_DTYPE && P_MS15 + 1 == P_FTYPE && P_FRES + 1 == P_E0 && P_E0 == 115 && P_COUNT == 127 &&
+          P_LN8 == 123 && P_LN11 == 126;
     for (i = 0; i < 45u; i++)
         ok &= v[i] == (int16_t)(2000 + i);
     for (i = P_SLCR; i < P_E0; i++)
