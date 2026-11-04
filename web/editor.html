@@ -4594,10 +4594,10 @@ async function libAdopt(d) {
     const name = p.engineName || (libMeta.engines || [])[p.engine];
     const digital = noFm4 && !p.fm6 && (name === "DIGITAL" || ((!name || name === "-") && p.engine === 1));
     const pe0 = () => (keys && p.p.length === keys.length ? d.info.pe0 : p.p.length - 8);   /* (E1..E8: the last 8) */
-    const perc = !digital && !!fromPerc({ ...p, engineName: name }, engines, p.p.length - 8);
+    const perc = !digital && !!fromPerc({ ...p, engineName: name }, engines, pe0());
     if (!relayout && !digital && !perc) continue;
     if (relayout) p.p = remapParams(p.p, libMeta.keys, keys);
-    const pt = digital ? fromDigital(p, engines, pe0()) : perc ? fromPerc({ ...p, engineName: name }, engines, pe0()) : null;
+    const pt = digital ? fromDigital(p, engines, d.info.pe0) : perc ? fromPerc({ ...p, engineName: name }, engines, d.info.pe0) : null;
     if (pt) Object.assign(p, cleanPatch(pt));
     else {
       const e = name ? engines.indexOf(name) : p.engine;
