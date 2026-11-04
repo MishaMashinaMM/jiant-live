@@ -128,6 +128,8 @@ typedef struct {
     motion_store_t motion;
     uint8_t fm6[NTRK][FM6_PACKED];             /* each track's FM6 patch, packed (eng_fm6.c) */
     dx_lane_t dx[8];                           /* the DRUM-X kit (drumx_voice.c) */
+    dx_lane_t dx12[4];                         /* 9B2: B2/S2/O2/T2 independent patches */
+    uint8_t dx_snd12[4], dx_lay12[4];          /* their independent sends, layers and feedback */
     uint16_t dx_mute;                          /* its mutes (eng_drum.c: the groups DXG_* in the first reserved byte, the
                                                 * sounds' DXM_LANE in the second) */
     uint8_t dx_mot[4];                         /* (0.5.1) the kit's X-MOD (eng_drum.c), in its reserved bytes 3..6 */
@@ -548,6 +550,25 @@ static int proj_from_v1(project_t *q, const project_v1_t *v1, int n)
 /* n bytes of a stored project (any format) -> slot q as format 6; 0 = not a project */
 static int proj_unpack(project_t *q, const uint8_t *b, uint32_t size);
 /* the init patch on every track (a project of a format before FUN8), the factory DRUM-X kit (before FUNA) */
+static void proj_dx12_clone(project_t *q)
+{
+    static const uint8_t source[4] = {DV_KICK, DV_SNARE, DV_HATO, DV_TOM};
+    uint32_t i;
+    for (i = 0; i < 4u; i++) {
+        q->dx12[i] = q->dx[source[i]];
+        q->dx_snd12[i] = q->dx_snd[source[i]];
+        q->dx_lay12[i] = q->dx_lay[source[i]];
+    }
+}
+static int proj_dx12_changed(const project_t *q)
+{
+    static const uint8_t source[4] = {DV_KICK, DV_SNARE, DV_HATO, DV_TOM};
+    uint32_t i;
+    for (i = 0; i < 4u; i++)
+        if (memcmp(&q->dx12[i], &q->dx[source[i]], sizeof q->dx12[i]) ||
+            q->dx_snd12[i] != q->dx_snd[source[i]] || q->dx_lay12[i] != q->dx_lay[source[i]]) return 1;
+    return 0;
+}
 static void proj_fm6_init(project_t *q)
 {
     uint32_t t;
@@ -560,6 +581,7 @@ static void proj_fm6_init(project_t *q)
     q->dx_hands = 0;
     memset(q->dx_snd, 0, sizeof q->dx_snd);
     memcpy(q->dx_lay, DX_LAY_DEF, sizeof q->dx_lay);   /* (0.6.49: a new project: the factory kit's) */
+    proj_dx12_clone(q);
     memset(q->fugue, 0, sizeof q->fugue);              /* (0.6.52: no FUGUE) */
     q->sum = proj_sum(q);
 }
@@ -850,6 +872,7 @@ static uint32_t proj_packed_size(const project_t *q)
         if (q->dx_snd[i]) { n += 2u + sizeof q->dx_snd; break; }
     for (i = 0; i < sizeof q->dx_lay; i++)              /* (0.6.49) the LAYERs' */
         if (q->dx_lay[i]) { n += 2u + sizeof q->dx_lay; break; }
+    if (proj_dx12_changed(q)) n += 2u + sizeof q->dx12 + sizeof q->dx_snd12 + sizeof q->dx_lay12;
     if (proj_fg_used(q))                                /* (0.6.52) FUGUE's */
         n += 2u + sizeof q->fugue;
     for (t = 0; t < NTRK; t++)                          /* (0.8.5) the lyrics' */
@@ -951,6 +974,12 @@ static int proj_pack(project_store_t *out, const project_t *q)
         b[pos++] = 'D'; b[pos++] = 'L';
         memcpy(b + pos, q->dx_lay, sizeof q->dx_lay);
         pos += sizeof q->dx_lay;
+    }
+    if (proj_dx12_changed(q)) {                         /* 9B2: optional four independent sounds */
+        b[pos++] = 'D'; b[pos++] = '2';
+        memcpy(b + pos, q->dx12, sizeof q->dx12); pos += sizeof q->dx12;
+        memcpy(b + pos, q->dx_snd12, sizeof q->dx_snd12); pos += sizeof q->dx_snd12;
+        memcpy(b + pos, q->dx_lay12, sizeof q->dx_lay12); pos += sizeof q->dx_lay12;
     }
     if (proj_fg_used(q)) {                              /* (0.6.52) FUGUE's heads */
         b[pos++] = 'F'; b[pos++] = 'G';
@@ -1096,7 +1125,7 @@ static int proj_pack_vb(project_store_t *out, const project_t *q)
 /* a FUNC store (3840 bytes) -> q; 0 = not one (its hash, a value out of range, a length past its room) */
 static int proj_unpack_c(project_t *q, const uint8_t *b)
 {
-    uint32_t pos = 68u, t, i, size, sum, np = b[66], nt = b[67], room = PROJC_PFX_OFF;
+    uint32_t pos = 68u, t, i, size, sum, np = b[66], nt = b[67], room = PROJC_PFX_OFF, has_dx12 = 0;
     memcpy(&size, b + 4, 4); memcpy(&sum, b + PROJ_STORE_SIZE - 4u, 4);
     if (size != PROJ_STORE_SIZE || sum != proj_hash(b, PROJ_STORE_SIZE - 4u) || np < 8u || np > P_COUNT || !nt || nt > NTRK)
         return 0;
@@ -1211,6 +1240,14 @@ static int proj_unpack_c(project_t *q, const uint8_t *b)
         memcpy(q->dx_lay, b + pos + 2u, sizeof q->dx_lay);
         pos += 2u + sizeof q->dx_lay;
     }
+    if (pos + 2u + sizeof q->dx12 + sizeof q->dx_snd12 + sizeof q->dx_lay12 <= room &&
+        b[pos] == 'D' && b[pos + 1u] == '2') {
+        has_dx12 = 1;
+        pos += 2u;
+        memcpy(q->dx12, b + pos, sizeof q->dx12); pos += sizeof q->dx12;
+        memcpy(q->dx_snd12, b + pos, sizeof q->dx_snd12); pos += sizeof q->dx_snd12;
+        memcpy(q->dx_lay12, b + pos, sizeof q->dx_lay12); pos += sizeof q->dx_lay12;
+    }
     memset(q->fugue, 0, sizeof q->fugue);
     if (pos + 2u + sizeof q->fugue <= room && b[pos] == 'F' && b[pos + 1u] == 'G') {   /* (0.6.52) FUGUE's heads */
         uint32_t k;
@@ -1304,6 +1341,7 @@ static int proj_unpack_c(project_t *q, const uint8_t *b)
         q->macro[i] = b[PROJC_PFX_OFF + sizeof q->pfx_lane + 1u + i] & 127u;
     memcpy(q->dx, b + PROJC_DX_OFF, sizeof q->dx);
     if (!dx_kit_ok(q->dx)) return 0;
+    if (!has_dx12) proj_dx12_clone(q);
     q->dx_mute = (uint16_t)((b[PROJC_DX_OFF + sizeof q->dx] & DXG_ALL) | b[PROJC_DX_OFF + sizeof q->dx + 1u] << 8);
     memcpy(q->dx_mot, b + PROJC_DX_OFF + sizeof q->dx + 3u, sizeof q->dx_mot);
     q->dx_tone = b[PROJC_DX_OFF + sizeof q->dx + 7u];
@@ -1437,6 +1475,7 @@ static int proj_unpack(project_t *q, const uint8_t *b, uint32_t st)
     }
     memset(q->dx_snd, 0, sizeof q->dx_snd);            /* (0.6.48: none before FUNC's block) */
     memset(q->dx_lay, 0, sizeof q->dx_lay);            /* (0.6.49: none: the kit as it sounded) */
+    proj_dx12_clone(q);
     memset(q->fugue, 0, sizeof q->fugue);              /* (0.6.52) */
     proj_new_tracks(q, PROJ_LT);                       /* (JIANT 0.6: tracks 5, 6 their power-on sounds) */
     {
@@ -1568,6 +1607,9 @@ static void project_capture(project_t *p)
     }
     p->motion = motion;
     memcpy(p->dx, dx_kit, sizeof p->dx);
+    memcpy(p->dx12, dx_kit12, sizeof p->dx12);
+    memcpy(p->dx_snd12, dx_snd12, sizeof p->dx_snd12);
+    memcpy(p->dx_lay12, dx_lay12, sizeof p->dx_lay12);
     p->dx_mute = dx_mute;
     memcpy(p->dx_mot, dx_mot, sizeof p->dx_mot);
     p->dx_tone = dx_tone;
@@ -1727,6 +1769,9 @@ static void sound_put(project_t *p, uint32_t k)
     }
     if (e == ENGI_DRUM) {
         memcpy(dx_kit, dx_kit_ok(p->dx) ? p->dx : DX_KIT_DEF, sizeof dx_kit);
+        memcpy(dx_kit12, p->dx12, sizeof dx_kit12);
+        memcpy(dx_snd12, p->dx_snd12, sizeof dx_snd12);
+        memcpy(dx_lay12, p->dx_lay12, sizeof dx_lay12);
         memcpy(dx_mot, p->dx_mot, sizeof dx_mot);
         dx_tone = p->dx_tone;
         dx_hands = p->dx_hands & 15u;
@@ -1772,6 +1817,9 @@ static int project_restore_runtime(const project_t *input)
     transport_req = 0;
     chain.ended = 0;                                    /* (a song stopped by this load: the load wins, song_poll keeps out) */
     memcpy(dx_kit, dx_kit_ok(p->dx) ? p->dx : DX_KIT_DEF, sizeof dx_kit);   /* (the section's DRUM-X kit) */
+    memcpy(dx_kit12, p->dx12, sizeof dx_kit12);
+    memcpy(dx_snd12, p->dx_snd12, sizeof dx_snd12);
+    memcpy(dx_lay12, p->dx_lay12, sizeof dx_lay12);
     dx_mute_set(p->dx_mute);
     memcpy(dx_mot, p->dx_mot, sizeof dx_mot);           /* (0.5.1: the kit's X-MOD) */
     dx_tone = p->dx_tone;                               /* (0.6.36: its TONE) */
@@ -1885,6 +1933,14 @@ static void system_init(void)
     dx_hands = 0;
     memset(dx_snd, 0, sizeof dx_snd);
     memcpy(dx_lay, DX_LAY_DEF, sizeof dx_lay);
+    {
+        static const uint8_t src[4] = {DV_KICK, DV_SNARE, DV_HATO, DV_TOM};
+        for (i = 0; i < 4u; i++) {
+            dx_kit12[i] = dx_kit[src[i]];
+            dx_snd12[i] = dx_snd[src[i]];
+            dx_lay12[i] = dx_lay[src[i]];
+        }
+    }
     memset(fg_set, 0, sizeof fg_set);                   /* (0.6.52) no FUGUE */
     live_return((1u << NTRK) - 1u);                     /* (0.9.11) no LIVE modifier (ui_live.c) */
     dx_mute_set(0);
