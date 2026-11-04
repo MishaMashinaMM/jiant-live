@@ -518,7 +518,7 @@ static void drum_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const 
     drum_lane_t *L = drum_lane_of(t, v);
     int32_t y[CTL], pb0 = 4096, pb1 = 4096;
     uint32_t lane = (uint32_t)v->s[0];
-    int32_t lv = lane < DV_NLANE ? clamp(p[P_LN0 + lane], 0, 127) : 100;
+    int32_t lv = clamp(p[lane < DV_NLANE ? P_LN0 + lane : P_LN8 + lane - DV_NLANE], 0, 127);
     if (lane == DV_BELL)   /* (JIANT 0.6.49) the cowbell 4 dB under the others: it */
         lv = lv * 100 / 127;                                  /* stood out of every kit (its LEVEL at 100 % is this) */
     uint32_t i;
