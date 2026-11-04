@@ -264,7 +264,7 @@ int st_save_ext(uint32_t obj, const void *src, uint32_t len,
 
     if (obj >= OBJ_COUNT || len > ST_PAYLOAD_MAX || ext_len > EXT_MAX_DATA)
         return -1;
-    if ((ext == NULL) != (ext_len == 0u))
+    if ((ext == 0) != (ext_len == 0u))
         return -1;
 
     va = st_copy_valid(obj, 0, &h_a);
