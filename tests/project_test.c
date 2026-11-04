@@ -188,7 +188,7 @@ static void old_image(uint8_t *o, const project_store_t *st, uint32_t np, uint32
     o[66] = (uint8_t)np;
     for (t = 0; t < PROJ_LT; t++) {
         for (j = 0; j < np; j++) o[pos++] = b[src + (j < np - 8u ? j : P_E0 + j - (np - 8u))];
-        src += P_COUNT;
+        src += P_E0 + 8u;
         memcpy(o + pos, b + src, 2u + NSTEP * 9u);
         pos += 2u + NSTEP * 9u; src += 2u + NSTEP * 9u;
     }
