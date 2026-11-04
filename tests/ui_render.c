@@ -1877,21 +1877,21 @@ static void draw(int s)
         setup_show("TURN RIGHT", "ALGORITHM");
         return;
     }
-    if (s == S_SPLASH) {                          /* the power-on splash (main.c, before the UI): its lines, the version
-                                                   * shown FELUCCA_VERSION (run_tests.sh: src/felucca.c's) */
-        static const char WANT[] = FELUCCA_VERSION "|by Juan Jiant";   /* (JIANT 0.5: under the signature) */
+    if (s == S_SPLASH) {                          /* static Jiant Live power-on screen */
+        static const char WANT[] =
+            "JIANT LIVE|FM1 PERFORMANCE FIRMWARE|orig: Juan Jiant | mod: Misha Mashina|v0.2";
         splash_seen[0] = 0;
         in_splash = 1;
         draw_splash();
         in_splash = 0;
-        {   /* the signature written whole (spl_anim 0): its ink in its band (y 40 .. 164), the rest of the band BG */
+        {   /* the title and subtitle must draw visible text on the black background */
             uint16_t bg = host_screen[0];
             uint32_t x, y, ink = 0;
             for (y = 40; y < 164u; y++)
                 for (x = 0; x < 240u; x++)
                     ink += host_screen[y * 240u + x] != bg;
             if (ink < 600u) {
-                if (rep) fprintf(rep, "FIND %-26s the splash's signature has %u pixels of ink (< 600)\n", cur_name, ink);
+                if (rep) fprintf(rep, "FIND %-26s the static splash has %u pixels of ink (< 600)\n", cur_name, ink);
                 nfind++;
             }
         }
@@ -1900,7 +1900,7 @@ static void draw(int s)
             nfind++;
         } else {
             static uint8_t said;
-            if (!said++) printf("ui_render: the splash shows the version " FELUCCA_VERSION " (FELUCCA_VERSION) and its lines\n");
+            if (!said++) printf("ui_render: static JIANT LIVE v0.2 splash text and visible ink ok\n");
         }
         return;
     }
