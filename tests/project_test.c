@@ -764,7 +764,6 @@ int main(void)
 #define FM4_OK(c) ((c).t[1].engine == ENGI_FM6 && (c).t[1].preset == 4u && !memcmp((c).fm6[1], pk, FM6_PACKED) && \
                    !memcmp((c).t[1].p, p, sizeof p) && (c).t[0].engine == 0u && !memcmp((c).fm6[0], FM6_INIT, FM6_PACKED))
         ok = proj_pack_vb(&st, &a) && proj_import(&c, &st, sizeof st);
-        if (!ok || !FM4_OK(c)) fprintf(stderr, "DIAG DIGITAL: pack/import=%d engine=%u preset=%u fm6cmp=%d pcmp=%d t0engine=%u t0patch=%d; levels orig=%d/%d extra=%d/%d expected extra=%d/%d\n", ok, c.t[1].engine, c.t[1].preset, memcmp(c.fm6[1], pk, FM6_PACKED), memcmp(c.t[1].p, p, sizeof p), c.t[0].engine, memcmp(c.fm6[0], FM6_INIT, FM6_PACKED), c.t[1].p[P_LN0], c.t[1].p[P_LN4], c.t[1].p[P_LN8], c.t[1].p[P_LN10], p[P_LN8], p[P_LN10]);
         bad += check("FUN8 with a DIGITAL track: FM6, the converted patch its own, PTCH / preset FM6 PAD", ok && FM4_OK(c));
         bad += check("  its motion on INDEX / OP LEVEL / E7 goes; a send's and the other track's stay",
                      c.motion.count == 2u && c.motion.event[0].param == P_CHOR && c.motion.event[1].place == 3u &&
@@ -905,14 +904,32 @@ int main(void)
         f.motion.count = 2; f.motion.on = 0x30;
         memcpy(f.name, "SIX", 3);
         f.sum = proj_sum(&f);
-        fprintf(stderr, "DIAG FUNC: packed_size=%u limit=%u dx12changed=%d fm_kept4=%d levels=%d/%d\n", proj_packed_size(&f), PROJC_PFX_OFF, proj_dx12_changed(&f), proj_fm_kept(&f, 4), f.t[0].p[P_LN8], f.t[0].p[P_LN11]);
         ok = proj_pack(&fs, &f) && ((uint32_t *)fs.raw)[0] == PROJ_MAGIC && fs.raw[67] == NTRK && proj_import(&g, &fs, sizeof fs);
-        fprintf(stderr, "DIAG FUNC outcome: ok=%d full=%d import=%d tcmp=%d fmcmp=%d\n", ok, proj_full, proj_import(&g, &fs, sizeof fs), memcmp(g.t, f.t, sizeof f.t), memcmp(g.fm6, f.fm6, sizeof f.fm6));
         ok &= !memcmp(g.t, f.t, sizeof f.t) && !memcmp(g.fm6, f.fm6, sizeof f.fm6) && !memcmp(&g.motion, &f.motion, sizeof f.motion) &&
               !memcmp(g.name, "SIX", 3) && !memcmp(g.g, f.g, sizeof f.g) && !memcmp(g.dx, f.dx, sizeof f.dx);
         ok &= MOTION_TRK(&g.motion.event[0]) == 5u && MOTION_STEP(&g.motion.event[0]) == 9u && MOTION_VAL(&g.motion.event[0]) == 33 &&
               MOTION_TRK(&g.motion.event[1]) == 4u && MOTION_VAL(&g.motion.event[1]) == -20;
         bad += check("FUNC: six tracks round trip (steps, ratchet, chance, patches, T5 / T6 motion, name, globals)", ok);
+        {   /* Stage 9B2: the extra drums are independent across a project save/load, including their LEVEL values. */
+            static project_t b2, restored;
+            static project_store_t saved;
+            b2 = f;
+            b2.dx12[0].a[DXP_PITCH] = (uint8_t)(f.dx[DV_KICK].a[DXP_PITCH] == 60u ? 61u : 60u);
+            b2.dx_snd12[1] = 0x11u;
+            b2.dx_lay12[2] = 0x21u;
+            b2.t[0].p[P_LN8] = 37;
+            b2.t[0].p[P_LN9] = 62;
+            b2.t[0].p[P_LN10] = 97;
+            b2.t[0].p[P_LN11] = 111;
+            b2.sum = proj_sum(&b2);
+            ok = proj_pack(&saved, &b2) && proj_import(&restored, &saved, sizeof saved);
+            ok &= !memcmp(restored.dx12, b2.dx12, sizeof b2.dx12) &&
+                  !memcmp(restored.dx_snd12, b2.dx_snd12, sizeof b2.dx_snd12) &&
+                  !memcmp(restored.dx_lay12, b2.dx_lay12, sizeof b2.dx_lay12);
+            for (i = P_LN8; i <= P_LN11; i++)
+                ok &= restored.t[0].p[i] == b2.t[0].p[i];
+            bad += check("Stage 9B2: B2/S2/O2/T2 patches, LAYER, SEND and four LEVELs survive a project round trip", ok);
+        }
         ok = proj_pack_vb(&gs, &f) && proj_import(&h, &gs, sizeof gs) && !memcmp(h.t, f.t, PROJ_LT * sizeof f.t[0]) &&
              h.t[4].engine == trk_old_engine(4u) && h.t[5].engine == trk_old_engine(5u) && h.t[5].step[0].time == ST_REST;
         bad += check("FUNB (0.5) -> six tracks: its four kept, T5 / T6 at 0.9.8's power-on sounds (TRK_OLD), empty", ok);
