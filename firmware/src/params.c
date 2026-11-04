@@ -163,10 +163,10 @@ static const param_desc_t TP[P_COUNT] = {
     [P_FTYPE] = PE("TYPE", N_FTYPE, 0),         /* (JIANT 0.5) the filter: LP (as before) HP BP COMB */
     [P_FCUT] = PD("CUT", F_CUTOFF, 0, 127, 127),  /* .. the other engines' (on the part): open, */
     [P_FRES] = PD("RES", F_PCT, 0, 127, 0),       /* no resonance: out of the chain (its drive: DIST, the part's) */
-    [P_LN8] = PD("B2", F_PCT, 0, 127, 127),
-    [P_LN9] = PD("S2", F_PCT, 0, 127, 127),
-    [P_LN10] = PD("O2", F_PCT, 0, 127, 127),
-    [P_LN11] = PD("T2", F_PCT, 0, 127, 127),
+    [P_LN8] = PD("B2", F_PCT, 0, 127, 100),
+    [P_LN9] = PD("S2", F_PCT, 0, 127, 100),
+    [P_LN10] = PD("O2", F_PCT, 0, 127, 100),
+    [P_LN11] = PD("T2", F_PCT, 0, 127, 100),
 };
 
 static const param_desc_t GP[G_COUNT] = {
