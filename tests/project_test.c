@@ -485,7 +485,7 @@ int main(void)
         uint32_t i, zero = 1;
         bad += check("FUNB name at the end of the reserved tail, the FM6 patches and the kit before it, after the data (48: the punch-in block, no spare)",
                      PROJ_NAME_OFF == 3824u && PROJ_FM6_OFF == 3312u && PROJ_DX_OFF == 3216u &&
-                     68u + PROJ_LT * (P_COUNT + 2u + NSTEP * 9u) + sizeof(chain_config_t) + sizeof(motion_store_t) + 48u ==
+                     68u + PROJ_LT * (P_E0 + 8u + 2u + NSTEP * 9u) + sizeof(chain_config_t) + sizeof(motion_store_t) + 48u ==
                      PROJ_DX_OFF);
         memset(&a, 0, sizeof a);
         a.magic = PROJ_MAGIC; a.size = sizeof a; a.parts = NPART; a.phys = PROJ_PHYS;
@@ -657,7 +657,7 @@ int main(void)
                 f.sum = proj_sum(&f);
                 ok = proj_pack_vb(&st, &f) && proj_import(&g, &st, sizeof st) && !memcmp(&f.motion, &g.motion, sizeof f.motion);
                 bad += check("FUN9 round trip: locks on a lane level (P_LN2) and an engine value (P_E5) kept", ok &&
-                             st.raw[68u + PROJ_LT * (P_COUNT + 2u + NSTEP * 9u) + sizeof(chain_config_t) + 4u + 8u + 1u] ==
+                             st.raw[68u + PROJ_LT * (P_E0 + 8u + 2u + NSTEP * 9u) + sizeof(chain_config_t) + 4u + 8u + 1u] ==
                              (P_LN2 | MOTION_LOCK) && g.motion.event[3].param == (P_E5 | MOTION_LOCK));
             }
             e.motion.count = 3;   /* a FUN8 of a 1.1 development build (91 parameters) could hold a lock: its E5 then */
@@ -890,6 +890,7 @@ int main(void)
         for (k = 0; k < NTRK; k++) memcpy(f.fm6[k], FM6_INIT, FM6_PACKED);
         for (k = 0; k < G_COUNT; k++) f.g[k] = GP[k].def;
         memcpy(f.dx, DX_KIT_DEF, sizeof f.dx);
+        proj_dx12_clone(&f);                      /* Stage 9B2: the four factory duplicates start as their originals */
         for (k = 0; k < NTRK; k++)                      /* a typical song: 16 steps a track, T5 a chord on all 64 */
             for (i = 0; i < (k == 4u ? NSTEP : 16u); i++) {
                 step_t *s = &f.t[k].step[i];
