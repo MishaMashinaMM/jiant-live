@@ -163,6 +163,10 @@ static const param_desc_t TP[P_COUNT] = {
     [P_FTYPE] = PE("TYPE", N_FTYPE, 0),         /* (JIANT 0.5) the filter: LP (as before) HP BP COMB */
     [P_FCUT] = PD("CUT", F_CUTOFF, 0, 127, 127),  /* .. the other engines' (on the part): open, */
     [P_FRES] = PD("RES", F_PCT, 0, 127, 0),       /* no resonance: out of the chain (its drive: DIST, the part's) */
+    [P_LN8] = PD("B2", F_PCT, 0, 127, 127),
+    [P_LN9] = PD("S2", F_PCT, 0, 127, 127),
+    [P_LN10] = PD("O2", F_PCT, 0, 127, 127),
+    [P_LN11] = PD("T2", F_PCT, 0, 127, 127),
 };
 
 static const param_desc_t GP[G_COUNT] = {
@@ -619,6 +623,7 @@ static const page_t PAGES[] = {
     {"SOUND 4", FAM_EDIT, SC_TRACK, GR_DXSND, {0xFF, 0xFF, 0xFF, 0xFF}},   /* (JIANT 0.6.54) LAYER, FEEDBK, SEND */
     {"LEVELS", FAM_EDIT, SC_TRACK, GR_NONE, {P_LN0, P_LN1, P_LN2, P_LN3}},   /* DRUM only: the sounds' levels (was LANES) */
     {"LEVELS 2", FAM_EDIT, SC_TRACK, GR_NONE, {P_LN4, P_LN5, P_LN6, P_LN7}},
+    {"LEVELS 3", FAM_EDIT, SC_TRACK, GR_NONE, {P_LN8, P_LN9, P_LN10, P_LN11}},
     {"OP1 ENV", FAM_EDIT, SC_TRACK, GR_ADSR, {P_FM1_ATK, P_FM1_DEC, P_FM1_SUS, P_FM1_REL}},
     {"OP2 ENV", FAM_EDIT, SC_TRACK, GR_ADSR, {P_FM2_ATK, P_FM2_DEC, P_FM2_SUS, P_FM2_REL}},
     {"OP3 ENV", FAM_EDIT, SC_TRACK, GR_ADSR, {P_FM3_ATK, P_FM3_DEC, P_FM3_SUS, P_FM3_REL}},
