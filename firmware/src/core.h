@@ -90,6 +90,7 @@ enum {                          /* per-track parameters */
     P_FTYPE,                                   /* (JIANT 0.5) the filter's type: LP HP BP COMB (eng_analog.c, voice.c) */
     P_FCUT, P_FRES,                            /* .. every other engine's: a filter on the part's sum (voice.c track_filter) */
     P_E0, P_E1, P_E2, P_E3, P_E4, P_E5, P_E6, P_E7,
+    P_LN8, P_LN9, P_LN10, P_LN11,        /* 9B2: appended IDs; never renumber legacy parameters */
     P_COUNT
 };
 #define P_LRTRG P_FM1_ATK              /* (JIANT 0.6.12) LOFI BYTE / FLOAT's RTRG: a note restarts the formula's time (voice.c
@@ -192,10 +193,16 @@ enum {                          /* global parameters */
 static void params_by_count(int16_t *out, const int16_t *in, uint32_t np, const int16_t *def)
 {
     uint32_t i, nc = np - 8u;
+    if (np == P_COUNT) {                   /* current layout: four appended lane levels follow P_E7 */
+        for (i = 0; i < P_COUNT; i++) out[i] = in[i];
+        return;
+    }
     for (i = 0; i < P_E0; i++)
         out[i] = i < nc ? in[i] : def[i];
     for (i = 0; i < 8u; i++)
         out[P_E0 + i] = in[nc + i];
+    out[P_LN8] = out[P_LN0]; out[P_LN9] = out[P_LN1];
+    out[P_LN10] = out[P_LN4]; out[P_LN11] = out[P_LN5];
 }
 
 /* engine indices the stores name (engines.c ENGINES[]: append-only) */
