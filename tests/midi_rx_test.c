@@ -4,8 +4,6 @@
 #include "hostsim.c"
 #undef main
 #include <assert.h>
-static uint8_t rx_learn_map[30];
-static uint8_t *const ml_tab = rx_learn_map;
 
 static void reset_rx(void)
 {
@@ -13,7 +11,7 @@ static void reset_rx(void)
     memset(midi_ch, 0, sizeof midi_ch); memset(midi_sel_on, 0, sizeof midi_sel_on);
     memset(midi_owners, 0, sizeof midi_owners); memset(kb_on, 0, sizeof kb_on);
     memset(dxo_n, 0, sizeof dxo_n);
-    memset(rx_learn_map, 0, sizeof rx_learn_map);
+    memset(ml_table, 0, sizeof ml_table);
     host_tracks_init();
     for (uint32_t i = 0; i < NTRK; i++) {
         midi_rx[i] = (uint8_t)(i + 1u);
@@ -111,7 +109,7 @@ int main(void)
     send_rx(0xB0, 7, 23, 1); send_rx(0xB0, 1, 75, 2); send_rx(0xD0, 88, 0, 1);
     assert(trk[0].p[P_LEVEL] == 23 && trk[1].p[P_LEVEL] == 23);
     assert(trk[0].mw == 75 && trk[1].mw == 75 && trk[0].at == 88 && trk[1].at == 88);
-    rx_learn_map[0] = 0x80u | 30u; rx_learn_map[1] = 2; rx_learn_map[2] = P_PAN + 1u;
+    ml_table[0] = 0x80u | 30u; ml_table[1] = 2; ml_table[2] = P_PAN + 1u;
     send_rx(0xB0, 30, 127, 1);
     assert(trk[2].p[P_PAN] == 63 && trk[0].p[P_PAN] != 63 && trk[1].p[P_PAN] != 63);
     send_rx(0x90, 60, 100, 1); send_rx(0xB0, 120, 0, 2);
