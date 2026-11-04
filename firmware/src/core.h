@@ -574,7 +574,7 @@ static void step_set_ratchet(step_t *s, uint32_t hits)
  * recorded on the selected track (GLO > MIXER KNOB 4), it sets song.g[G_DJF] at its step and the value holds as any
  * event's; a stop or the loop's restart puts back the knob's (motion.c). Stored in FUNC's block 'M' 'G' (project.c) */
 #define MOT_DJF 127u
-_Static_assert(P_COUNT < MOT_DJF, "MOT_DJF past every track parameter");
+_Static_assert(P_COUNT <= MOT_DJF, "MOT_DJF past every track parameter");
 typedef struct { uint8_t place, param; int16_t value; } motion_event_t;
 typedef struct { uint8_t count, on, rsv[2]; motion_event_t event[MOTION_MAX]; } motion_store_t;
 static void motion_at(motion_event_t *e, uint32_t place, int16_t v)   /* place: track << 6 | step; v: the value */
