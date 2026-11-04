@@ -7,8 +7,8 @@
  * LEARN ON (menu_items.c) arms it; then a knob turned on any page that edits a track's parameter (HOME, the EDIT and
  * sound pages, ENV, LFO, FX, MIXER: ui_input.c) picks that parameter of that track; the next CC that comes (midi_control.c
  * midi_learned: any channel ROUT hears, USB or TRS) is set to it, and stays until something else is learned on it. Then
- * turn the next knob. LEARN OFF (or the menu's LEARN CLEAR, every CC) ends it. One CC sets one parameter, a parameter
- * has one CC: learning one again replaces both. A CC with a meaning of its own is refused ("CC64 RESERVED"); with
+ * turn the next knob. LEARN OFF (or the menu's LEARN CLEAR, every CC) ends it. One CC may set several parameters (including across tracks); a parameter
+ * has one CC: learning that parameter again replaces only its former assignment. A CC with a meaning of its own is refused ("CC64 RESERVED"); with
  * ML_N learned, "LEARN FULL". Saved with the settings as each one changes (deferred while playing) */
 typedef char ml_legacy_row_fits[2u + 3u * ML_OLD_N <= sizeof favorites.factory[0] ? 1 : -1];
 
@@ -39,14 +39,15 @@ static uint32_t ml_count(void)
         n += (uint32_t)ml_used(i);
     return n;
 }
-/* cc -> parameter id of track k, in place of what either had; 1 learned, 0 no room (ML_N others), 2 a CC never learned */
+/* cc -> parameter id of track k; a CC may target multiple parameters, while one parameter has one CC.
+ * 1 learned, 0 no room (ML_N others), 2 a CC never learned */
 static uint32_t ml_learn(uint32_t cc, uint32_t k, uint32_t id)
 {
     uint32_t i, f = ML_N;
     if (!ml_free_cc(cc) || k >= NTRK || id >= P_COUNT)
         return 2;
     for (i = 0; i < ML_N; i++)
-        if (ml_used(i) && ((ml_tab[3u * i] & 127u) == cc || (ml_tab[3u * i + 1u] == k && ml_tab[3u * i + 2u] == ml_code(id))))
+        if (ml_used(i) && ml_tab[3u * i + 1u] == k && ml_tab[3u * i + 2u] == ml_code(id))
             ml_put(i, 0, 0, 0);
     for (i = ML_N; i--;)
         if (!ml_used(i))
