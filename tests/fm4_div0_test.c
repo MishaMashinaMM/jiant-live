@@ -278,6 +278,9 @@ int main(void)
         for (t = 0; t < PROJ_LT && ok; t++) {
             memcpy(ref, full[t], sizeof ref);
             pr = fm4_convert_ref(ref, v);
+            /* FUN3 has no extra LEVEL ids; imported duplicates inherit their originals. */
+            ref[P_LN8] = ref[P_LN0]; ref[P_LN9] = ref[P_LN1];
+            ref[P_LN10] = ref[P_LN4]; ref[P_LN11] = ref[P_LN5];
             fm6_pack(v, pk);
             ok = q.t[t].engine == ENGI_FM6 && q.t[t].preset == pr && pr == FM4_TO_FM6[(k + t + 4u) % FM4_NPRESETS] &&
                  !memcmp(q.fm6[t], pk, FM6_PACKED) && !memcmp(q.t[t].p, ref, sizeof ref);
