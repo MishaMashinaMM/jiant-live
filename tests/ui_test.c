@@ -2664,27 +2664,27 @@ static int test_menu_tabs(void)
     bad += check("MENU: HOME closes ABOUT too; reopened at its page, the action let go; the setting turned last breathes OCT- / OCT+ where they can go", ok);
 
     /* (0.9.18) the tabs and the breadcrumb (rule 6): five tabs (the page's lit, a dot a page), "MENU . TAB . page" and the
-     * page's place among the ten; a page named as its tab ("SCREEN", "SCREEN 2", "AUDIO") not repeated: MENU . page */
+     * page's place among the eight; a page named as its tab ("SCREEN", "SCREEN 2", "AUDIO") not repeated: MENU . page */
     ui_power_on();
     hold(B_HOME);
     frame();
     ok = ui.menu == 1 && lz_on() && lz_fam() == LZ_MENU && lz_tabs() == 5u && lz_tab_lit(0) &&
-         lz_crumb_is("MENU \xB7 SCREEN") && lz_count_is("1/10");
+         lz_crumb_is("MENU \xB7 SCREEN") && lz_count_is("1/8");
     turn(EN_SELECT, 1); frame();
     ok &= lz_tab_lit(0) && lz_crumb_is("MENU \xB7 SCREEN \xB7 LEDS") && lz_count_is("2/10");
     turn(EN_ALGO, 1); frame();
     ok &= menu_tab() == MTAB_AUDIO && lz_tab_lit(1) && lz_crumb_is("MENU \xB7 AUDIO") && lz_count_is("3/10");
     turn(EN_SELECT, 1); frame();
-    ok &= lz_crumb_is("MENU \xB7 AUDIO \xB7 CLICK") && lz_count_is("4/10");
+    ok &= lz_crumb_is("MENU \xB7 AUDIO \xB7 CLICK") && lz_count_is("4/8");
     turn(EN_ALGO, 3); frame();
-    ok &= lz_tab_lit(4) && lz_crumb_is("MENU \xB7 SYSTEM \xB7 CONTROLS") && lz_count_is("9/10");
+    ok &= lz_tab_lit(4) && lz_crumb_is("MENU \xB7 SYSTEM \xB7 CONTROLS") && lz_count_is("7/8");
     turn(EN_K3, 1); frame();
     ok &= (fx_latch & 1u) != 0u && ui.menu_sel == MI_LATCH;
     turn(EN_K3, -1); frame();
     turn(EN_SELECT, 1); frame();
-    ok &= lz_crumb_is("MENU \xB7 SYSTEM") && lz_count_is("10/10");
+    ok &= lz_crumb_is("MENU \xB7 SYSTEM") && lz_count_is("8/8");
     menu_close();
-    bad += check("0.9.18 MENU: five tabs (the page's lit), MENU . TAB . page (MENU . page when named as its tab) and n/10; ALGORITHM the tab, KNOB n the value", ok && MI_COUNT == 35u);
+    bad += check("0.9.18 MENU: five tabs (the page's lit), MENU . TAB . page (MENU . page when named as its tab) and n/8; ALGORITHM the tab, KNOB n the value", ok && MI_COUNT == 35u);
     return bad;
 }
 
