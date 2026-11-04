@@ -1126,7 +1126,7 @@ static int proj_unpack_c(project_t *q, const uint8_t *b)
         if (pos > room) return 0;
         for (i = 0; i < np; i++) {                      /* (an older np: params_by_count's places, their defaults) */
             if (!((b[map + i / 8u] >> (i & 7u)) & 1u)) {
-                values[i] = def[i < nc ? i : P_E0 + i - nc];
+                values[i] = def[np == P_COUNT ? i : (i < nc ? i : P_E0 + i - nc)];
                 continue;
             }
             if (pos >= room || b[pos] > 191u) return 0;
@@ -1332,7 +1332,7 @@ static int proj_motion_ids(motion_store_t *m, uint32_t np)
         uint32_t id = MOTION_ID(&m->event[i]);
         if (id >= np) return 0;
         if (np < P_COUNT && id >= np - 8u)
-            m->event[i].param = (uint8_t)((m->event[i].param & MOTION_LOCK) | (id + P_COUNT - np));
+            m->event[i].param = (uint8_t)((m->event[i].param & MOTION_LOCK) | (P_E0 + id - (np - 8u)));
     }
     return 1;
 }
