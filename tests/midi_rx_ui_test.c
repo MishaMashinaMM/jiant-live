@@ -89,6 +89,32 @@ int main(void)
     trks_put(1); param_format(&GP[G_ROUTE], 0, value, &unit); assert(str_eq(value, "1-4"));
     param_format(&GP[G_ROUTE], 2, value, &unit); assert(str_eq(value, "1-6"));
     param_format(&GP[G_ROUTE], 1, value, &unit); assert(str_eq(value, "SEL"));
+    /* Stage 11: 32 global learned assignments, full-table handling and PER6 persistence. */
+    ml_clear_all();
+    uint32_t cc = 2u, learned[ML_N];
+    assert(ML_N == 32u);
+    for (uint32_t i = 0; i < ML_N; i++) {
+        while (cc < 120u && !ml_free_cc(cc)) cc++;
+        assert(cc < 120u);
+        learned[i] = cc;
+        assert(ml_learn(cc++, i % NTRK, P_LEVEL + i / NTRK) == 1u);
+    }
+    assert(ml_count() == 32u);
+    for (uint32_t i = 0; i < ML_N; i++)
+        assert(ml_cc_of(i % NTRK, P_LEVEL + i / NTRK) == learned[i] + 1u);
+    while (cc < 120u && !ml_free_cc(cc)) cc++;
+    assert(cc < 120u && ml_learn(cc, 0, P_E0) == 0u);
+    persist_t saved = {0};
+    settings_export(&saved);
+    assert(saved.magic == PERSIST_MAGIC);
+    memset(ml_table, 0, sizeof ml_table);
+    assert(settings_import(&saved, sizeof saved) == 1 && ml_count() == 32u);
+    for (uint32_t i = 0; i < ML_N; i++)
+        assert(ml_cc_of(i % NTRK, P_LEVEL + i / NTRK) == learned[i] + 1u);
+    saved.magic = PERSIST_MAGIC_V5;
+    assert(settings_import(&saved, PERSIST_V5_SIZE) == 2 && ml_count() == ML_OLD_N);
+    puts("RX UI: 32 MIDI LEARN slots, capacity, PER6 round-trip and PER5 migration passed");
+
     puts("RX UI: ROUTE follows TRACKS; project, preset and NEW PROJECT preserve assignments");
     return 0;
 }
