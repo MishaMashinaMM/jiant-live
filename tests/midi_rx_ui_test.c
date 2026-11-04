@@ -113,6 +113,16 @@ int main(void)
         assert(ml_cc_of(i % NTRK, P_LEVEL + i / NTRK) == learned[i] + 1u);
     saved.magic = PERSIST_MAGIC_V5;
     assert(settings_import(&saved, PERSIST_V5_SIZE) == 2 && ml_count() == ML_OLD_N);
+    /* One CC controls more than one destination; relearning affects only that parameter. */
+    assert(ml_learn(learned[0], 1u, P_E0) == 1u);
+    assert(ml_count() == ML_OLD_N + 1u);
+    assert(ml_cc_of(0u, P_LEVEL) == learned[0] + 1u);
+    assert(ml_cc_of(1u, P_E0) == learned[0] + 1u);
+    assert(ml_learn(learned[1], 1u, P_E0) == 1u);
+    assert(ml_count() == ML_OLD_N + 1u);
+    assert(ml_cc_of(0u, P_LEVEL) == learned[0] + 1u);
+    assert(ml_cc_of(1u, P_E0) == learned[1] + 1u);
+    puts("RX UI: shared CC fan-out and independent relearn passed");
     puts("RX UI: 32 MIDI LEARN slots, capacity, PER6 round-trip and PER5 migration passed");
 
     puts("RX UI: ROUTE follows TRACKS; project, preset and NEW PROJECT preserve assignments");
