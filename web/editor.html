@@ -1969,7 +1969,7 @@ function makeMockDevice(opt = {}) {
   /* tracks (firmware v3): four synth parts (1.0), six (JIANT 0.6); engine / preset / p / step below are the selected track's */
   const NTRK = 6;
   const newTrack = () => ({ engine: 0, preset: 0, fm6: FM6.INIT_PK.slice(),
-    p: TP.map((d) => d.def).concat(new Array(8).fill(0), [127, 127, 127, 127]),
+    p: TP.map((d) => d.def).concat(new Array(8).fill(0), [100, 100, 100, 100]),
     motion: {on: true, events: []},
     step: Array.from({ length: NSTEP }, () => ({ chance: 100, ratchet: 1, n: 0, notes: [0, 0, 0, 0], time: 2, flags: 0, vel: 0, hit: 0, acc: 0 })) });
   const st = {
@@ -1989,7 +1989,7 @@ function makeMockDevice(opt = {}) {
     Object.defineProperty(st, k, { enumerable: false, get: () => st.tracks[st.sel][k], set: (v) => { st.tracks[st.sel][k] = v; } });
   }
   const watchMs = opt.watchMs || 3000;
-  const LN_EXTRA = ["B2", "S2", "O2", "T2"].map((x) => D(x, F.PCT, 0, 127, 127));
+  const LN_EXTRA = ["B2", "S2", "O2", "T2"].map((x) => D(x, F.PCT, 0, 127, 100));
   const trackDesc = (id, engine) => id >= P_E0 && id < P_E0 + 8 ? ENG[engine].edit[id - P_E0] : id >= P_E0 + 8 ? LN_EXTRA[id - P_E0 - 8] : TP[id];
   const desc = (scope, id) => (scope === 0 && id < P_COUNT ? trackDesc(id, st.engine)
     : scope === 1 && id < G_COUNT ? GP[id] : null);
