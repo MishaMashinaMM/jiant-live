@@ -764,6 +764,7 @@ int main(void)
 #define FM4_OK(c) ((c).t[1].engine == ENGI_FM6 && (c).t[1].preset == 4u && !memcmp((c).fm6[1], pk, FM6_PACKED) && \
                    !memcmp((c).t[1].p, p, sizeof p) && (c).t[0].engine == 0u && !memcmp((c).fm6[0], FM6_INIT, FM6_PACKED))
         ok = proj_pack_vb(&st, &a) && proj_import(&c, &st, sizeof st);
+        if (!ok || !FM4_OK(c)) fprintf(stderr, "DIAG DIGITAL: pack/import=%d engine=%u preset=%u fm6cmp=%d pcmp=%d t0engine=%u t0patch=%d; levels orig=%d/%d extra=%d/%d expected extra=%d/%d\n", ok, c.t[1].engine, c.t[1].preset, memcmp(c.fm6[1], pk, FM6_PACKED), memcmp(c.t[1].p, p, sizeof p), c.t[0].engine, memcmp(c.fm6[0], FM6_INIT, FM6_PACKED), c.t[1].p[P_LN0], c.t[1].p[P_LN4], c.t[1].p[P_LN8], c.t[1].p[P_LN10], p[P_LN8], p[P_LN10]);
         bad += check("FUN8 with a DIGITAL track: FM6, the converted patch its own, PTCH / preset FM6 PAD", ok && FM4_OK(c));
         bad += check("  its motion on INDEX / OP LEVEL / E7 goes; a send's and the other track's stay",
                      c.motion.count == 2u && c.motion.event[0].param == P_CHOR && c.motion.event[1].place == 3u &&
@@ -904,7 +905,9 @@ int main(void)
         f.motion.count = 2; f.motion.on = 0x30;
         memcpy(f.name, "SIX", 3);
         f.sum = proj_sum(&f);
+        fprintf(stderr, "DIAG FUNC: packed_size=%u limit=%u dx12changed=%d fm_kept4=%d levels=%d/%d\n", proj_packed_size(&f), PROJC_PFX_OFF, proj_dx12_changed(&f), proj_fm_kept(&f, 4), f.t[0].p[P_LN8], f.t[0].p[P_LN11]);
         ok = proj_pack(&fs, &f) && ((uint32_t *)fs.raw)[0] == PROJ_MAGIC && fs.raw[67] == NTRK && proj_import(&g, &fs, sizeof fs);
+        fprintf(stderr, "DIAG FUNC outcome: ok=%d full=%d import=%d tcmp=%d fmcmp=%d\n", ok, proj_full, proj_import(&g, &fs, sizeof fs), memcmp(g.t, f.t, sizeof f.t), memcmp(g.fm6, f.fm6, sizeof f.fm6));
         ok &= !memcmp(g.t, f.t, sizeof f.t) && !memcmp(g.fm6, f.fm6, sizeof f.fm6) && !memcmp(&g.motion, &f.motion, sizeof f.motion) &&
               !memcmp(g.name, "SIX", 3) && !memcmp(g.g, f.g, sizeof f.g) && !memcmp(g.dx, f.dx, sizeof f.dx);
         ok &= MOTION_TRK(&g.motion.event[0]) == 5u && MOTION_STEP(&g.motion.event[0]) == 9u && MOTION_VAL(&g.motion.event[0]) == 33 &&
