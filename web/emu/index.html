@@ -547,7 +547,7 @@ async function switchOn() {
     const sampleChoice = document.getElementById("sample-bank").value || (!hasSampleBank(sectors) ? "factory-voices.json" : "");
     if (sampleChoice) {
       if (!["factory-voices.json", "factory-samples.json"].includes(sampleChoice)) throw new Error("Invalid sample bank selection");
-      const response = await fetch("../webapp/editor/" + sampleChoice, { cache: "no-cache" });
+      const response = await fetch(sampleChoice, { cache: "no-cache" });
       if (!response.ok) throw new Error("Sample bank: HTTP " + response.status);
       sectors = withSampleBank(sectors, encodeSampleBank(await response.json()));
     }
