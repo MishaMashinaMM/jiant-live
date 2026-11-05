@@ -37,17 +37,18 @@ static const char *const MI_NAME[MI_COUNT] = {"COLOR", "SKIN", "SCOPE", "STYLE",
  * COLOR/SKIN/STYLE/LARGE/ANIMATION compatibility rows have no panel slot. The editor gets a row's tab after its MENU_DESC reply (tab
  * indexes are not ids: 0.9.18 regrouped them). An action (LEARN CLEAR, CALIBRATION, ABOUT) is a card armed by its knob,
  * OCT+ does it */
-enum { MTAB_SCREEN, MTAB_AUDIO, MTAB_MIDI, MTAB_USB, MTAB_SYSTEM, MTAB_COUNT };
-static const char *const MTAB_NAME[MTAB_COUNT] = {"SCREEN", "AUDIO", "MIDI", "USB", "SYSTEM"};
-#define MP_COUNT 8u
+/* Live's 24 visible settings/actions fit six complete four-knob pages.
+ * MIDI/USB share a tab; CLICK's fourth slot hosts MIDI OUT so no blank card remains.
+ * MENU's row identifiers and saved setting formats stay unchanged. */
+enum { MTAB_SCREEN, MTAB_AUDIO, MTAB_MIDI, MTAB_SYSTEM, MTAB_COUNT };
+static const char *const MTAB_NAME[MTAB_COUNT] = {"SCREEN", "AUDIO", "MIDI", "SYSTEM"};
+#define MP_COUNT 6u
 typedef struct { char name[9]; uint8_t tab, row[4]; } menu_page_t;
 static const menu_page_t MPAGE[MP_COUNT] = {   /* (a page opens on its first setting: a value, never an action) */
-    {"SCREEN", MTAB_SCREEN, {MI_SCOPE, MI_NONE, MI_SCROFF, MI_NONE}},
-    {"LEDS", MTAB_SCREEN, {MI_LEDS, MI_SCLLED, MI_NONE, MI_NONE}},
+    {"SCREEN", MTAB_SCREEN, {MI_SCOPE, MI_SCROFF, MI_LEDS, MI_SCLLED}},
     {"AUDIO", MTAB_AUDIO, {MI_LOWCUT, MI_TRACKS, MI_LOAD, MI_BPMLOCK}},
-    {"CLICK", MTAB_AUDIO, {MI_CLICK, MI_CLKLVL, MI_COUNTIN, MI_NONE}},
-    {"MIDI", MTAB_MIDI, {MI_MIDIOUT, MI_LEARN, MI_LCLEAR, MI_NONE}},
-    {"USB", MTAB_USB, {MI_SERIAL, MI_USB, MI_NONE, MI_NONE}},
+    {"CLICK", MTAB_AUDIO, {MI_CLICK, MI_CLKLVL, MI_COUNTIN, MI_MIDIOUT}},
+    {"MIDI/USB", MTAB_MIDI, {MI_LEARN, MI_LCLEAR, MI_SERIAL, MI_USB}},
     {"CONTROLS", MTAB_SYSTEM, {MI_HOLD, MI_ACCEL, MI_LATCH, MI_PANEL}},
     {"SYSTEM", MTAB_SYSTEM, {MI_RESTORE, MI_CPU, MI_CLOCK, MI_ABOUT}},   /* (RESTORE LAST, CPU CORES, CPU CLOCK: at power-on) */
 };
@@ -61,7 +62,12 @@ static uint32_t menu_page_of(uint32_t row)             /* the page a row is on *
     return 0;
 }
 /* T1..T6 RX remain accessible through the editor\'s stable MENU IDs,\n * even though the device edits them exclusively in GLO > MIXER. */
-static uint32_t mi_tab(uint32_t row) { return row >= MI_T1_RX && row <= MI_T6_RX ? MTAB_MIDI : MPAGE[menu_page_of(row)].tab; }
+static uint32_t mi_tab(uint32_t row) {
+    /* The editor describes MIDI OUT under MIDI even though its physical knob
+     * occupies the final CLICK-page slot. RX channel IDs remain MIDI. */
+    return (row >= MI_T1_RX && row <= MI_T6_RX) || row == MI_MIDIOUT
+        ? MTAB_MIDI : MPAGE[menu_page_of(row)].tab;
+}
 static uint32_t mtab_page(uint32_t t)                  /* a tab's first page */
 {
     uint32_t p = 0;
