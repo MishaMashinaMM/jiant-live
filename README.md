@@ -7,9 +7,9 @@
 
 ![JIANT LIVE v0.2 splash screen and example of shared MIDI control across tracks](docs/jiant-live-overview.svg)
 
-**▶ [Try it in the browser](#try-jiant-live-on-your-computer)** · **[Interactive manual (upstream)](https://juanjiant-bit.github.io/JIANT/manual/)** · **[Web installer (not released yet)](#status-and-safety)** · **[Web editor (upstream)](https://juanjiant-bit.github.io/JIANT/webapp/editor/)**
+**▶ [Try it in the browser](https://mishamashinamm.github.io/jiant-live/emu/)** · **[Interactive manual (upstream)](https://juanjiant-bit.github.io/JIANT/manual/)** · **[Web installer (not released yet)](#status-and-safety)** · **[Web editor (upstream)](https://juanjiant-bit.github.io/JIANT/webapp/editor/)**
 
-The browser version of **JIANT LIVE** can already run locally with sound and can import JIANT backup files. A publicly hosted Jiant Live emulator and a Jiant Live hardware installer are **not yet available**. The manual and editor linked above belong to **original JIANT** and have not been adapted or verified for all Jiant Live changes. The upstream web installer must **not** be used as a Jiant Live installer.
+The **public Jiant Live browser emulator** runs with sound and supports importing JIANT backup files. You can also run it locally. A Jiant Live hardware installer is **not yet available**. The manual and editor linked above belong to **original JIANT** and have not been adapted or verified for all Jiant Live changes. The upstream web installer must **not** be used as a Jiant Live installer.
 
 JIANT LIVE is designed for musicians using the FM1 as a **live multitimbral sound module**. It expands MIDI receiving and control, extends DRUM-X, and simplifies the appearance. The synthesis engines, effects, sound editing and sequencer remain available at this stage.
 
