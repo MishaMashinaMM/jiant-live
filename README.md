@@ -82,7 +82,7 @@ The startup screen uses a black background with **JIANT LIVE**, **FM1 PERFORMANC
 
 The browser tab is titled **JIANT LIVE**. The page includes the virtual FM1, computer-keyboard controls, MIDI test input, and an optional JIANT backup importer. The previous upstream donation paragraph and footer navigation have been removed from this Jiant Live page. Licensing and contributor attribution remain in the repository.
 
-The public emulator is published from the independent [`gh-pages` branch](https://github.com/MishaMashinaMM/jiant-live/tree/gh-pages), under `emu/`. Its editable HTML source is `web/emu/index.html` in the [documentation/development branch](https://github.com/MishaMashinaMM/jiant-live/tree/stage14-public-documentation); the publishing branch contains the generated files. The browser page is not the hardware installer.
+The public emulator is published from the independent [`gh-pages` branch](https://github.com/MishaMashinaMM/jiant-live/tree/gh-pages), under `emu/`. Its editable HTML source is [`web/emu/index.html`](web/emu/index.html) on `main`; `gh-pages` contains the generated website files. The browser page is not the hardware installer. Changes to the source require rebuilding and republishing the emulator.
 
 ### Run the emulator locally
 
@@ -91,7 +91,7 @@ You can also build and serve the emulator on your own computer.
 Requirements: this source checkout, the original build dependencies, Python 3, and **Emscripten** (`emcc`) for WebAssembly builds.
 
 ```sh
-./build.sh
+bash build.sh
 bash web/emu/build.sh
 python3 -m http.server 8000 --directory build/emu
 ```
@@ -112,10 +112,10 @@ The emulator also displays upstream sample-bank choices. Those controls do **not
 
 ## Status and safety
 
-- **Latest verified source checkpoint:** [`stage13-verified`](https://github.com/MishaMashinaMM/jiant-live/tree/stage13-verified). Subsequent documentation-only changes are developed separately.
-- **Host regression:** all host tests passed; 157 audio golden renders unchanged, with no reported health, voice/routing, or CPU-budget regressions.
-- **Firmware image:** the verified Stage 12 image was **565,120 bytes** within a **584,336-byte** limit, leaving **19,216 bytes**. Check size again when preparing any final release build.
-- **Physical FM1 testing:** pending. Treat this as experimental; maintain a recovery path and an external backup.
+- **Latest host-verified development branch:** [`stage15`](https://github.com/MishaMashinaMM/jiant-live/tree/stage15) (commit `1eed930`). Its firmware code is also on [`main`](https://github.com/MishaMashinaMM/jiant-live/tree/main), which carries subsequent README-only corrections. Stage 15 passed a fresh, isolated hardware build and the complete host regression suite on 2026-11-05. Earlier immutable checkpoints, including [`stage13-verified`](https://github.com/MishaMashinaMM/jiant-live/tree/stage13-verified), remain available. **Stage 15 has not yet been verified on physical hardware.**
+- **Host regression (Stage 15):** `bash tests/run_tests.sh` exited 0 (`ALL HOST TESTS PASSED`); 157 golden renders unchanged, 0 health failures, 0 voice/routing failures, 0 CPU-budget entries over limit, 0 crashes, and DRUM-X checks passed.
+- **Hardware build (Stage 15):** succeeded from the exact `stage15` checkout. `build/felucca.bin` is **565,120 bytes** within a **584,336-byte** maximum (96.7% used; **19,216 bytes free**). The binary is **not yet a physical-device-tested release**.
+- **Physical FM1 testing:** pending. Do not flash until the direct-upgrade and recovery procedures have been checked. Keep an external backup and a recovery path.
 - **Backwards compatibility:** the browser has successfully imported one real JIANT v0.9.17 JSON backup. Compatibility of every project/settings case on hardware has **not** yet been proven.
 - **No official release binary or installer is advertised here.** Do not use the upstream Juan Jiant installer links expecting them to install this fork.
 
