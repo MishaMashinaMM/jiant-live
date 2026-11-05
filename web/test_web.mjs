@@ -2244,7 +2244,7 @@ async function installerPage() {
   };
   const status = () => els.get("status").textContent, tip = () => els.get("tiptext").children.map((c) => c.textContent).join(" | ");
   let p = await run({ ...PROFILES.v14 });
-  ok(els.get("go").disabled === false && /JIANT FM v0\.9\.11/.test(status()), "installer page: the package loads, Install enabled");
+  ok(els.get("go").disabled === false && /JIANT LIVE v0\.9\.11/.test(status()), "installer page: the package loads, Install enabled");
   await p.click("go");
   ok(/firmware oficial más viejo.*FM-1_014/.test(status()) && els.get("tip").hidden === false && /Volver al V15 oficial/.test(tip()) && els.get("stock").open,
     "installer page: V14 (Spanish): its message, its box, Return opened");
