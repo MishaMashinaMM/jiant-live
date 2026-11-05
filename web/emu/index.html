@@ -590,7 +590,7 @@ async function switchOn() {
       node.port.postMessage({ type: "load", wasm, sectors, backupObjects: backup?.objects.map(({id, bytes}) => ({id, bytes})), sampleKit: !!sampleChoice, master: masterValue }, [wasm]);
     });
     await ac.resume();
-    if (sampleChoice && !saveFlash(sectors)) console.warn("JIANT: sample bank is available for this session only.");
+    if (sampleChoice && !backupMode && !saveFlash(sectors)) console.warn("JIANT: sample bank is available for this session only.");
     document.getElementById("backup-file").disabled = true;
     document.getElementById("sample-bank").disabled = true;
     document.getElementById("start").hidden = true;
