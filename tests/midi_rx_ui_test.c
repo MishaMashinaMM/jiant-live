@@ -10,9 +10,9 @@ int main(void)
     /* Stage 17: one full MIDI/USB page; RX assignments live in GLO > MIXER.
      * Their stable MENU IDs remain for the editor protocol, but are not
      * reachable from the physical MENU's cards or page navigation. */
-    hold(B_HOME); menu_page_go(mtab_page(MTAB_MIDI)); frame();
+    hold(B_HOME); menu_page_go(mtab_page(MTAB_USB)); frame();
     assert(MP_COUNT == 6u);
-    assert(menu_tab() == MTAB_MIDI);
+    assert(menu_tab() == MTAB_USB);
     assert(ui.menu_sel == MI_LEARN);
     assert(MPAGE[menu_page()].row[0] == MI_LEARN);
     assert(MPAGE[menu_page()].row[1] == MI_LCLEAR);
@@ -30,7 +30,7 @@ int main(void)
     turn(EN_SELECT, 1);
     assert(menu_tab() == MTAB_SYSTEM);
     turn(EN_SELECT, -1);
-    assert(menu_tab() == MTAB_MIDI);
+    assert(menu_tab() == MTAB_USB);
 
     /* The editor's six stable IDs still edit six independent tracks. */
     for (uint32_t i = 0; i < 6u; i++) {
