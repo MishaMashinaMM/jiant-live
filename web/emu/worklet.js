@@ -49,14 +49,38 @@ if (typeof registerProcessor === "function") {
     async onMessage(m) {
       if (m.type === "load") {
         try {
-          const { instance } = await WebAssembly.instantiate(m.wasm, {});
-          const ex = instance.exports;
-          ex._initialize();
-          ex.web_nor_erase();
-          restoreSectors(new Uint8Array(ex.memory.buffer, ex.web_nor(), ex.web_nor_size()), m.sectors);
-          ex.web_master(m.master ?? 700);
-          if (ex.web_seed) ex.web_seed((Math.random() * 4294967296) >>> 0);   // (JIANT 0.4) this session's macros
-          ex.web_boot();
+          const boot = async (sectors) => {
+            const { instance } = await WebAssembly.instantiate(m.wasm, {});
+            const ex = instance.exports;
+            ex._initialize();
+            ex.web_nor_erase();
+            restoreSectors(new Uint8Array(ex.memory.buffer, ex.web_nor(), ex.web_nor_size()), sectors);
+            ex.web_master(m.master ?? 700);
+            if (ex.web_seed) ex.web_seed((Math.random() * 4294967296) >>> 0);
+            ex.web_boot();
+            return ex;
+          };
+          let ex = await boot(m.sectors);
+          if (m.backupObjects) {
+            const byId = new Map(m.backupObjects.map(o => [o.id, o.bytes]));
+            const put = (id) => {
+              const bytes = byId.get(id);
+              if (!bytes || !bytes.length) return;
+              if (bytes.length > ex.web_bk_max())
+                throw new Error(`backup object ${id}: too large`);
+              new Uint8Array(ex.memory.buffer, ex.web_bk_buf(), bytes.length).set(bytes);
+              const rc = ex.web_bk_put(id, bytes.length);
+              if (rc) throw new Error(`backup object ${id}: firmware refused it (code ${rc})`);
+            };
+            put(1);                             // PER4/PER5/PER6 settings, migrated in the firmware
+            put(10);                            // song index
+            for (let id = 40; id < 72; id++) put(id); // all saved song sections
+            put(6); put(7); put(9);              // user presets and FM6 patches
+            const imported = storeSectors(new Uint8Array(ex.memory.buffer, ex.web_nor(), ex.web_nor_size()));
+            ex = await boot(imported);          // rebuild RAM caches from restored flash
+            put(0);                            // unsaved live music belongs in RAM, after the reboot
+            this.port.postMessage({type:"backup-ready", objects: m.backupObjects.length});
+          }
           const samples = ex.web_sample_count ? ex.web_sample_count() : 0;
           const kitReady = !!(samples && m.sampleKit && ex.web_sample_kit && !ex.web_sample_kit());
           this.ex = ex;
