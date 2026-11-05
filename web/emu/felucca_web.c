@@ -524,6 +524,15 @@ EXPORT uint32_t web_bk_put(uint32_t id, uint32_t len)   /* the bytes in web_bk_b
             memcpy(&proj_slot[k], raw, sizeof proj_slot[0]);
         return st_save(s ? OBJ_SONG1 + (s - 1u) * 4u + k : OBJ_PROJECT0 + k, raw, sizeof(project_store_t)) ? 4u : 0u;
     }
+    if (id == 1u) {                                    /* saved settings: migrate PER4/PER5 into PER6 */
+        persist_t p = {0};
+        if (len > sizeof p || len < 8u) return 2u;
+        memcpy(&p, raw, len);
+        if (!settings_import(&p, (int)len)) return 2u;
+        if (st_save(OBJ_SETTINGS, &p, sizeof p)) return 4u;
+        persist_saved = p;
+        return 0u;
+    }
     if (id == 10u) {                                   /* the song index: the rows and scenes, into RAM too */
         if (len != sizeof song_idx || ((const song_index_t *)raw)->magic != SONG_MAGIC) return 2;
         memcpy(&song_idx, raw, sizeof song_idx);
