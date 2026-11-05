@@ -2431,7 +2431,7 @@ static int test_display_preferences(void)
     return bad;
 }
 
-/* Live Stage 17: MENU has six full pages in four tabs (SCREEN AUDIO MIDI SYSTEM).
+/* Live Stage 17: MENU has six full pages, preserving five editor tabs.
  * CLICK shares its last slot with MIDI OUT; MIDI and USB share a page. SELECT walks the pages (no wrap), ALGORITHM
  * the tabs' first pages (no wrap), PRESETS nothing, KNOB n the page's setting n, OCT+ / OCT- the setting turned last; an
  * action armed by its knob, OCT+ does it; HOME closes (OCT- not); reopened at the same page */
@@ -2503,7 +2503,7 @@ static int test_menu_tabs(void)
     hold(B_HOME);
     ok = ui.menu == 1 && ui.menu_sel == MI_SCOPE && menu_page() == 0u && menu_tab() == MTAB_SCREEN;
     turn(EN_SELECT, 1); ok &= menu_page() == 1u && ui.menu_sel == MI_LOWCUT && menu_tab() == MTAB_AUDIO;
-    turn(EN_SELECT, 1); ok &= menu_page() == 2u && ui.menu_sel == MI_CLICK && menu_tab() == MTAB_AUDIO;
+    turn(EN_SELECT, 1); ok &= menu_page() == 2u && ui.menu_sel == MI_CLICK && menu_tab() == MTAB_MIDI;
     turn(EN_SELECT, -1); ok &= menu_page() == 1u;
     turn(EN_SELECT, -40); ok &= menu_page() == 0u && ui.menu_sel == MI_SCOPE;   /* (no wrap) */
     turn(EN_PRESET, 1); ok &= ui.menu_sel == MI_SCOPE;   /* (PRESETS: nothing, rule 3) */
@@ -2667,28 +2667,28 @@ static int test_menu_tabs(void)
     menu_close();
     bad += check("MENU: HOME closes ABOUT too; reopened at its page, the action let go; the setting turned last breathes OCT- / OCT+ where they can go", ok);
 
-    /* (0.9.18) the tabs and the breadcrumb (rule 6): five tabs (the page's lit, a dot a page), "MENU . TAB . page" and the
-     * page's place among the eight; a page named as its tab ("SCREEN", "SCREEN 2", "AUDIO") not repeated: MENU . page */
+    /* Six full physical pages and five stable tabs; the page counter is 1/6 .. 6/6. */
     ui_power_on();
     hold(B_HOME);
     frame();
     ok = ui.menu == 1 && lz_on() && lz_fam() == LZ_MENU && lz_tabs() == 5u && lz_tab_lit(0) &&
-         lz_crumb_is("MENU \xB7 SCREEN") && lz_count_is("1/8");
+         lz_crumb_is("MENU \xB7 SCREEN") && lz_count_is("1/6");
     turn(EN_SELECT, 1); frame();
-    ok &= lz_tab_lit(0) && lz_crumb_is("MENU \xB7 SCREEN \xB7 LEDS") && lz_count_is("2/8");
+    ok &= lz_tab_lit(1) && lz_crumb_is("MENU \xB7 AUDIO") && lz_count_is("2/6");
     turn(EN_ALGO, 1); frame();
-    ok &= menu_tab() == MTAB_AUDIO && lz_tab_lit(1) && lz_crumb_is("MENU \xB7 AUDIO") && lz_count_is("3/8");
+    ok &= menu_tab() == MTAB_MIDI && lz_tab_lit(2) &&
+          lz_crumb_is("MENU \xB7 MIDI \xB7 CLICK") && lz_count_is("3/6");
     turn(EN_SELECT, 1); frame();
-    ok &= lz_crumb_is("MENU \xB7 AUDIO \xB7 CLICK") && lz_count_is("4/8");
-    turn(EN_ALGO, 3); frame();
-    ok &= lz_tab_lit(4) && lz_crumb_is("MENU \xB7 SYSTEM \xB7 CONTROLS") && lz_count_is("7/8");
+    ok &= lz_tab_lit(3) && lz_crumb_is("MENU \xB7 USB \xB7 MIDI/USB") && lz_count_is("4/6");
+    turn(EN_ALGO, 1); frame();
+    ok &= lz_tab_lit(4) && lz_crumb_is("MENU \xB7 SYSTEM \xB7 CONTROLS") && lz_count_is("5/6");
     turn(EN_K3, 1); frame();
     ok &= (fx_latch & 1u) != 0u && ui.menu_sel == MI_LATCH;
     turn(EN_K3, -1); frame();
     turn(EN_SELECT, 1); frame();
-    ok &= lz_crumb_is("MENU \xB7 SYSTEM") && lz_count_is("8/8");
+    ok &= lz_crumb_is("MENU \xB7 SYSTEM") && lz_count_is("6/6");
     menu_close();
-    bad += check("0.9.18 MENU: five tabs (the page's lit), MENU . TAB . page (MENU . page when named as its tab) and n/8; ALGORITHM the tab, KNOB n the value", ok && MI_COUNT == 35u);
+    bad += check("Stage 17 MENU: five tabs, six full pages, current breadcrumb and knob values", ok && MI_COUNT == 35u);
     return bad;
 }
 
@@ -6964,14 +6964,14 @@ static int test_screen_off(void)
     menu_put(MI_SCROFF, 3u);
     hold(B_HOME);
     ok = ui.menu == 1 && ui.menu_sel == MI_SCOPE && menu_page_of(MI_SCROFF) == 0u;
-    turn(EN_K3, 1); ok &= scr_get() == 4u && ui.menu_sel == MI_SCROFF;
+    turn(EN_K2, 1); ok &= scr_get() == 4u && ui.menu_sel == MI_SCROFF;
     press(B_OCTUP); ok &= scr_get() == 4u;           /* (stops at the end) */
-    for (i = 0; i < 4u; i++) turn(EN_K3, -1);
+    for (i = 0; i < 4u; i++) turn(EN_K2, -1);
     ok &= scr_get() == 0u;
     press(B_OCTDN); ok &= scr_get() == 0u && ui.menu == 1;
     press(B_OCTUP); press(B_OCTUP); press(B_OCTUP); ok &= scr_get() == 3u;
     press(B_HOME); ok &= ui.menu == 0;
-    bad += check("SCREEN SLEEP: SCREEN 2 KNOB 3 / OCT-+ step NEVER .. 60 MIN, stops at the ends", ok);
+    bad += check("SCREEN SLEEP: SCREEN KNOB 2 / OCT-+ step NEVER .. 60 MIN, stops at the ends", ok);
 
     {
         uint32_t f0 = 0, f1 = 0;
@@ -9683,7 +9683,7 @@ static int test_click_menu(void)
     turn(EN_K2, -1); frame(); ok = trk_live == 4u && !(ui_rec_prefs & 0x80u);   /* (0.6.18) TRACKS 4 */
     turn(EN_K2, 1); frame(); ok &= trk_live == NTRK && (ui_rec_prefs & 0x80u);  /* 6 */
     turn(EN_SELECT, 1);                                /* CLICK: CLICK, LEVEL, COUNT-IN, BPM LOCK */
-    ok &= ui.menu_sel == MI_CLICK && menu_tab() == MTAB_AUDIO;
+    ok &= ui.menu_sel == MI_CLICK && menu_tab() == MTAB_MIDI;
     turn(EN_K1, 1); ok &= click_mode == CLICK_REC;
     turn(EN_K1, 1); ok &= click_mode == CLICK_ON;
     turn(EN_K1, 1); ok &= click_mode == CLICK_ON;      /* (stops at the end) */
@@ -9692,7 +9692,7 @@ static int test_click_menu(void)
     press(B_OCTUP); press(B_OCTUP); ok &= click_lvl == 2u;
     turn(EN_K3, 1); ok &= cin_bars == 1u && ui.menu_sel == MI_COUNTIN;
     turn(EN_K3, 1); ok &= cin_bars == 2u;
-    turn(EN_SELECT, 1); ok &= ui.menu_sel == MI_MIDIOUT && menu_tab() == MTAB_MIDI;   /* (on into the next tab) */
+    turn(EN_SELECT, 1); ok &= ui.menu_sel == MI_LEARN && menu_tab() == MTAB_USB;   /* (next physical page) */
     press(B_HOME);
     ok &= !ui.menu;
     bad += check("0.9.18 MENU > AUDIO: TRACKS on KNOB 2; SELECT to CLICK: CLICK, LEVEL, COUNT-IN on KNOB 1..3, OCT the one turned; applied at once", ok);
@@ -10084,20 +10084,20 @@ static int test_usb_serial(void)
     hold(B_HOME);
     ui.menu_sel = MI_SERIAL;
     ui.force = 1; ui_draw();
-    turn(EN_K1, 1);
+    turn(EN_K3, 1);
     ok = (ui_prefs & PREF_SERIAL_OFF) && !usb_out && usb_cdc_on;   /* right: STEREO; applied when the menu closes */
-    turn(EN_K1, 1); ok &= (ui_prefs & PREF_SERIAL_OFF) && usb_out && !fx_stems;   /* right again: STEMS */
-    turn(EN_K1, -1); turn(EN_K1, -1); ok &= !(ui_prefs & PREF_SERIAL_OFF) && !usb_out;   /* left twice: CONSOLE */
+    turn(EN_K3, 1); ok &= (ui_prefs & PREF_SERIAL_OFF) && usb_out && !fx_stems;   /* right again: STEMS */
+    turn(EN_K3, -1); turn(EN_K3, -1); ok &= !(ui_prefs & PREF_SERIAL_OFF) && !usb_out;   /* left twice: CONSOLE */
     press(B_OCTUP); ok &= (ui_prefs & PREF_SERIAL_OFF) && !usb_out && ui.menu && usb_cdc_on;   /* OCT+: STEREO */
     press(B_HOME);
     ok &= ui.menu == 0 && usb_cdc_on;                 /* (HOME acts as it is let go: closed this frame) */
     frame();
     ok &= !ui.menu && !usb_cdc_on && !usb.config && plain_desc() && dev_class() == 0 && !fx_stems;
-    bad += check("  KNOB 1 right STEREO, again STEMS, left back; the menu closed (HOME) on STEREO: audio + MIDI only, class 0", ok);
+    bad += check("  KNOB 3 right STEREO, again STEMS, left back; the menu closed (HOME) on STEREO: audio + MIDI only, class 0", ok);
     hold(B_HOME);                                     /* STEMS: the parts' stems feed USB from the next block */
     ui.menu_sel = MI_SERIAL;
     ui.force = 1; ui_draw();
-    turn(EN_K1, 1);
+    turn(EN_K3, 1);
     press(B_HOME);
     frame();
     ok = !ui.menu && usb_out && fx_stems && !usb_cdc_on;
@@ -10108,7 +10108,7 @@ static int test_usb_serial(void)
     hold(B_HOME);                                     /* (0.7.5) IN+OUT: the audio output too, no console, no stems */
     ui.menu_sel = MI_SERIAL;
     ui.force = 1; ui_draw();
-    turn(EN_K1, 1); turn(EN_K1, 1);
+    turn(EN_K3, 1); turn(EN_K3, 1);
     ok = usb_out == 2u && menu_get(MI_SERIAL) == 3u;
     press(B_HOME);
     frame();
@@ -10120,7 +10120,7 @@ static int test_usb_serial(void)
     hold(B_HOME);                                     /* (0.8.0) STEMS+IN: the stems (10 channels) and the output */
     ui.menu_sel = MI_SERIAL;
     ui.force = 1; ui_draw();
-    turn(EN_K1, 1); turn(EN_K1, 1); turn(EN_K1, 1);
+    turn(EN_K3, 1); turn(EN_K3, 1); turn(EN_K3, 1);
     ok = usb_out == 3u && menu_get(MI_SERIAL) == 4u;
     press(B_HOME);
     frame();
@@ -11341,19 +11341,26 @@ static int test_menu_prefs(void)
     turn(EN_SELECT, -40);
     ok &= ui.menu_sel == MPAGE[0].row[0];
     bad += check("0.9.18 MENU: SELECT reaches every page (every tab), each a screen of its own", ok);
-    /* Legacy ANIM is absent: SCREEN's KNOB 2 leaves selection and settings alone. */
-    ok = str_eq(MI_NAME[MI_ANIM], "ANIMATION") && MPAGE[menu_page()].row[1] == MI_NONE &&
-         menu_get(MI_ANIM) == 1u && str_eq(menu_vname(MI_ANIM, menu_get(MI_ANIM)), "OFF");
-    turn(EN_K2, 1);
-    ok &= ui.menu_sel == MI_SCOPE;
-    for (k = 0; k < ROLL_FRAMES; k++) {
-        frame();
-        ok &= ui.menu && ui.menu_sel == MI_SCOPE && menu_get(MI_ANIM) == 1u &&
-              str_eq(menu_vname(MI_ANIM, menu_get(MI_ANIM)), "OFF");
+    /* ANIMATION remains fixed OFF and absent, while all SCREEN slots are occupied.
+     * KNOB 2 edits SCREEN SLEEP without changing animation. */
+    ok = str_eq(MI_NAME[MI_ANIM], "ANIMATION") &&
+         MPAGE[menu_page()].row[1] == MI_SCROFF &&
+         menu_get(MI_ANIM) == 1u &&
+         str_eq(menu_vname(MI_ANIM, menu_get(MI_ANIM)), "OFF");
+    {
+        uint32_t was = menu_get(MI_SCROFF);
+        turn(EN_K2, 1);
+        ok &= ui.menu_sel == MI_SCROFF;
+        for (k = 0; k < ROLL_FRAMES; k++) {
+            frame();
+            ok &= ui.menu && ui.menu_sel == MI_SCROFF && menu_get(MI_ANIM) == 1u &&
+                  str_eq(menu_vname(MI_ANIM, menu_get(MI_ANIM)), "OFF");
+        }
+        menu_put(MI_SCROFF, was);
     }
     ok &= !(ui_prefs & ~(uint32_t)(PREF_ANIM_OFF | PREF_LARGE));
     press(B_HOME);
-    bad += check("Live MENU: removed ANIMATION knob slot preserves selection and settings", ok && !ui.menu);
+    bad += check("Live MENU: SCREEN is full; removed ANIMATION remains OFF and does not alter settings", ok && !ui.menu);
     ok = 1;
     for (j = 0; j < 3u; j++) {                 /* legacy ON bit, OFF bit, and imported pre-ANIM settings */
         persist_t p;
