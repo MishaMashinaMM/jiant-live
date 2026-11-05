@@ -84,6 +84,11 @@ footer small { font-size: 11px; opacity: .8; }
 </head>
 <body>
 <main>
+<div class="keys" id="backup-controls">
+  <label>Jiant backup (.json): <input id="backup-file" type="file" accept=".json,application/json"></label>
+  <span>Optional: select before Switch on. The backup is validated and loaded into an isolated session; existing browser saves and your original file are not changed.</span>
+  <p id="backup-status" role="status">No backup selected — normal emulator.</p>
+</div>
 <div class="keys" id="sample-bank-controls">
   <label>Sample bank:
     <select id="sample-bank"><option value="">Saved bank / Kit 2 if empty</option><option value="factory-voices.json">Kit 2 · Voices + instruments (7)</option><option value="factory-samples.json">Kit 1 · Synth (12)</option></select>
@@ -135,6 +140,7 @@ footer small { font-size: 11px; opacity: .8; }
 
 <script type="module">
 import { encodeSampleBank, withSampleBank, hasSampleBank } from "./sample-bank.js?v=sample-play3";
+import { readBackup } from "./fm1backup.js";
 const NS = "http://www.w3.org/2000/svg";
 // panel.c's labels (bit = label) and encoder roles
 const B = { FX: 0, SCL: 1, ENV: 2, LFO: 3, EDIT: 4, GLO: 5, HOME: 6, SAVE: 7, ARP: 8, SEQ: 9, PLAY: 10, REC: 11, "OCT-": 12, "OCT+": 13 };
@@ -543,7 +549,10 @@ async function switchOn() {
   go.textContent = "Starting…";
   try {
     const ac = new AudioContext({ sampleRate: 44100, latencyHint: "interactive" });
-    let sectors = loadFlash();
+    const backupFile = document.getElementById("backup-file").files[0];
+    const backup = backupFile ? readBackup(await backupFile.text()) : null;
+    const backupMode = !!backup;
+    let sectors = backupMode ? {} : loadFlash();
     const sampleChoice = document.getElementById("sample-bank").value || (!hasSampleBank(sectors) ? "factory-voices.json" : "");
     if (sampleChoice) {
       if (!["factory-voices.json", "factory-samples.json"].includes(sampleChoice)) throw new Error("Invalid sample bank selection");
@@ -564,21 +573,25 @@ async function switchOn() {
           showSampleStatus(m);
           res();
         }
+        else if (m.type === "backup-ready")
+          document.getElementById("backup-status").textContent =
+            `Loaded ${m.objects} backup entries in an isolated emulator session.`;
         else if (m.type === "sample-ready") showSampleStatus(m);
         else if (m.type === "error") rej(new Error(m.message));
         else if (m.type === "frame") {
           if (m.fb) drawScreen(m.fb);
           if (m.leds) drawLights(lastLeds = m.leds, m.anim);
-          if (m.sectors && !saveFlash(m.sectors) && !warned) {
+          if (m.sectors && !backupMode && !saveFlash(m.sectors) && !warned) {
             warned = true;
             console.warn("JIANT: this browser does not keep the saves; they last until the page closes.");
           }
         }
       };
-      node.port.postMessage({ type: "load", wasm, sectors, sampleKit: !!sampleChoice, master: masterValue }, [wasm]);
+      node.port.postMessage({ type: "load", wasm, sectors, backupObjects: backup?.objects.map(({id, bytes}) => ({id, bytes})), sampleKit: !!sampleChoice, master: masterValue }, [wasm]);
     });
     await ac.resume();
     if (sampleChoice && !saveFlash(sectors)) console.warn("JIANT: sample bank is available for this session only.");
+    document.getElementById("backup-file").disabled = true;
     document.getElementById("sample-bank").disabled = true;
     document.getElementById("start").hidden = true;
     midiTestEnable(true);
