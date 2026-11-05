@@ -2471,16 +2471,18 @@ static int test_menu_tabs(void)
               str_eq(menu_short(MI_PANEL), "CALIB") && str_eq(menu_short(MI_CLOCK), "CPU MHZ") &&
               str_eq(menu_short(MI_SERIAL), "USB AUD");
     }
-    bad += check("Live MENU: 24 active options on six full pages, four grouped tabs, six RX rows absent",
-                 ok && n == MP_COUNT && MP_COUNT == 6u && MTAB_COUNT == 4u &&
+    bad += check("Live MENU: 24 active options on six full pages, five legacy editor tabs, six RX rows absent",
+                 ok && n == MP_COUNT && MP_COUNT == 6u && MTAB_COUNT == 5u &&
                  str_eq(MTAB_NAME[0], "SCREEN") && str_eq(MTAB_NAME[MTAB_SYSTEM], "SYSTEM") &&
-                 mtab_pages(MTAB_SCREEN) == 1u && mtab_pages(MTAB_AUDIO) == 2u &&
-                 mtab_pages(MTAB_MIDI) == 1u && mtab_pages(MTAB_SYSTEM) == 2u &&
+                 mtab_pages(MTAB_SCREEN) == 1u && mtab_pages(MTAB_AUDIO) == 1u &&
+                 mtab_pages(MTAB_MIDI) == 1u && mtab_pages(MTAB_USB) == 1u &&
+                 mtab_pages(MTAB_SYSTEM) == 2u &&
                  mi_tab(MI_MIDIOUT) == MTAB_MIDI && mi_tab(MI_LEARN) == MTAB_MIDI &&
-                 mi_tab(MI_LCLEAR) == MTAB_MIDI && mi_tab(MI_SERIAL) == MTAB_MIDI &&
-                 mi_tab(MI_USB) == MTAB_MIDI && mi_tab(MI_CPU) == MTAB_SYSTEM &&
-                 mi_tab(MI_CLOCK) == MTAB_SYSTEM && mi_tab(MI_BPMLOCK) == MTAB_AUDIO &&
-                 mi_tab(MI_SCLLED) == MTAB_SCREEN && mi_tab(MI_PANEL) == MTAB_SYSTEM);
+                 mi_tab(MI_LCLEAR) == MTAB_MIDI && mi_tab(MI_SERIAL) == MTAB_USB &&
+                 mi_tab(MI_USB) == MTAB_USB && mi_tab(MI_CLICK) == MTAB_AUDIO &&
+                 mi_tab(MI_CPU) == MTAB_SYSTEM && mi_tab(MI_CLOCK) == MTAB_SYSTEM &&
+                 mi_tab(MI_BPMLOCK) == MTAB_AUDIO && mi_tab(MI_SCLLED) == MTAB_SCREEN &&
+                 mi_tab(MI_PANEL) == MTAB_SYSTEM);
     {   /* (0.9.12) CPU CORES, CPU CLOCK (cpu_safe.c): values of their own, set through menu_put (the editor's MENU_SET too),
          * from the next start */
         uint8_t was = cpu_cfg;
@@ -2509,17 +2511,17 @@ static int test_menu_tabs(void)
     turn(EN_SELECT, -40);
     bad += check("0.9.18 MENU: SELECT walks the pages (SCREEN .. SYSTEM, no wrap), each opened on its first setting; PRESETS does nothing", ok);
     turn(EN_ALGO, 1); ok = menu_tab() == MTAB_AUDIO && menu_page() == 1u;
-    turn(EN_SELECT, 1); ok &= menu_page() == 2u && ui.menu_sel == MI_CLICK;
-    turn(EN_ALGO, 1); ok &= menu_tab() == MTAB_MIDI && menu_page() == 3u && ui.menu_sel == MI_LEARN;
-    turn(EN_SELECT, 1); ok &= menu_page() == 4u && ui.menu_sel == MI_HOLD;
-    turn(EN_SELECT, -1); ok &= menu_page() == 3u && ui.menu_sel == MI_LEARN;
-    turn(EN_SELECT, -1); ok &= menu_page() == 2u;
-    turn(EN_ALGO, -1); ok &= menu_page() == 1u;
+    turn(EN_SELECT, 1); ok &= menu_page() == 2u && ui.menu_sel == MI_CLICK && menu_tab() == MTAB_MIDI;
+    turn(EN_SELECT, 1); ok &= menu_page() == 3u && ui.menu_sel == MI_LEARN && menu_tab() == MTAB_USB;
+    turn(EN_ALGO, 1); ok &= menu_tab() == MTAB_SYSTEM && menu_page() == 4u && ui.menu_sel == MI_HOLD;
+    turn(EN_ALGO, -1); ok &= menu_tab() == MTAB_USB && menu_page() == 3u && ui.menu_sel == MI_LEARN;
+    turn(EN_ALGO, -1); ok &= menu_tab() == MTAB_MIDI && menu_page() == 2u && ui.menu_sel == MI_CLICK;
+    turn(EN_SELECT, -1); ok &= menu_page() == 1u;
     turn(EN_ALGO, -1); ok &= menu_page() == 0u && menu_tab() == MTAB_SCREEN;
-    turn(EN_ALGO, 2); ok &= menu_tab() == MTAB_MIDI && ui.menu_sel == MI_LEARN;
-    turn(EN_ALGO, 1); ok &= menu_tab() == MTAB_SYSTEM && ui.menu_sel == MI_HOLD;
-    turn(EN_ALGO, 1); ok &= menu_page() == 4u;
-    bad += check("Stage 17 MENU: ALGORITHM jumps between SCREEN AUDIO MIDI SYSTEM tabs, no wrap", ok && ui.menu == 1);
+    turn(EN_ALGO, -1); ok &= menu_page() == 0u;  /* no wrap */
+    turn(EN_ALGO, 4); ok &= menu_tab() == MTAB_SYSTEM && menu_page() == 4u && ui.menu_sel == MI_HOLD;
+    turn(EN_ALGO, 1); ok &= menu_page() == 4u;   /* no wrap */
+    bad += check("Stage 17 MENU: ALGORITHM jumps between legacy tabs (MIDI track selection unchanged)", ok && ui.menu == 1);
     ok = 1;                                            /* SYSTEM > CONTROLS: HOLD TIME, KNOB SPEEDUP, FX LATCH, CALIBRATION */
     turn(EN_K2, 1); ok &= !(ui_prefs & PREF_ACCEL_OFF) && ui.menu_sel == MI_ACCEL;
     turn(EN_K2, -1); ok &= (ui_prefs & PREF_ACCEL_OFF) != 0u;
@@ -2605,7 +2607,7 @@ static int test_menu_tabs(void)
     press(B_HOME);
     ok = !ui.menu;
     hold(B_HOME);
-    ok &= ui.menu == 1 && ui.menu_sel == MI_USB && menu_tab() == MTAB_MIDI;
+    ok &= ui.menu == 1 && ui.menu_sel == MI_USB && menu_tab() == MTAB_USB;
     frames(500);
     ok &= ui.menu == 1;                                 /* (the hold's release: no tap, the menu stays) */
     hold(B_HOME);
