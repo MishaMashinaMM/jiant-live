@@ -78,7 +78,15 @@ The startup screen uses a black background with **JIANT LIVE**, **FM1 PERFORMANC
 
 ## Try JIANT LIVE on your computer
 
-The browser emulator runs compiled firmware code and can be used **without flashing your FM1**.
+**[▶ Launch JIANT LIVE in your browser](https://mishamashinamm.github.io/jiant-live/emu/)** — no installation or FM1 hardware required.
+
+The browser tab is titled **JIANT LIVE**. The page includes the virtual FM1, computer-keyboard controls, MIDI test input, and an optional JIANT backup importer. The previous upstream donation paragraph and footer navigation have been removed from this Jiant Live page. Licensing and contributor attribution remain in the repository.
+
+The public emulator is published from the independent [`gh-pages` branch](https://github.com/MishaMashinaMM/jiant-live/tree/gh-pages), under `emu/`. Its editable HTML source is `web/emu/index.html` in the [documentation/development branch](https://github.com/MishaMashinaMM/jiant-live/tree/stage14-public-documentation); the publishing branch contains the generated files. The browser page is not the hardware installer.
+
+### Run the emulator locally
+
+You can also build and serve the emulator on your own computer.
 
 Requirements: this source checkout, the original build dependencies, Python 3, and **Emscripten** (`emcc`) for WebAssembly builds.
 
