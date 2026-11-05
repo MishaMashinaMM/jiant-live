@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="390" viewBox="0 0 1080 390" role="img" aria-labelledby="t d">
+<title id="t">JIANT LIVE v0.2: startup screen and MIDI performance routing</title>
+<desc id="d">A representation of the static splash and a diagram of the MIDI controller routing to independently assigned tracks with shared MIDI CC mappings.</desc>
+<rect width="1080" height="390" rx="20" fill="#101218"/>
+<rect x="26" y="26" width="348" height="338" rx="22" fill="#060606" stroke="#494b57" stroke-width="2"/>
+<text x="200" y="106" font-size="32" text-anchor="middle" font-family="sans-serif" fill="#fff" letter-spacing="1">JIANT LIVE</text>
+<text x="200" y="151" font-size="14" font-weight="bold" text-anchor="middle" font-family="sans-serif" fill="#e5e7eb">FM1 PERFORMANCE FIRMWARE</text>
+<text x="200" y="214" font-size="12" text-anchor="middle" font-family="monospace" fill="#c3c7cf">orig: Juan Jiant</text>
+<text x="200" y="235" font-size="12" text-anchor="middle" font-family="monospace" fill="#c3c7cf">mod: Misha Mashina</text>
+<text x="200" y="286" font-size="13" text-anchor="middle" font-family="monospace" fill="#9a9fad">v0.2</text>
+<text x="408" y="60" font-size="24" font-family="sans-serif" font-weight="bold" fill="#fff">Independent MIDI routing</text>
+<text x="409" y="91" font-size="15" font-family="sans-serif" fill="#bdc5d4">Each track chooses RX channel 1–16; shared channels are allowed.</text>
+<rect x="408" y="120" width="188" height="77" rx="12" fill="#273d53" stroke="#6cc7ff"/>
+<text x="502" y="147" text-anchor="middle" font-size="18" font-family="sans-serif" fill="#fff">MIDI keyboard</text>
+<text x="502" y="175" text-anchor="middle" font-family="monospace" font-size="14" fill="#c9e9ff">CH 1 · CC 40</text>
+<path d="M596 158 H646 V128 H689 M646 158 V216 H689" stroke="#84d7ff" stroke-width="3" fill="none"/>
+<rect x="692" y="106" width="344" height="69" rx="11" fill="#233d37" stroke="#60d6a7"/>
+<text x="712" y="135" font-size="17" font-family="sans-serif" fill="#fff">Track 1 · RX channel 1</text>
+<text x="712" y="158" font-size="14" font-family="monospace" fill="#bdfcdd">CC40 → cutoff</text>
+<rect x="692" y="192" width="344" height="69" rx="11" fill="#43324f" stroke="#d49ff9"/>
+<text x="712" y="221" font-size="17" font-family="sans-serif" fill="#fff">Track 2 · RX channel 1</text>
+<text x="712" y="244" font-size="14" font-family="monospace" fill="#efd5ff">CC40 → resonance</text>
+<text x="408" y="309" font-size="20" font-family="sans-serif" font-weight="bold" fill="#fff">32 MIDI LEARN destinations</text>
+<text x="408" y="339" font-size="15" font-family="sans-serif" fill="#bdc5d4">One CC can move several parameters simultaneously.</text>
+</svg>
