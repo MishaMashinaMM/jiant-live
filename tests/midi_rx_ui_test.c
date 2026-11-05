@@ -7,26 +7,28 @@ int main(void)
 {
     ui_power_on(); trks_put(0); frame();
 
-    /* The device has one MIDI page; RX assignments live in GLO > MIXER.
+    /* Stage 17: one full MIDI/USB page; RX assignments live in GLO > MIXER.
      * Their stable MENU IDs remain for the editor protocol, but are not
      * reachable from the physical MENU's cards or page navigation. */
     hold(B_HOME); menu_page_go(mtab_page(MTAB_MIDI)); frame();
-    assert(MP_COUNT == 8u);
+    assert(MP_COUNT == 6u);
     assert(menu_tab() == MTAB_MIDI);
-    assert(ui.menu_sel == MI_MIDIOUT);
-    assert(MPAGE[menu_page()].row[0] == MI_MIDIOUT);
-    assert(MPAGE[menu_page()].row[1] == MI_LEARN);
-    assert(MPAGE[menu_page()].row[2] == MI_LCLEAR);
-    assert(MPAGE[menu_page()].row[3] == MI_NONE);
+    assert(ui.menu_sel == MI_LEARN);
+    assert(MPAGE[menu_page()].row[0] == MI_LEARN);
+    assert(MPAGE[menu_page()].row[1] == MI_LCLEAR);
+    assert(MPAGE[menu_page()].row[2] == MI_SERIAL);
+    assert(MPAGE[menu_page()].row[3] == MI_USB);
     for (uint32_t p = 0; p < MP_COUNT; p++)
-        for (uint32_t k = 0; k < 4u; k++)
+        for (uint32_t k = 0; k < 4u; k++) {
+            assert(MPAGE[p].row[k] != MI_NONE);
             assert(MPAGE[p].row[k] < MI_T1_RX || MPAGE[p].row[k] > MI_T6_RX);
+        }
 
-    /* The empty MIDI card does not select or edit a hidden RX setting. */
+    /* The fourth MIDI/USB knob edits USB LEVEL, never hidden RX settings. */
     turn(EN_K4, 1);
-    assert(ui.menu_sel == MI_MIDIOUT);
+    assert(ui.menu_sel == MI_USB);
     turn(EN_SELECT, 1);
-    assert(menu_tab() == MTAB_USB);
+    assert(menu_tab() == MTAB_SYSTEM);
     turn(EN_SELECT, -1);
     assert(menu_tab() == MTAB_MIDI);
 
