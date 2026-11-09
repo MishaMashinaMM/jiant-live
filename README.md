@@ -3,17 +3,17 @@
 **Performance-focused firmware for the M-VAVE FM1**, modified by **Misha Mashina** from **JIANT by Juan Jiant** (based on Felucca).
 
 [![License: GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg)](LICENSE)
-[![Status: experimental](https://img.shields.io/badge/device%20testing-pending-orange.svg)](#status-and-safety)
+[![Status: experimental](https://img.shields.io/badge/device%20tested-limited-yellow.svg)](#status-and-safety)
 
 ![JIANT LIVE v0.2 splash screen and example of shared MIDI control across tracks](docs/jiant-live-overview.svg)
 
-**▶ [Try it in the browser](https://mishamashinamm.github.io/jiant-live/emu/)** · **[Interactive manual (upstream)](https://juanjiant-bit.github.io/JIANT/manual/)** · **[Web installer (not released yet)](#status-and-safety)** · **[Web editor (upstream)](https://juanjiant-bit.github.io/JIANT/webapp/editor/)**
+**[Project homepage](https://github.com/MishaMashinaMM/jiant-live)** · **[Emulator](https://mishamashinamm.github.io/jiant-live/emu/)** · **[Installer (not published)](#status-and-safety)** · **[Editor (upstream)](https://juanjiant-bit.github.io/JIANT/webapp/editor/)** · **[Interactive manual (inherited)](https://juanjiant-bit.github.io/JIANT/manual/)**
 
-The **public Jiant Live browser emulator** runs with sound and supports importing JIANT backup files. You can also run it locally. A Jiant Live hardware installer is **not yet available**. The manual and editor linked above belong to **original JIANT** and have not been adapted or verified for all Jiant Live changes. The upstream web installer must **not** be used as a Jiant Live installer.
+The **public Jiant Live browser emulator** runs with sound and supports importing JIANT backup files. You can also run it locally. The project homepage currently links to this repository; a dedicated Jiant Live website and web installer are **not yet published**. The linked editor and interactive manual belong to **original JIANT**, have not been adapted or verified for all Jiant Live changes, and are provided as inherited references. Do **not** use the upstream web installer as a Jiant Live installer.
 
 JIANT LIVE is designed for musicians using the FM1 as a **live multitimbral sound module**. It expands MIDI receiving and control, extends DRUM-X, and simplifies the appearance. The synthesis engines, effects, sound editing and sequencer remain available at this stage.
 
-> **Current status:** this is a development fork, **not an official Juan Jiant release**. The full automated host suite and firmware build pass, and a real JIANT backup has been restored and checked in the browser emulator. **This build has not yet been tested on a physical FM1.** Back up your FM1 before considering installation; there is no published Jiant Live installer or hardware flashing guide here yet.
+> **Current status:** this is a development fork, **not an official Juan Jiant release**. The full automated host suite and firmware build pass, and a real JIANT backup has been restored and checked in the browser emulator. **Jiant Live has now been successfully flashed to a physical FM1.** This confirms a successful device installation, not a complete validation of its features, persistence, MIDI behavior or long-term reliability. Back up your FM1 and prepare a recovery method before installing; no dedicated public Jiant Live web installer or hardware flashing guide is published here yet.
 
 ## What's different from JIANT
 
@@ -112,10 +112,10 @@ The emulator also displays upstream sample-bank choices. Those controls do **not
 
 ## Status and safety
 
-- **Latest host-verified development branch:** [`stage15`](https://github.com/MishaMashinaMM/jiant-live/tree/stage15) (commit `1eed930`). Its firmware code is also on [`main`](https://github.com/MishaMashinaMM/jiant-live/tree/main), which carries subsequent README-only corrections. Stage 15 passed a fresh, isolated hardware build and the complete host regression suite on 2026-11-05. Earlier immutable checkpoints, including [`stage13-verified`](https://github.com/MishaMashinaMM/jiant-live/tree/stage13-verified), remain available. **Stage 15 has not yet been verified on physical hardware.**
+- **Latest host-verified development branch:** [`stage15`](https://github.com/MishaMashinaMM/jiant-live/tree/stage15) (commit `1eed930`). Its firmware code is also on [`main`](https://github.com/MishaMashinaMM/jiant-live/tree/main), which carries subsequent README-only corrections. Stage 15 passed a fresh, isolated hardware build and the complete host regression suite on 2026-11-05. Earlier immutable checkpoints, including [`stage13-verified`](https://github.com/MishaMashinaMM/jiant-live/tree/stage13-verified), remain available. **A physical FM1 has been successfully flashed with Jiant Live; broader Stage 15 hardware verification remains open.**
 - **Host regression (Stage 15):** `bash tests/run_tests.sh` exited 0 (`ALL HOST TESTS PASSED`); 157 golden renders unchanged, 0 health failures, 0 voice/routing failures, 0 CPU-budget entries over limit, 0 crashes, and DRUM-X checks passed.
-- **Hardware build (Stage 15):** succeeded from the exact `stage15` checkout. `build/felucca.bin` is **565,120 bytes** within a **584,336-byte** maximum (96.7% used; **19,216 bytes free**). The binary is **not yet a physical-device-tested release**.
-- **Physical FM1 testing:** pending. Do not flash until the direct-upgrade and recovery procedures have been checked. Keep an external backup and a recovery path.
+- **Hardware build (Stage 15):** succeeded from the exact `stage15` checkout. `build/felucca.bin` is **565,120 bytes** within a **584,336-byte** maximum (96.7% used; **19,216 bytes free**). A physical FM1 has been successfully flashed with Jiant Live, but this is **not yet a fully hardware-qualified release**.
+- **Physical FM1 testing (November 2026):** Jiant Live was successfully flashed to a physical FM1, as confirmed by the project maintainer. This establishes a successful hardware flash, but does not establish full functional, persistence, MIDI, or long-duration reliability testing. Keep an external backup and recovery path; a complete public installation/recovery procedure has not yet been documented.
 - **Backwards compatibility:** the browser has successfully imported one real JIANT v0.9.17 JSON backup. Compatibility of every project/settings case on hardware has **not** yet been proven.
 - **No official release binary or installer is advertised here.** Do not use the upstream Juan Jiant installer links expecting them to install this fork.
 
