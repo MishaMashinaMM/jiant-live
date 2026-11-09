@@ -7,13 +7,13 @@
 
 ![JIANT LIVE v0.2 splash screen and example of shared MIDI control across tracks](docs/jiant-live-overview.svg)
 
-**[Project homepage](https://github.com/MishaMashinaMM/jiant-live)** · **[Emulator](https://mishamashinamm.github.io/jiant-live/emu/)** · **[Installer (not published)](#status-and-safety)** · **[Editor (upstream)](https://juanjiant-bit.github.io/JIANT/webapp/editor/)** · **[Interactive manual (inherited)](https://juanjiant-bit.github.io/JIANT/manual/)**
+**[Project homepage](https://mishamashinamm.github.io/jiant-live/)** · **[Emulator](https://mishamashinamm.github.io/jiant-live/emu/)** · **[Jiant Live installer](https://mishamashinamm.github.io/jiant-live/webapp/installer/)** · **[Jiant Live editor](https://mishamashinamm.github.io/jiant-live/webapp/editor/)** · **[Interactive manual (inherited)](https://mishamashinamm.github.io/jiant-live/manual/)**
 
-The **public Jiant Live browser emulator** runs with sound and supports importing JIANT backup files. You can also run it locally. The project homepage currently links to this repository; a dedicated Jiant Live website and web installer are **not yet published**. The linked editor and interactive manual belong to **original JIANT**, have not been adapted or verified for all Jiant Live changes, and are provided as inherited references. Do **not** use the upstream web installer as a Jiant Live installer.
+The Jiant Live site provides a browser emulator, a dedicated USB-MIDI firmware installer, and a web editor. The installer packages **this fork's current Jiant Live build**, not an upstream JIANT edition or Jiant Live Drums. The interactive manual is inherited from JIANT and is **not an exact reference** for every new Jiant Live control. Do **not** use the upstream JIANT installer to install this fork.
 
 JIANT LIVE is designed for musicians using the FM1 as a **live multitimbral sound module**. It expands MIDI receiving and control, extends DRUM-X, and simplifies the appearance. The synthesis engines, effects, sound editing and sequencer remain available at this stage.
 
-> **Current status:** this is a development fork, **not an official Juan Jiant release**. The full automated host suite and firmware build pass, and a real JIANT backup has been restored and checked in the browser emulator. **Jiant Live has now been successfully flashed to a physical FM1.** This confirms a successful device installation, not a complete validation of its features, persistence, MIDI behavior or long-term reliability. Back up your FM1 and prepare a recovery method before installing; no dedicated public Jiant Live web installer or hardware flashing guide is published here yet.
+> **Current status:** this is a development fork, **not an official Juan Jiant release**. The full automated host suite and firmware build pass, and a real JIANT backup has been restored and checked in the browser emulator. **Jiant Live has now been successfully flashed to a physical FM1.** This confirms a successful device installation, not a complete validation of its features, persistence, MIDI behavior or long-term reliability. Back up your FM1 and prepare a recovery method before using the dedicated web installer.
 
 ## What's different from JIANT
 
@@ -117,7 +117,7 @@ The emulator also displays upstream sample-bank choices. Those controls do **not
 - **Hardware build (Stage 15):** succeeded from the exact `stage15` checkout. `build/felucca.bin` is **565,120 bytes** within a **584,336-byte** maximum (96.7% used; **19,216 bytes free**). A physical FM1 has been successfully flashed with Jiant Live, but this is **not yet a fully hardware-qualified release**.
 - **Physical FM1 testing (November 2026):** Jiant Live was successfully flashed to a physical FM1, as confirmed by the project maintainer. This establishes a successful hardware flash, but does not establish full functional, persistence, MIDI, or long-duration reliability testing. Keep an external backup and recovery path; a complete public installation/recovery procedure has not yet been documented.
 - **Backwards compatibility:** the browser has successfully imported one real JIANT v0.9.17 JSON backup. Compatibility of every project/settings case on hardware has **not** yet been proven.
-- **No official release binary or installer is advertised here.** Do not use the upstream Juan Jiant installer links expecting them to install this fork.
+- **Dedicated installer:** the Jiant Live GitHub Pages site builds a firmware package from this repository's current `main` commit and publishes it with a web installer, editor and source-commit checksum metadata. This is an experimental installer, **not a fully qualified official release**. Do not use the upstream Juan Jiant installer for this fork.
 
 For regression testing in the development environment:
 

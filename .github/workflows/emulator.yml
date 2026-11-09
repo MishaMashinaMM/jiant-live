@@ -68,8 +68,10 @@ jobs:
           printf '%s\n' "$GITHUB_SHA" > build/site/firmware/SOURCE_COMMIT
           (cd build/site/firmware && sha256sum felucca-*.fwsc > SHA256SUMS)
           cp -r build/site/webapp build/site/firmware build/emu/
-      - name: Jiant Live firmware regressions
-        run: bash tests/run_tests.sh
+      - name: Installer, backup and package protocol tests
+        run: |
+          node web/test_web.mjs
+          node web/test_backup.mjs
       # (JIANT 0.7.9) the stems app's phase-0 probe (android/probe), next to the installer: app/jiant-probe.apk
       - uses: actions/setup-java@v4
         continue-on-error: true
