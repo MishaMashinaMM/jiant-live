@@ -1,0 +1,46 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JIANT LIVE v0.2</title>
+<meta name="description" content="JIANT LIVE v0.2: performance-oriented M-VAVE FM1 firmware with per-track MIDI routing and 12-sound DRUM-X.">
+<style>
+  :root { color-scheme: dark; font: 16px/1.55 system-ui, sans-serif; background: #0e0e10; color: #f1f1ed; }
+  body { max-width: 960px; margin: 0 auto; padding: 3rem 1.5rem; }
+  h1 { font-size: clamp(2.2rem, 6vw, 4.5rem); line-height: 1.08; letter-spacing: -.05em; margin: .4em 0; }
+  h2 { font-size: 1.25rem; } p { max-width: 740px; }
+  .eyebrow { color: #b1b1b6; letter-spacing: .13em; font-size: .78rem; text-transform: uppercase; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin: 2rem 0; }
+  .card { border: 1px solid #45454b; padding: 1.2rem; border-radius: 8px; background: #19191c; }
+  .card a { font-size: 1.25rem; font-weight: bold; color: #fff; }
+  a { color: #d3d3ff; } .notice { padding: 1rem; border-left: 4px solid #f5a77b; background: #30251f; }
+  footer { margin-top: 3rem; border-top: 1px solid #45454b; padding-top: 1rem; color: #c7c7ca; font-size: .9rem; }
+</style>
+</head>
+<body>
+<div class="eyebrow">M-VAVE FM1 · independent open-source firmware fork</div>
+<h1>JIANT LIVE <small>v0.2</small></h1>
+<p>Performance-oriented FM1 firmware with six independently assigned MIDI receive channels,
+  32 MIDI Learn destinations with shared CCs, and 12 editable DRUM-X sounds.
+  The original synthesizer engines, effects and sequencer remain available.</p>
+<div class="cards">
+  <div class="card"><a href="emu/">Try the emulator</a><p>Audition sounds, test MIDI routing and import a backup in the browser.</p></div>
+  <div class="card"><a href="webapp/installer/">FM1 installer</a><p>Install the Jiant Live package via USB-MIDI using a supported browser.</p></div>
+  <div class="card"><a href="webapp/editor/">Web editor</a><p>Edit sounds and projects, and back up or restore FM1 data.</p></div>
+  <div class="card"><a href="manual/">Interactive manual</a><p>Inherited JIANT reference; Jiant Live MIDI controls differ.</p></div>
+</div>
+<p class="notice"><strong>Experimental:</strong> Jiant Live has been successfully flashed to a physical FM1,
+  but broader hardware validation and recovery testing remain incomplete. Make an external backup and
+  prepare a recovery method before installing. This installer publishes only Jiant Live firmware.</p>
+<h2>Live MIDI control</h2>
+<p>Assign any MIDI channel (1–16) to each of six tracks, layer tracks on the same channel,
+  and assign one incoming CC to several parameters at once.</p>
+<footer>JIANT LIVE modification by Misha Mashina. Based on
+  <a href="https://github.com/juanjiant-bit/JIANT">JIANT</a> by Juan Ignacio Antonucci (Juan Jiant),
+  itself based on Felucca by Hügelton Instruments.
+  <a href="https://github.com/MishaMashinaMM/jiant-live">Source and licenses (GPL-3.0-only)</a>.
+</footer>
+</body>
+</html>

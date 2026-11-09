@@ -1,9 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-only
-# The site on GitHub Pages: the front page (web/landing) at the root and the browser emulator (web/emu) under emu/: the firmware's sources compiled to WebAssembly, on every push to
-# main. Needs Settings > Pages > Source: "GitHub Actions" once. The emulator needs only the generated headers; the
-# installer (webapp/installer) and the editor (webapp/editor) need the package, built with JieLi's toolchain (downloaded).
-# Two installers: preview/webapp/installer follows web/PREVIEW when set (otherwise main); webapp/installer follows
-# the approved web/STABLE commit. The browser emulator follows web/PREVIEW too (main without a pin).
+# Jiant Live Pages: build emulator, installer, editor and manual from the current main commit.
+# No inherited upstream STABLE/PREVIEW/CLASSIC firmware is ever published by this fork.
 name: emulator
 on:
   push:
@@ -22,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0                 # (web/STABLE's commit: built for the public installer)
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
@@ -33,42 +30,8 @@ jobs:
         with:
           version: 6.0.11                # (the version the emulator is tested with)
       - name: the emulator
-        # (0.9.9-seq2) the emulator runs the beta's firmware (web/PREVIEW's commit, as the beta installer), main's if
-        # no pin is set or the pinned tree's emulator does not build
         run: |
-          P=$(tr -d ' \n' < web/PREVIEW 2>/dev/null || true)
-          if [ -n "$P" ] && git cat-file -e "$P^{commit}" 2>/dev/null; then
-            rm -rf /tmp/emusrc; git worktree add -f --detach /tmp/emusrc "$P"
-            cp web/emu/sample-kit-api.h /tmp/emusrc/web/emu/sample-kit-api.h
-            printf '%s\n' '#include "sample-kit-api.h"' >> /tmp/emusrc/web/emu/felucca_web.c
-            if (cd /tmp/emusrc && python3 -c "import sys; sys.path.insert(0, 'tools'); import build; build.generate()" \
-                && sh web/emu/build.sh); then
-              rm -rf build/emu; mkdir -p build; cp -r /tmp/emusrc/build/emu build/emu
-              echo "emulator: web/PREVIEW ${P::7}"
-            else
-              echo "emulator: ${P::7} did not build, main's instead"; sh web/emu/build.sh
-            fi
-            git worktree remove -f /tmp/emusrc || true
-          else
-            sh web/emu/build.sh
-          fi
-          # Use the current browser shell with the pinned firmware, preserving its version label.
-          python3 - <<'PY'
-          from pathlib import Path
-          import re, shutil
-          target = Path("build/emu/index.html")
-          version = re.search(r'<small class="version">(.*?)</small>', target.read_text()).group(1)
-          shell = Path("web/emu/index.html").read_text().replace("@VERSION@", version).replace("@PREVIEW@", "")
-          target.write_text(shell)
-          shutil.copy("web/emu/sample-bank.js", "build/emu/sample-bank.js")
-          shutil.copy("web/emu/worklet.js", "build/emu/worklet.js")
-          PY
-          node web/emu/sample-bank-test.mjs build/emu/felucca.wasm
-      - name: Browser sampler audio
-        timeout-minutes: 4
-        run: |
-          pip install --timeout 30 --retries 2 playwright==1.58.0
-          python3 -u web/emu/browser-sample-test.py
+          EMU_PREVIEW=0 sh web/emu/build.sh
       # (JIANT) the installer and the web editor next to the emulator: the package needs JieLi's toolchain (downloaded)
       # and three files of their AC79 SDK (a partial clone: only those blobs). A firmware build failure stops deployment.
       - name: JieLi toolchain and SDK files (cached)
@@ -100,69 +63,13 @@ jobs:
           AC79_SDK: /home/runner/fw-AC79_AIoT_SDK
           JIELI_TOOLCHAIN: /home/runner/.jieli/toolchain
         run: |
-          ver() { sed -n 's/^#define FELUCCA_VERSION "\([^"]*\)".*/\1/p' "$1/firmware/src/felucca.c" | head -1; }
-          # The preview follows an explicitly selected source commit, or main when no pin exists.
-          PREVIEW_ROOT=.
-          PREVIEW_SHA="$GITHUB_SHA"
-          P=$(tr -d ' \n' < web/PREVIEW 2>/dev/null || true)
-          if [ -n "$P" ]; then
-            [[ "$P" =~ ^[0-9a-f]{40}$ ]]
-            git cat-file -e "$P^{commit}"
-            git worktree add --detach /tmp/preview "$P"
-            PREVIEW_ROOT=/tmp/preview
-            PREVIEW_SHA="$P"
-          fi
-          (cd "$PREVIEW_ROOT" && python3 tools/build.py)
-          PV=$(ver "$PREVIEW_ROOT")
-          V=$(ver .)
-          python3 web/make_site.py "$PREVIEW_ROOT/build/felucca.fwsc" "${PV:-dev}-${PREVIEW_SHA::7}-preview" build/site_preview
-          mkdir -p build/emu/preview
-          cp -r build/site_preview/webapp build/site_preview/firmware build/emu/preview/
-          printf '%s\n' "$PREVIEW_SHA" > build/emu/preview/firmware/SOURCE_COMMIT
-          (cd build/emu/preview/firmware && sha256sum felucca-*.fwsc > SHA256SUMS)
-          # the public installer: the approved commit (web/STABLE), built from its own sources
-          S=$(tr -d ' \n' < web/STABLE 2>/dev/null || true)
-          PKG=build/felucca.fwsc; SV=${V:-dev}; SH=${GITHUB_SHA::7}
-          if [ -n "$S" ] && git cat-file -e "$S^{commit}" 2>/dev/null; then
-            git worktree add -f /tmp/stable "$S"
-            (cd /tmp/stable && python3 tools/build.py)
-            PKG=/tmp/stable/build/felucca.fwsc; SV=$(ver /tmp/stable); SH=${S::7}
-          fi
-          # (0.9.9-beta1) web/CLASSIC: earlier versions offered too, each built from its own commit here (never a
-          # package taken from the live site: later builds crashed on the device). versions.json for make_site.py.
-          rm -rf build/prev; mkdir -p build/prev; : > build/prev/list
-          W=$(sed 's/#.*//' web/WITHDRAWN 2>/dev/null | awk 'NF{print $1}' | tr '\n' ' ')
-          while read -r C NOTE; do
-            case "$C" in ''|'#'*) continue;; esac
-            git cat-file -e "$C^{commit}" 2>/dev/null || { echo "CLASSIC: $C is not a commit here, skipped"; continue; }
-            rm -rf /tmp/classic; git worktree prune; git worktree add -f --detach /tmp/classic "$C"
-            if (cd /tmp/classic && python3 tools/build.py >/tmp/classic.log 2>&1); then
-              CV=$(ver /tmp/classic); F="felucca-${CV}-${C::7}.fwsc"
-              case " $W " in *" ${CV#v} "*) echo "CLASSIC: $CV withdrawn (web/WITHDRAWN), skipped";;
-                *) cp /tmp/classic/build/felucca.fwsc "build/prev/$F"; printf '%s %s\n' "$CV-${C::7}" "$F" >> build/prev/list;;
-              esac
-            else
-              echo "CLASSIC: $C did not build, skipped"; tail -5 /tmp/classic.log
-            fi
-            git worktree remove -f /tmp/classic || true
-          done < web/CLASSIC
-          python3 -c 'import json,sys; L=[l.split() for l in open("build/prev/list") if l.strip()]; json.dump([{"version":v,"file":f} for v,f in L], open("build/prev/versions.json","w"))'
-          # Offer the already-built sampler preview alongside ADD in the public installer.
-          python3 - <<'PY'
-          import json, shutil
-          from pathlib import Path
-          previous = Path("build/prev")
-          entries = json.loads((previous / "versions.json").read_text())
-          preview = Path("build/site_preview/firmware")
-          sampler = json.loads((preview / "versions.json").read_text())[0]
-          shutil.copy(preview / sampler["file"], previous / sampler["file"])
-          # Keep ADD near the top even when the history list grows.
-          additive = [e for e in entries if e["version"].startswith("v0.9.9-par10-")]
-          rest = [e for e in entries if e not in additive and e["version"] != sampler["version"]]
-          (previous / "versions.json").write_text(json.dumps([sampler] + additive + rest) + "\n")
-          PY
-          python3 web/make_site.py "$PKG" "${SV:-dev}-$SH" build/site build/prev
+          python3 tools/build.py
+          python3 web/make_site.py build/felucca.fwsc "v0.2-${GITHUB_SHA::7}" build/site
+          printf '%s\n' "$GITHUB_SHA" > build/site/firmware/SOURCE_COMMIT
+          (cd build/site/firmware && sha256sum felucca-*.fwsc > SHA256SUMS)
           cp -r build/site/webapp build/site/firmware build/emu/
+      - name: Jiant Live firmware regressions
+        run: bash tests/run_tests.sh
       # (JIANT 0.7.9) the stems app's phase-0 probe (android/probe), next to the installer: app/jiant-probe.apk
       - uses: actions/setup-java@v4
         continue-on-error: true
@@ -188,7 +95,7 @@ jobs:
             if [ -e "build/emu/$f" ]; then mv "build/emu/$f" build/pages/emu/; fi
           done
           cp -r build/emu/. build/pages/
-          cp web/landing/index.html build/pages/index.html
+          cp web/live-home.html build/pages/index.html
           cp web/landing/frecuencia.html build/pages/frecuencia.html
           # (0.9.12) the front page's animations, recorded from the firmware's drawing code (tools/landing_anim)
           cp -r web/landing/anim build/pages/anim

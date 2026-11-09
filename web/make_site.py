@@ -124,10 +124,7 @@ def main(pkg, version, out, prev=None):
     editions = json.loads((HERE / "EDITIONS.json").read_text(encoding="utf-8"))
     for entry in versions:
         entry.update(editions.get(entry["version"], {}))
-    # Public installer: SAMPLE first, ADDITIVE second, then stable/history.
-    if not version.endswith("-preview"):
-        priority = {"SAMPLE": 0, "ADDITIVE": 1}
-        versions.sort(key=lambda e: priority.get(e.get("edition"), 2))
+    # The public installer offers this fork's current package only.
     selected = versions[0]
     meta = json.dumps({"version": selected["version"], "product": selected["product"],
                        "pkg": "../../firmware/" + selected["file"],
@@ -169,9 +166,9 @@ def main(pkg, version, out, prev=None):
             shutil.copy(HERE / f, ed / f)
     shutil.copy(HERE / "404.html", out / "404.html")
     (out / "index.html").write_text(
-        '<!doctype html><meta charset="utf-8"><title>Felucca</title>'
+        '<!doctype html><meta charset="utf-8"><title>JIANT LIVE</title>'
         '<meta http-equiv="refresh" content="0; url=webapp/installer/">'
-        '<a href="webapp/installer/">Felucca installer</a>\n', encoding="utf-8")
+        '<a href="webapp/installer/">JIANT LIVE installer</a>\n', encoding="utf-8")
     print(f"site: {out}: webapp/installer ({len(html)} B), webapp/editor, firmware/{name} ({len(raw)} B, {product})"
           + (f", earlier: {' '.join(e['version'] for e, _ in old)}" if old else ""))
 
